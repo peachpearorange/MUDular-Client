@@ -19,7 +19,7 @@ jobs:
             binary: mudular
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            name: mudular-windows-x86_64
+            name: mudular-windows-x86_64.exe
             binary: mudular.exe
           - os: macos-latest
             target: aarch64-apple-darwin
@@ -44,18 +44,15 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Package
+      - name: Rename binary
         shell: bash
-        run: |
-          mkdir -p staging
-          cp target/${{ matrix.target }}/release/${{ matrix.binary }} staging/
-          cp -r profiles staging/
+        run: cp target/${{ matrix.target }}/release/${{ matrix.binary }} ${{ matrix.name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: staging/
+          path: ${{ matrix.name }}
 
   release:
     needs: build
@@ -66,16 +63,14 @@ jobs:
         with:
           path: artifacts
 
-      - name: Package archives
-        run: |
-          cd artifacts
-          for dir in */; do
-            name="${dir%/}"
-            tar czf "${name}.tar.gz" -C "$dir" .
-          done
+      - name: Flatten artifacts
+        run: find artifacts -type f -exec mv {} artifacts/ \;
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*.tar.gz
+          files: |
+            artifacts/mudular-linux-x86_64
+            artifacts/mudular-windows-x86_64.exe
+            artifacts/mudular-macos-aarch64
           generate_release_notes: true

@@ -241,7 +241,7 @@ fn generate_lua(t: &GameTemplate) -> String {
 
 impl Profile {
     pub fn profiles_dir() -> Option<PathBuf> {
-        ProjectDirs::from("com", "mudular", "MUDular")
+        ProjectDirs::from("com", "mudular", "MUDular Client")
             .map(|dirs| dirs.config_dir().join("profiles"))
     }
 

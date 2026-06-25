@@ -20,7 +20,7 @@ struct Appearance {
 
 impl Appearance {
     fn path() -> Option<std::path::PathBuf> {
-        directories::ProjectDirs::from("com", "mudular", "MUDular")
+        directories::ProjectDirs::from("com", "mudular", "MUDular Client")
             .map(|dirs| dirs.config_dir().join("appearance.json"))
     }
 
