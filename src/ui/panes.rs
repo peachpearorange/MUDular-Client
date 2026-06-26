@@ -33,6 +33,9 @@ pub fn render_pane(ui: &mut egui::Ui, _name: &str, buffer: &mut TextBuffer) {
     for line in &buffer.lines {
       render_styled_line(ui, line, available_width, &font_id, default_color);
     }
+    if let Some(line) = &buffer.pending_line {
+      render_styled_line(ui, line, available_width, &font_id, default_color);
+    }
   });
 
   let max_scroll = (output.content_size.y - output.inner_rect.height()).max(0.0);

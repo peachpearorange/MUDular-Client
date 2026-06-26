@@ -380,6 +380,15 @@ impl ScriptEngine {
     main_buf.append_lines(styled_lines);
   }
 
+  pub fn set_main_pending(&self, line: &str) {
+    let mut st = self.state.lock().unwrap();
+    let palette = st.ansi_palette;
+    let pending_line = parse_ansi(line, palette.as_ref()).into_iter().next();
+    let main_buf =
+      st.panes.entry("main".into()).or_insert_with(|| TextBuffer::new(10000));
+    main_buf.pending_line = pending_line.filter(|line| !line.is_empty());
+  }
+
   pub fn append_system_message(&self, msg: &str) {
     warn!("{msg}");
     let line = StyledLine::plain(msg);

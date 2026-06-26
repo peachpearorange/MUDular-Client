@@ -9,6 +9,7 @@ use crate::{protocol::{gmcp, mccp::MccpDecompressor, mssp},
 pub enum ConnEvent {
   Connected,
   Data(String),
+  PendingData(String),
   GmcpReceived(String, serde_json::Value),
   MsspReceived(std::collections::HashMap<String, String>),
   MsdpReceived(serde_json::Value),
@@ -299,6 +300,7 @@ async fn handle_telnet_events(
           *partial_line = partial_line[newline_pos + 1..].to_string();
           let _ = event_tx.send(ConnEvent::Data(line));
         }
+        let _ = event_tx.send(ConnEvent::PendingData(partial_line.clone()));
       }
       TelnetEvent::Negotiate(cmd, opt) => {
         debug!("Telnet negotiate: cmd={cmd} opt={opt}");
@@ -343,6 +345,7 @@ async fn handle_telnet_events(
         if !partial_line.is_empty() {
           let line = std::mem::take(partial_line);
           let _ = event_tx.send(ConnEvent::Data(line));
+          let _ = event_tx.send(ConnEvent::PendingData(String::new()));
         }
       }
     }

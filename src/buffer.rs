@@ -31,6 +31,7 @@ impl StyledLine {
 
 pub struct TextBuffer {
   pub lines: Vec<StyledLine>,
+  pub pending_line: Option<StyledLine>,
   pub max_lines: usize,
   pub auto_scroll: bool,
   pub scroll_delta_lines: f32,
@@ -45,6 +46,7 @@ impl TextBuffer {
   pub fn new(max_lines: usize) -> Self {
     Self {
       lines: Vec::new(),
+      pending_line: None,
       max_lines,
       auto_scroll: true,
       scroll_delta_lines: 0.0,
@@ -78,6 +80,7 @@ impl TextBuffer {
 
   pub fn clear(&mut self) {
     self.lines.clear();
+    self.pending_line = None;
     self.prev_content_height = 0.0;
     self.scroll_anim_offset = 0.0;
     self.scroll_anim_start_offset = 0.0;

@@ -216,64 +216,65 @@ struct Session {
 }
 
 impl Session {
-  fn process_events(&mut self) -> bool {
-    let Some(conn) = &self.connection else { return false };
-    let events = conn.poll_events();
-    let mut disconnected = false;
-    for event in events {
-      match event {
-        ConnEvent::Connected => {
-          info!("Connected");
-          self.script_engine.append_system_message("[Connected]");
-          self.script_engine.handle_connect();
-          info!("After on_connect: {} timers", self.script_engine.timer_count());
-        }
-        ConnEvent::Data(line) => {
-          info!("DATA: {}", line.chars().take(120).collect::<String>());
-          let show = self.script_engine.handle_line(&line);
-          if show {
-            self.script_engine.append_to_main(&line);
+  fn process_events(&mut self) {
+    if let Some(conn) = &self.connection {
+      let events = conn.poll_events();
+      for event in events {
+        match event {
+          ConnEvent::Connected => {
+            info!("Connected");
+            self.script_engine.append_system_message("[Connected]");
+            self.script_engine.handle_connect();
+            info!("After on_connect: {} timers", self.script_engine.timer_count());
           }
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        ConnEvent::GmcpReceived(package, data) => {
-          info!("GMCP: {package}");
-          self.script_engine.handle_gmcp(&package, &data);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        ConnEvent::MsspReceived(mssp_info) => {
-          let msg = format!("[MSSP: {} entries received]", mssp_info.len());
-          info!("{msg}");
-          self.script_engine.append_system_message(&msg);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        ConnEvent::MsdpReceived(data) => {
-          info!("MSDP: {data}");
-          if let Some(vars) = data.get("REPORTABLE_VARIABLES") {
-            if let Some(arr) = vars.as_array() {
-              let names: Vec<&str> = arr.iter().filter_map(|v| v.as_str()).collect();
-              self.script_engine.append_system_message(&format!(
-                "[MSDP reportable variables: {}]",
-                names.join(", ")
-              ));
+          ConnEvent::Data(line) => {
+            info!("DATA: {}", line.chars().take(120).collect::<String>());
+            let show = self.script_engine.handle_line(&line);
+            if show {
+              self.script_engine.append_to_main(&line);
             }
           }
-          self.script_engine.handle_msdp(&data);
-        }
-        ConnEvent::Disconnected(reason) => {
-          warn!("Disconnected: {reason}");
-          self.script_engine.append_system_message(&format!("[Disconnected: {reason}]"));
-          self.script_engine.handle_disconnect();
-          self.connection = None;
-          disconnected = true;
-        }
-        ConnEvent::Error(e) => {
-          warn!("Connection error: {e}");
-          self.script_engine.append_system_message(&format!("[Error: {e}]"));
+          ConnEvent::PendingData(line) => {
+            self.script_engine.set_main_pending(&line);
+          }
+          #[cfg(not(target_arch = "wasm32"))]
+          ConnEvent::GmcpReceived(package, data) => {
+            info!("GMCP: {package}");
+            self.script_engine.handle_gmcp(&package, &data);
+          }
+          #[cfg(not(target_arch = "wasm32"))]
+          ConnEvent::MsspReceived(mssp_info) => {
+            let msg = format!("[MSSP: {} entries received]", mssp_info.len());
+            info!("{msg}");
+            self.script_engine.append_system_message(&msg);
+          }
+          #[cfg(not(target_arch = "wasm32"))]
+          ConnEvent::MsdpReceived(data) => {
+            info!("MSDP: {data}");
+            if let Some(vars) = data.get("REPORTABLE_VARIABLES") {
+              if let Some(arr) = vars.as_array() {
+                let names: Vec<&str> = arr.iter().filter_map(|v| v.as_str()).collect();
+                self.script_engine.append_system_message(&format!(
+                  "[MSDP reportable variables: {}]",
+                  names.join(", ")
+                ));
+              }
+            }
+            self.script_engine.handle_msdp(&data);
+          }
+          ConnEvent::Disconnected(reason) => {
+            warn!("Disconnected: {reason}");
+            self.script_engine.append_system_message(&format!("[Disconnected: {reason}]"));
+            self.script_engine.handle_disconnect();
+            self.connection = None;
+          }
+          ConnEvent::Error(e) => {
+            warn!("Connection error: {e}");
+            self.script_engine.append_system_message(&format!("[Error: {e}]"));
+          }
         }
       }
     }
-    disconnected
   }
 
   fn process_outgoing(&mut self) {
@@ -695,24 +696,10 @@ impl eframe::App for MudApp {
       }
     }
 
-    let mut disconnected = Vec::new();
-    for (i, session) in self.sessions.iter_mut().enumerate() {
-      if session.process_events() {
-        disconnected.push(i);
-      }
+    for session in self.sessions.iter_mut() {
+      session.process_events();
       session.script_engine.tick_timers();
       session.process_outgoing();
-    }
-    for i in disconnected.into_iter().rev() {
-      self.sessions.remove(i);
-      if self.active_tab > 0 {
-        let active_si = self.active_tab - 1;
-        if active_si == i {
-          self.active_tab = 0;
-        } else if active_si > i {
-          self.active_tab -= 1;
-        }
-      }
     }
 
     let scroll_line_height = self

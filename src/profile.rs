@@ -99,19 +99,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
 "#
   },
   GameTemplate {
-    name: "Achaea WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "achaea.com",
-    port: 23,
-    tls: false,
-    websocket_url: Some("wss://play.achaea.com/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
-  },
-  GameTemplate {
     name: "Aardwolf",
     connection_mode: ConnectionMode::Tcp,
     host: "aardmud.org",
@@ -203,19 +190,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     extra_scheme: ""
   },
   GameTemplate {
-    name: "GemStone IV WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "gemstone.net",
-    port: 7777,
-    tls: false,
-    websocket_url: Some("wss://www.play.net/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: Simutronics web clients use custom authentication.
-"#
-  },
-  GameTemplate {
     name: "DragonRealms",
     connection_mode: ConnectionMode::Tcp,
     host: "prime.dr.game.play.net",
@@ -236,19 +210,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
 "#
   },
   GameTemplate {
-    name: "DragonRealms WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "prime.dr.game.play.net",
-    port: 4901,
-    tls: false,
-    websocket_url: Some("wss://www.play.net/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: Simutronics web clients use custom authentication.
-"#
-  },
-  GameTemplate {
     name: "Threshold RPG",
     connection_mode: ConnectionMode::Tcp,
     host: "thresholdrpg.com",
@@ -259,19 +220,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     gauges: &[],
     gmcp_package: "",
     extra_scheme: ""
-  },
-  GameTemplate {
-    name: "Threshold RPG WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "thresholdrpg.com",
-    port: 3333,
-    tls: false,
-    websocket_url: Some("wss://www.thresholdrpg.com/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
   },
   GameTemplate {
     name: "AwakeMUD CE",
@@ -298,19 +246,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     extra_scheme: ""
   },
   GameTemplate {
-    name: "Realms of Despair WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "realmsofdespair.com",
-    port: 4000,
-    tls: false,
-    websocket_url: Some("wss://realmsofdespair.com/webclient/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
-  },
-  GameTemplate {
     name: "Legends of the Jedi",
     connection_mode: ConnectionMode::Tcp,
     host: "legendsofthejedi.com",
@@ -321,19 +256,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     gauges: &[],
     gmcp_package: "",
     extra_scheme: ""
-  },
-  GameTemplate {
-    name: "Legends of the Jedi WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "legendsofthejedi.com",
-    port: 5656,
-    tls: false,
-    websocket_url: Some("wss://www.legendsofthejedi.com/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
   },
   GameTemplate {
     name: "Miriani",
@@ -360,19 +282,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     extra_scheme: ""
   },
   GameTemplate {
-    name: "Alter Aeon WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "alteraeon.com",
-    port: 3000,
-    tls: false,
-    websocket_url: Some("wss://www.alteraeon.com/play/"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
-  },
-  GameTemplate {
     name: "Genesis",
     connection_mode: ConnectionMode::Tcp,
     host: "mud.genesismud.org",
@@ -390,11 +299,11 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     host: "mud.genesismud.org",
     port: 3011,
     tls: false,
-    websocket_url: Some("wss://www.genesismud.org/play/"),
+    websocket_url: Some("wss://www.genesismud.org/websocket"),
     has_map: false,
     gauges: &[],
     gmcp_package: "",
-    extra_scheme: r#";; Experimental: official web client requires WebSockets, raw endpoint is unverified.
+    extra_scheme: r#";; Genesis documents this WebSocket endpoint for its official web client.
 "#
   },
   GameTemplate {
@@ -505,19 +414,6 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     gauges: &[],
     gmcp_package: "",
     extra_scheme: ""
-  },
-  GameTemplate {
-    name: "Icesus WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "icesus.org",
-    port: 4000,
-    tls: false,
-    websocket_url: Some("wss://icesus.org/ws"),
-    has_map: false,
-    gauges: &[],
-    gmcp_package: "",
-    extra_scheme: r#";; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-"#
   },
   GameTemplate {
     name: "Dune",
@@ -754,34 +650,6 @@ impl Profile {
       tls: false,
       websocket_url: None,
       script_code: include_str!("../profiles/nukefire/init.scm").into(),
-      path: None,
-      is_preset: true
-    });
-    templates.push(Profile {
-      name: "NukeFire WebSocket (experimental)".into(),
-      connection_mode: ConnectionMode::WebSocket,
-      host: "tdome.nukefire.org".into(),
-      port: 4000,
-      tls: false,
-      websocket_url: Some("wss://www.nukefire.org/".into()),
-      script_code: r#"(profile
-  'name "NukeFire WebSocket (experimental)"
-  'connection-mode 'websocket
-  'host "tdome.nukefire.org"
-  'port 4000
-  'tls #f
-  'websocket-url "wss://www.nukefire.org/")
-
-;; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-(load-theme "Gruvbox Dark")
-;; (option "font" "JetBrains Mono")
-(option "font_size" 14)
-(option "scroll_lines" 6)
-
-(pane "main")
-(define (on-line line) #t)
-"#
-      .into(),
       path: None,
       is_preset: true
     });

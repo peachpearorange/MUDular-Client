@@ -5,6 +5,7 @@ use {std::sync::mpsc,
 pub enum ConnEvent {
   Connected,
   Data(String),
+  PendingData(String),
   Disconnected(String),
   Error(String)
 }
