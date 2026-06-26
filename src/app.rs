@@ -357,7 +357,11 @@ impl MudApp {
     #[cfg(not(target_arch = "wasm32"))]
     let profiles = Profile::load_user();
     #[cfg(target_arch = "wasm32")]
-    let profiles = templates.clone();
+    let profiles = templates
+      .iter()
+      .filter(|profile| profile.connection_mode == ConnectionMode::WebSocket)
+      .cloned()
+      .collect();
 
     Self {
       profiles,

@@ -62,9 +62,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Flatten artifacts
-        run: find artifacts -type f -exec mv {} artifacts/ \;
+          merge-multiple: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

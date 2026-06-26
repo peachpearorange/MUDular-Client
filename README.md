@@ -19,7 +19,9 @@ The web version runs in the browser and currently connects to WebSocket-enabled 
 | Platform | Link |
 |----------|------|
 | Web | [mudular web app](https://peachpearorange.github.io/MUDular-Client/) |
-| Native builds | [releases](https://github.com/peachpearorange/MUDular-Client/releases) |
+| Linux x86_64 | [mudular-linux-x86_64](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-linux-x86_64) |
+| Windows x86_64 | [mudular-windows-x86_64.exe](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-windows-x86_64.exe) |
+| macOS Apple Silicon | [mudular-macos-aarch64](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-macos-aarch64) |
 
 ## Building from source
 
