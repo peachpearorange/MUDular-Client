@@ -653,6 +653,34 @@ impl Profile {
       path: None,
       is_preset: true
     });
+    templates.push(Profile {
+      name: "NukeFire WebSocket (experimental)".into(),
+      connection_mode: ConnectionMode::WebSocket,
+      host: "tdome.nukefire.org".into(),
+      port: 4000,
+      tls: false,
+      websocket_url: Some("wss://www.nukefire.org/".into()),
+      script_code: r#"(profile
+  'name "NukeFire WebSocket (experimental)"
+  'connection-mode 'websocket
+  'host "tdome.nukefire.org"
+  'port 4000
+  'tls #f
+  'websocket-url "wss://www.nukefire.org/")
+
+;; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
+(load-theme "Gruvbox Dark")
+;; (option "font" "JetBrains Mono")
+(option "font_size" 14)
+(option "scroll_lines" 6)
+
+(pane "main")
+(define (on-line line) #t)
+"#
+      .into(),
+      path: None,
+      is_preset: true
+    });
     templates
   }
 
