@@ -22,6 +22,23 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       name
   });
 
+  reg!("profile*", s => move |args: SteelVal| {
+      let mut st = s.lock().unwrap();
+      for pair in steel_list_to_vec(&args).chunks(2) {
+          if let [key, value] = pair {
+              match steel_key_name(key).as_deref() {
+                  Some("name") => st.profile_name = steel_to_string(value),
+                  Some("connection-mode") => st.profile_connection_mode = steel_key_name(value),
+                  Some("host") => st.profile_host = steel_to_string(value),
+                  Some("port") => st.profile_port = steel_to_f64(value).map(|n| n as u16),
+                  Some("tls") => st.profile_tls = Some(matches!(value, SteelVal::BoolV(true))),
+                  Some("websocket-url") => st.profile_websocket_url = steel_to_string(value),
+                  _ => {}
+              }
+          }
+      }
+  });
+
   reg!("pane-print", s => move |name: String, text: String| {
       let mut st = s.lock().unwrap();
       let palette = st.ansi_palette;
@@ -184,6 +201,9 @@ const PRELUDE: &str = r#"
 (define (interval secs callback)
   (set! *timers* (cons (list secs #f callback) *timers*)))
 
+(define (profile . args)
+  (profile* args))
+
 (define (on-line line) #t)
 (define (on-connect) void)
 (define (on-disconnect) void)
@@ -205,6 +225,13 @@ fn parse_gauge_opts(opts: &SteelVal) -> (Option<f64>, Option<f64>, Option<String
       (get_f64("current"), get_f64("max"), color)
     }
     _ => (None, None, None)
+  }
+}
+
+fn steel_list_to_vec(val: &SteelVal) -> Vec<SteelVal> {
+  match val {
+    SteelVal::ListV(list) => list.iter().cloned().collect(),
+    _ => Vec::new()
   }
 }
 

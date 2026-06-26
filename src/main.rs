@@ -11,6 +11,8 @@ mod scripting;
 mod telnet;
 mod themes;
 mod ui;
+#[cfg(target_arch = "wasm32")]
+mod web_connection;
 
 #[cfg(not(target_arch = "wasm32"))]
 struct DualWriter {
@@ -63,12 +65,19 @@ fn main() -> eframe::Result<()> {
 fn main() {
   let web_options = eframe::WebOptions::default();
   wasm_bindgen_futures::spawn_local(async {
+    use wasm_bindgen::JsCast;
+
+    let canvas = web_sys::window()
+      .expect("window not available")
+      .document()
+      .expect("document not available")
+      .get_element_by_id("the_canvas_id")
+      .expect("canvas not found")
+      .dyn_into::<web_sys::HtmlCanvasElement>()
+      .expect("element is not a canvas");
+
     let _ = eframe::WebRunner::new()
-      .start(
-        "the_canvas_id",
-        web_options,
-        Box::new(|cc| Ok(Box::new(app::MudApp::new(cc))))
-      )
+      .start(canvas, web_options, Box::new(|cc| Ok(Box::new(app::MudApp::new(cc)))))
       .await;
   });
 }
@@ -86,6 +95,10 @@ mod tests {
     let st = engine.state.lock().unwrap();
     assert!(st.panes.contains_key("main"));
     assert!(st.panes.contains_key("map"));
+    assert_eq!(st.profile_name.as_deref(), Some("NukeFire"));
+    assert_eq!(st.profile_host.as_deref(), Some("tdome.nukefire.org"));
+    assert_eq!(st.profile_port, Some(4000));
+    assert_eq!(st.profile_tls, Some(false));
     assert!(st.gauges.len() >= 3);
     let health = st.gauges.iter().find(|g| g.name == "health").unwrap();
     let mana = st.gauges.iter().find(|g| g.name == "mana").unwrap();

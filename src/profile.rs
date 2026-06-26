@@ -3,15 +3,34 @@ use std::{fmt::Write, path::PathBuf};
 #[cfg(not(target_arch = "wasm32"))]
 use directories::ProjectDirs;
 
+use crate::scripting::ScriptEngine;
+
 #[derive(Clone, Debug)]
 pub struct Profile {
   pub name: String,
+  pub connection_mode: ConnectionMode,
   pub host: String,
   pub port: u16,
   pub tls: bool,
+  pub websocket_url: Option<String>,
   pub script_code: String,
   pub path: Option<PathBuf>,
   pub is_preset: bool
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ConnectionMode {
+  Tcp,
+  WebSocket
+}
+
+impl ConnectionMode {
+  fn as_scheme_symbol(self) -> &'static str {
+    match self {
+      Self::Tcp => "tcp",
+      Self::WebSocket => "websocket"
+    }
+  }
 }
 
 struct GaugeTemplate {
@@ -23,9 +42,11 @@ struct GaugeTemplate {
 
 struct GameTemplate {
   name: &'static str,
+  connection_mode: ConnectionMode,
   host: &'static str,
   port: u16,
   tls: bool,
+  websocket_url: Option<&'static str>,
   has_map: bool,
   gauges: &'static [GaugeTemplate],
   gmcp_package: &'static str,
@@ -35,9 +56,11 @@ struct GameTemplate {
 const GAME_TEMPLATES: &[GameTemplate] = &[
   GameTemplate {
     name: "Achaea",
+    connection_mode: ConnectionMode::Tcp,
     host: "achaea.com",
     port: 23,
     tls: false,
+    websocket_url: None,
     has_map: true,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -77,9 +100,11 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
   },
   GameTemplate {
     name: "Aardwolf",
+    connection_mode: ConnectionMode::Tcp,
     host: "aardmud.org",
     port: 23,
     tls: false,
+    websocket_url: None,
     has_map: false,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -104,9 +129,11 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
   },
   GameTemplate {
     name: "BatMUD",
+    connection_mode: ConnectionMode::Tcp,
     host: "batmud.bat.org",
     port: 23,
     tls: false,
+    websocket_url: None,
     has_map: false,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -118,9 +145,11 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
   },
   GameTemplate {
     name: "Discworld",
+    connection_mode: ConnectionMode::Tcp,
     host: "discworld.atuin.net",
     port: 4242,
     tls: false,
+    websocket_url: None,
     has_map: true,
     gauges: &[
       GaugeTemplate { name: "hp", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -149,10 +178,299 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
 "#
   },
   GameTemplate {
-    name: "Enrym",
+    name: "GemStone IV",
+    connection_mode: ConnectionMode::Tcp,
+    host: "gemstone.net",
+    port: 7777,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "DragonRealms",
+    connection_mode: ConnectionMode::Tcp,
+    host: "prime.dr.game.play.net",
+    port: 4901,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: r#";; DragonRealms usually requires a time-sensitive Simutronics login key.
+(define launch-key-note-shown #f)
+
+(define (on-line line)
+  (when (not launch-key-note-shown)
+    (set! launch-key-note-shown #t)
+    (pane-print "main" "[DragonRealms may need a launch key from the official Simutronics launcher.]"))
+  #t)
+"#
+  },
+  GameTemplate {
+    name: "Threshold RPG",
+    connection_mode: ConnectionMode::Tcp,
+    host: "thresholdrpg.com",
+    port: 3333,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "AwakeMUD CE",
+    connection_mode: ConnectionMode::Tcp,
+    host: "play.awakemud.com",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Realms of Despair",
+    connection_mode: ConnectionMode::Tcp,
+    host: "realmsofdespair.com",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Legends of the Jedi",
+    connection_mode: ConnectionMode::Tcp,
+    host: "legendsofthejedi.com",
+    port: 5656,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Miriani",
+    connection_mode: ConnectionMode::Tcp,
+    host: "toastsoft.net",
+    port: 1234,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Alter Aeon",
+    connection_mode: ConnectionMode::Tcp,
+    host: "alteraeon.com",
+    port: 3000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Genesis",
+    connection_mode: ConnectionMode::Tcp,
+    host: "mud.genesismud.org",
+    port: 3011,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "The Eternal City",
+    connection_mode: ConnectionMode::Tcp,
+    host: "game.eternalcitygame.com",
+    port: 6730,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Materia Magica",
+    connection_mode: ConnectionMode::Tcp,
+    host: "materiamagica.com",
+    port: 23,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Avatar MUD",
+    connection_mode: ConnectionMode::Tcp,
+    host: "avatar.outland.org",
+    port: 3000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Star Trek: Phoenix Rising",
+    connection_mode: ConnectionMode::Tcp,
+    host: "game.phxrising.org",
+    port: 1701,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "CLOK",
+    connection_mode: ConnectionMode::Tcp,
+    host: "clok.contrarium.net",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "CoffeeMud",
+    connection_mode: ConnectionMode::Tcp,
+    host: "coffeemud.net",
+    port: 23,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "MUME",
+    connection_mode: ConnectionMode::Tcp,
+    host: "mume.org",
+    port: 4242,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Icesus MUD",
+    connection_mode: ConnectionMode::Tcp,
+    host: "icesus.org",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Dune",
+    connection_mode: ConnectionMode::Tcp,
+    host: "dunemud.net",
+    port: 6789,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Merentha",
+    connection_mode: ConnectionMode::Tcp,
+    host: "merentha.com",
+    port: 10000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Lost Souls",
+    connection_mode: ConnectionMode::Tcp,
+    host: "lostsouls.org",
+    port: 23,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "RetroMUD",
+    connection_mode: ConnectionMode::Tcp,
+    host: "retromud.org",
+    port: 3000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Mirkwood",
+    connection_mode: ConnectionMode::Tcp,
+    host: "mirkwoodmud.org",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: ""
+  },
+  GameTemplate {
+    name: "Enrym TCP",
+    connection_mode: ConnectionMode::Tcp,
     host: "play.enrym.com",
     port: 4001,
     tls: true,
+    websocket_url: None,
+    has_map: false,
+    gauges: &[],
+    gmcp_package: "",
+    extra_scheme: r#";; Log GMCP messages
+(define (on-gmcp package data)
+  (pane-print "main" (to-string "[GMCP " package "]")))
+"#
+  },
+  GameTemplate {
+    name: "Enrym WebSocket",
+    connection_mode: ConnectionMode::WebSocket,
+    host: "play.enrym.com",
+    port: 4001,
+    tls: true,
+    websocket_url: Some("wss://play.enrym.com"),
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -163,9 +481,11 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
   },
   GameTemplate {
     name: "Generic",
+    connection_mode: ConnectionMode::Tcp,
     host: "localhost",
     port: 4000,
     tls: false,
+    websocket_url: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -179,10 +499,17 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
 fn generate_scheme(t: &GameTemplate) -> String {
   let mut s = String::new();
 
-  let _ = writeln!(s, "(define name \"{}\")", t.name);
-  let _ = writeln!(s, "(define host \"{}\")", t.host);
-  let _ = writeln!(s, "(define port {})", t.port);
-  let _ = writeln!(s, "(define tls {})", if t.tls { "#t" } else { "#f" });
+  let _ = writeln!(s, "(profile");
+  let _ = writeln!(s, "  'name \"{}\"", t.name);
+  let _ = writeln!(s, "  'connection-mode '{}", t.connection_mode.as_scheme_symbol());
+  let _ = writeln!(s, "  'host \"{}\"", t.host);
+  let _ = writeln!(s, "  'port {}", t.port);
+  let _ = write!(s, "  'tls {}", if t.tls { "#t" } else { "#f" });
+  if let Some(url) = t.websocket_url {
+    let _ = writeln!(s);
+    let _ = write!(s, "  'websocket-url \"{url}\"");
+  }
+  let _ = writeln!(s, ")");
   let _ = writeln!(s);
   let _ = writeln!(
     s,
@@ -277,9 +604,11 @@ impl Profile {
       .iter()
       .map(|t| Profile {
         name: t.name.into(),
+        connection_mode: t.connection_mode,
         host: t.host.into(),
         port: t.port,
         tls: t.tls,
+        websocket_url: t.websocket_url.map(str::to_string),
         script_code: generate_scheme(t),
         path: None,
         is_preset: true
@@ -287,9 +616,11 @@ impl Profile {
       .collect();
     templates.push(Profile {
       name: "NukeFire".into(),
+      connection_mode: ConnectionMode::Tcp,
       host: "tdome.nukefire.org".into(),
       port: 4000,
       tls: false,
+      websocket_url: None,
       script_code: include_str!("../profiles/nukefire/init.scm").into(),
       path: None,
       is_preset: true
@@ -326,13 +657,15 @@ impl Profile {
           .ok()
           .map(|c| (scm_path, c))
           .or_else(|| std::fs::read_to_string(&lua_path).ok().map(|c| (lua_path, c)))?;
-        let name = e.file_name().to_string_lossy().to_string();
+        let fallback_name = e.file_name().to_string_lossy().to_string();
+        let metadata = load_profile_metadata(&code);
         Some(Profile {
-          name: name.clone(),
-          host: extract_scheme_string(&code, "host")
-            .unwrap_or_else(|| "localhost".into()),
-          port: extract_scheme_number(&code, "port").unwrap_or(4000.0) as u16,
-          tls: extract_scheme_bool(&code, "tls"),
+          name: metadata.name.unwrap_or_else(|| fallback_name.clone()),
+          connection_mode: metadata.connection_mode.unwrap_or(ConnectionMode::Tcp),
+          host: metadata.host.unwrap_or_else(|| "localhost".into()),
+          port: metadata.port.unwrap_or(4000),
+          tls: metadata.tls.unwrap_or(false),
+          websocket_url: metadata.websocket_url,
           script_code: code,
           path: Some(path),
           is_preset: false
@@ -365,8 +698,8 @@ impl Profile {
     if old_dir.exists() {
       std::fs::rename(&old_dir, &new_dir).map_err(|e| e.to_string())?;
     }
-    let old_name_line = format!("(define name \"{}\")", self.name);
-    let new_name_line = format!("(define name \"{}\")", new_name);
+    let old_name_line = format!("  'name \"{}\"", self.name);
+    let new_name_line = format!("  'name \"{}\"", new_name);
     self.script_code = self.script_code.replacen(&old_name_line, &new_name_line, 1);
     self.name = new_name.to_string();
     let scm_path = new_dir.join("init.scm");
@@ -376,27 +709,34 @@ impl Profile {
   }
 }
 
-fn extract_scheme_string(code: &str, var: &str) -> Option<String> {
-  let pattern = format!("(define {var} \"");
-  let start = code.find(&pattern)? + pattern.len();
-  let end = code[start..].find('"')? + start;
-  Some(code[start..end].to_string())
+#[derive(Default)]
+struct ProfileMetadata {
+  name: Option<String>,
+  connection_mode: Option<ConnectionMode>,
+  host: Option<String>,
+  port: Option<u16>,
+  tls: Option<bool>,
+  websocket_url: Option<String>
 }
 
-fn extract_scheme_bool(code: &str, var: &str) -> bool {
-  let pattern = format!("(define {var} ");
-  code
-    .find(&pattern)
-    .map(|i| code[i + pattern.len()..].starts_with("#t"))
-    .unwrap_or(false)
-}
-
-fn extract_scheme_number(code: &str, var: &str) -> Option<f64> {
-  let pattern = format!("(define {var} ");
-  let start = code.find(&pattern)? + pattern.len();
-  let end = code[start..]
-    .find(|c: char| !c.is_ascii_digit() && c != '.')
-    .unwrap_or(code[start..].len())
-    + start;
-  code[start..end].parse().ok()
+fn load_profile_metadata(code: &str) -> ProfileMetadata {
+  let Ok(mut engine) = ScriptEngine::new() else {
+    return ProfileMetadata::default();
+  };
+  if engine.load_script(code).is_err() {
+    return ProfileMetadata::default();
+  }
+  let st = engine.state.lock().unwrap();
+  ProfileMetadata {
+    name: st.profile_name.clone(),
+    connection_mode: st.profile_connection_mode.as_deref().and_then(|mode| match mode {
+      "tcp" => Some(ConnectionMode::Tcp),
+      "websocket" => Some(ConnectionMode::WebSocket),
+      _ => None
+    }),
+    host: st.profile_host.clone(),
+    port: st.profile_port,
+    tls: st.profile_tls,
+    websocket_url: st.profile_websocket_url.clone()
+  }
 }

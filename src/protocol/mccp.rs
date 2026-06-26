@@ -20,27 +20,26 @@ impl MccpDecompressor {
       return Ok(input.to_vec());
     }
 
-    let mut output = vec![0u8; input.len() * 4];
-    let mut total_out = 0;
+    let mut output = vec![0u8; input.len().max(1) * 4];
+    let mut consumed = 0;
+    let call_start_in = self.decompress.total_in();
+    let call_start_out = self.decompress.total_out();
 
     loop {
-      let before_in = self.decompress.total_in();
-      let before_out = self.decompress.total_out();
-
       let status = self
         .decompress
         .decompress(
-          &input[(before_in as usize).min(input.len())..],
-          &mut output[total_out..],
+          &input[consumed..],
+          &mut output[(self.decompress.total_out() - call_start_out) as usize..],
           FlushDecompress::Sync
         )
         .map_err(|e| format!("MCCP2 decompression error: {e}"))?;
 
-      total_out = (self.decompress.total_out() - before_out + total_out as u64) as usize;
+      consumed = (self.decompress.total_in() - call_start_in) as usize;
 
       match status {
         flate2::Status::Ok => {
-          if self.decompress.total_in() as usize >= input.len() {
+          if consumed >= input.len() {
             break;
           }
           output.resize(output.len() + input.len() * 2, 0);
@@ -53,6 +52,7 @@ impl MccpDecompressor {
       }
     }
 
+    let total_out = (self.decompress.total_out() - call_start_out) as usize;
     output.truncate(total_out);
     Ok(output)
   }

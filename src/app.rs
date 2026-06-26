@@ -3,7 +3,9 @@ use {eframe::egui,
 
 #[cfg(not(target_arch = "wasm32"))]
 use crate::connection::{ConnEvent, Connection};
-use crate::{profile::Profile,
+#[cfg(target_arch = "wasm32")]
+use crate::web_connection::{ConnEvent, Connection};
+use crate::{profile::{ConnectionMode, Profile},
             scripting::ScriptEngine,
             ui::{editor::{EditorAction, ScriptEditor},
                  gauges::render_gauges,
@@ -191,14 +193,12 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
 struct Session {
   profile_idx: usize,
   name: String,
-  #[cfg(not(target_arch = "wasm32"))]
   connection: Option<Connection>,
   script_engine: ScriptEngine,
   input: InputLine
 }
 
 impl Session {
-  #[cfg(not(target_arch = "wasm32"))]
   fn process_events(&mut self) -> bool {
     let Some(conn) = &self.connection else { return false };
     let events = conn.poll_events();
@@ -218,15 +218,18 @@ impl Session {
             self.script_engine.append_to_main(&line);
           }
         }
+        #[cfg(not(target_arch = "wasm32"))]
         ConnEvent::GmcpReceived(package, data) => {
           info!("GMCP: {package}");
           self.script_engine.handle_gmcp(&package, &data);
         }
+        #[cfg(not(target_arch = "wasm32"))]
         ConnEvent::MsspReceived(mssp_info) => {
           let msg = format!("[MSSP: {} entries received]", mssp_info.len());
           info!("{msg}");
           self.script_engine.append_system_message(&msg);
         }
+        #[cfg(not(target_arch = "wasm32"))]
         ConnEvent::MsdpReceived(data) => {
           info!("MSDP: {data}");
           if let Some(vars) = data.get("REPORTABLE_VARIABLES") {
@@ -256,29 +259,40 @@ impl Session {
     disconnected
   }
 
-  #[cfg(not(target_arch = "wasm32"))]
   fn process_outgoing(&mut self) {
     let Some(conn) = &self.connection else { return };
     for cmd in self.script_engine.drain_commands() {
       info!("Sending command ({} chars)", cmd.len());
       conn.send(&cmd);
     }
+    #[cfg(not(target_arch = "wasm32"))]
     for (package, data) in self.script_engine.drain_gmcp() {
       info!("Sending GMCP: {package}");
       conn.send_gmcp(&package, &data);
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = self.script_engine.drain_gmcp();
+    #[cfg(not(target_arch = "wasm32"))]
     for vars in self.script_engine.drain_msdp_reports() {
       info!("Sending MSDP report for: {vars:?}");
       conn.send_msdp_report(vars);
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = self.script_engine.drain_msdp_reports();
+    #[cfg(not(target_arch = "wasm32"))]
     for vars in self.script_engine.drain_msdp_sends() {
       info!("Sending MSDP send for: {vars:?}");
       conn.send_msdp_send(vars);
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = self.script_engine.drain_msdp_sends();
+    #[cfg(not(target_arch = "wasm32"))]
     for what in self.script_engine.drain_msdp_lists() {
       info!("Sending MSDP list: {what}");
       conn.send_msdp_list(what);
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = self.script_engine.drain_msdp_lists();
   }
 }
 
@@ -359,15 +373,26 @@ impl MudApp {
       "Connecting to profile '{}' at {}:{}",
       profile.name, profile.host, profile.port
     );
-    let conn =
-      Connection::connect(profile.host.clone(), profile.port, profile.tls, &self.runtime);
-
     let mut engine = ScriptEngine::new().expect("Failed to create script engine");
     engine.state.lock().unwrap().profile_dir =
       profile.path.as_ref().and_then(|p| p.parent()).map(|p| p.to_path_buf());
     if let Err(e) = engine.load_script(&profile.script_code) {
       engine.append_system_message(&format!("[Script error: {e}]"));
     }
+    let connection = match profile.connection_mode {
+      ConnectionMode::Tcp => Some(Connection::connect(
+        profile.host.clone(),
+        profile.port,
+        profile.tls,
+        &self.runtime
+      )),
+      ConnectionMode::WebSocket => {
+        engine.append_system_message(
+          "[This profile uses WebSocket connections, which are only supported in the web build]"
+        );
+        None
+      }
+    };
     info!(
       "Script loaded: {} triggers, {} aliases, {} timers",
       engine.trigger_count(),
@@ -378,14 +403,56 @@ impl MudApp {
     self.sessions.push(Session {
       profile_idx: idx,
       name: profile.name.clone(),
-      connection: Some(conn),
+      connection,
       script_engine: engine,
       input: InputLine::new()
     });
     self.active_tab = self.sessions.len();
   }
 
-  #[cfg(not(target_arch = "wasm32"))]
+  #[cfg(target_arch = "wasm32")]
+  fn connect_to_profile(&mut self, idx: usize) {
+    let profile = &self.profiles[idx];
+    let mut engine = ScriptEngine::new().expect("Failed to create script engine");
+    if let Err(e) = engine.load_script(&profile.script_code) {
+      engine.append_system_message(&format!("[Script error: {e}]"));
+    }
+
+    let connection = match profile.connection_mode {
+      ConnectionMode::WebSocket => profile
+        .websocket_url
+        .as_deref()
+        .map(Connection::connect)
+        .transpose()
+        .unwrap_or_else(|e| {
+          engine.append_system_message(&format!("[WebSocket error: {e}]"));
+          None
+        }),
+      ConnectionMode::Tcp => {
+        engine.append_system_message(
+          "[This profile uses TCP connections, which browsers cannot open directly]"
+        );
+        None
+      }
+    };
+    if profile.connection_mode == ConnectionMode::WebSocket
+      && profile.websocket_url.is_none()
+    {
+      engine.append_system_message(
+        "[This WebSocket profile does not define a WebSocket URL]"
+      );
+    }
+
+    self.sessions.push(Session {
+      profile_idx: idx,
+      name: profile.name.clone(),
+      connection,
+      script_engine: engine,
+      input: InputLine::new()
+    });
+    self.active_tab = self.sessions.len();
+  }
+
   fn disconnect_session(&mut self, session_idx: usize) {
     if let Some(conn) = &self.sessions[session_idx].connection {
       conn.disconnect();
@@ -550,10 +617,7 @@ impl MudApp {
     render_gauges(ui, &gauges);
 
     let keep_input = session.script_engine.state.lock().unwrap().keep_input;
-    #[cfg(not(target_arch = "wasm32"))]
     let connected = session.connection.is_some();
-    #[cfg(target_arch = "wasm32")]
-    let connected = false;
     session.input.render(ui, connected, keep_input, editor_visible);
   }
 }
@@ -597,24 +661,24 @@ impl eframe::App for MudApp {
           });
         }
       }
+    }
 
-      let mut disconnected = Vec::new();
-      for (i, session) in self.sessions.iter_mut().enumerate() {
-        if session.process_events() {
-          disconnected.push(i);
-        }
-        session.script_engine.tick_timers();
-        session.process_outgoing();
+    let mut disconnected = Vec::new();
+    for (i, session) in self.sessions.iter_mut().enumerate() {
+      if session.process_events() {
+        disconnected.push(i);
       }
-      for i in disconnected.into_iter().rev() {
-        self.sessions.remove(i);
-        if self.active_tab > 0 {
-          let active_si = self.active_tab - 1;
-          if active_si == i {
-            self.active_tab = 0;
-          } else if active_si > i {
-            self.active_tab -= 1;
-          }
+      session.script_engine.tick_timers();
+      session.process_outgoing();
+    }
+    for i in disconnected.into_iter().rev() {
+      self.sessions.remove(i);
+      if self.active_tab > 0 {
+        let active_si = self.active_tab - 1;
+        if active_si == i {
+          self.active_tab = 0;
+        } else if active_si > i {
+          self.active_tab -= 1;
         }
       }
     }
@@ -644,7 +708,6 @@ impl eframe::App for MudApp {
     }
     self.apply_theme(ctx);
 
-    #[cfg(not(target_arch = "wasm32"))]
     if let Some(si) = self.active_tab.checked_sub(1) {
       if let Some(session) = self.sessions.get_mut(si) {
         if let Some(cmd) = session.input.take_submitted() {
@@ -733,7 +796,7 @@ impl eframe::App for MudApp {
         #[cfg(not(target_arch = "wasm32"))]
         ProfileAction::Connect(idx) => self.connect_to_profile(idx),
         #[cfg(target_arch = "wasm32")]
-        ProfileAction::Connect(_) => {}
+        ProfileAction::Connect(idx) => self.connect_to_profile(idx),
         ProfileAction::EditScript(idx) => {
           self.editor_profile_idx = Some(idx);
           self.editor.open(&self.profiles[idx].script_code);
@@ -793,7 +856,6 @@ impl eframe::App for MudApp {
         self.editor.open(&self.profiles[profile_idx].script_code);
       }
     }
-    #[cfg(not(target_arch = "wasm32"))]
     if want_disconnect && self.active_tab > 0 {
       let si = self.active_tab - 1;
       if si < self.sessions.len() {
@@ -808,15 +870,17 @@ impl MudApp {
     let template = &self.templates[template_idx];
     let name = Profile::unique_name(&template.name, &self.profiles);
     let script_code = template.script_code.replacen(
-      &format!("(define name \"{}\")", template.name),
-      &format!("(define name \"{name}\")"),
+      &format!("  'name \"{}\"", template.name),
+      &format!("  'name \"{name}\""),
       1
     );
     let mut profile = Profile {
       name,
+      connection_mode: template.connection_mode,
       host: template.host.clone(),
       port: template.port,
       tls: template.tls,
+      websocket_url: template.websocket_url.clone(),
       script_code,
       path: None,
       is_preset: false
@@ -850,9 +914,12 @@ impl MudApp {
         {
           let port = self.new_profile_port.parse().unwrap_or(23);
           let code = format!(
-            r#"(define name "{name}")
-(define host "{host}")
-(define port {port})
+            r#"(profile
+  'name "{name}"
+  'connection-mode 'tcp
+  'host "{host}"
+  'port {port}
+  'tls #f)
 
 (load-theme "Onenord")
 
@@ -875,9 +942,11 @@ impl MudApp {
           );
           let mut profile = Profile {
             name: self.new_profile_name.clone(),
+            connection_mode: ConnectionMode::Tcp,
             host: self.new_profile_host.clone(),
             port,
             tls: false,
+            websocket_url: None,
             script_code: code,
             path: None,
             is_preset: false

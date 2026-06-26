@@ -1,6 +1,8 @@
-(define name "NukeFire")
-(define host "tdome.nukefire.org")
-(define port 4000)
+(profile
+  'name "NukeFire"
+  'host "tdome.nukefire.org"
+  'port 4000
+  'tls #f)
 
 ;; Enter your name and password here to log in automatically on connect.
 ;; Leave empty to log in manually.

@@ -146,9 +146,7 @@ pub fn render_pane(ui: &mut egui::Ui, _name: &str, buffer: &mut TextBuffer) {
   }
 }
 
-fn smoothstep(t: f32) -> f32 {
-  t * t * (3.0 - 2.0 * t)
-}
+fn smoothstep(t: f32) -> f32 { t * t * (3.0 - 2.0 * t) }
 
 pub fn render_styled_line(
   ui: &mut egui::Ui,

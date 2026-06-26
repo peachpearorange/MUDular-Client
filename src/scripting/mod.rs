@@ -86,7 +86,13 @@ pub struct ScriptState {
   pub profile_dir: Option<std::path::PathBuf>,
   pub status_line: StyledLine,
   pub theme_dirty: bool,
-  pub scroll_lines: f32
+  pub scroll_lines: f32,
+  pub profile_name: Option<String>,
+  pub profile_connection_mode: Option<String>,
+  pub profile_host: Option<String>,
+  pub profile_port: Option<u16>,
+  pub profile_tls: Option<bool>,
+  pub profile_websocket_url: Option<String>
 }
 
 impl ScriptState {
@@ -116,7 +122,13 @@ impl ScriptState {
       profile_dir: None,
       status_line: StyledLine { spans: Vec::new() },
       theme_dirty: false,
-      scroll_lines: 6.0
+      scroll_lines: 6.0,
+      profile_name: None,
+      profile_connection_mode: None,
+      profile_host: None,
+      profile_port: None,
+      profile_tls: None,
+      profile_websocket_url: None
     }
   }
 }
