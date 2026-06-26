@@ -2,18 +2,18 @@
 // https://github.com/mbadolato/iTerm2-Color-Schemes
 
 pub fn get_builtin_theme(name: &str) -> Option<&'static str> {
-    let lower = name.to_lowercase();
-    THEMES.iter()
-        .find(|(n, _)| n.to_lowercase() == lower)
-        .map(|(_, content)| *content)
+  let lower = name.to_lowercase();
+  THEMES.iter().find(|(n, _)| n.to_lowercase() == lower).map(|(_, content)| *content)
 }
 
 pub fn theme_names() -> impl Iterator<Item = &'static str> {
-    THEMES.iter().map(|(name, _)| *name)
+  THEMES.iter().map(|(name, _)| *name)
 }
 
 const THEMES: [(&str, &str); 551] = [
-    ("0x96f", r####"color0 #262427
+  (
+    "0x96f",
+    r####"color0 #262427
 color1 #ff666d
 color2 #b3e03a
 color3 #ffc739
@@ -35,8 +35,11 @@ cursor #fcfcfa
 cursor_text_color #000000
 foreground #fcfcfa
 selection_background #fcfcfa
-"####),
-    ("12-bit Rainbow", r####"color0 #000000
+"####
+  ),
+  (
+    "12-bit Rainbow",
+    r####"color0 #000000
 color1 #a03050
 color2 #40d080
 color3 #e09040
@@ -58,8 +61,11 @@ cursor #e0d000
 cursor_text_color #000000
 foreground #feffff
 selection_background #feffff
-"####),
-    ("3024 Day", r####"color0 #090300
+"####
+  ),
+  (
+    "3024 Day",
+    r####"color0 #090300
 color1 #db2d20
 color2 #01a252
 color3 #caba00
@@ -81,8 +87,11 @@ cursor #4a4543
 cursor_text_color #f7f7f7
 foreground #4a4543
 selection_background #4a4543
-"####),
-    ("3024 Night", r####"color0 #090300
+"####
+  ),
+  (
+    "3024 Night",
+    r####"color0 #090300
 color1 #db2d20
 color2 #01a252
 color3 #fded02
@@ -104,8 +113,11 @@ cursor #a5a2a2
 cursor_text_color #090300
 foreground #a5a2a2
 selection_background #a5a2a2
-"####),
-    ("Aardvark Blue", r####"color0 #191919
+"####
+  ),
+  (
+    "Aardvark Blue",
+    r####"color0 #191919
 color1 #aa342e
 color2 #4b8c0f
 color3 #dbba00
@@ -129,8 +141,11 @@ foreground #dddddd
 selection_background #dddddd
 underline_color #38a276
 url_color #38a276
-"####),
-    ("Aardvark Ink", r####"color0 #222734
+"####
+  ),
+  (
+    "Aardvark Ink",
+    r####"color0 #222734
 color1 #c26265
 color2 #52aa60
 color3 #ad9b49
@@ -152,8 +167,11 @@ cursor #b4bcca
 cursor_text_color #0f141f
 foreground #b4bcca
 selection_background #b4bcca
-"####),
-    ("Abernathy", r####"color0 #000000
+"####
+  ),
+  (
+    "Abernathy",
+    r####"color0 #000000
 color1 #cd0000
 color2 #00cd00
 color3 #cdcd00
@@ -175,8 +193,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #eeeeec
 selection_background #eeeeec
-"####),
-    ("Adventure Time", r####"color0 #050404
+"####
+  ),
+  (
+    "Adventure Time",
+    r####"color0 #050404
 color1 #bd0013
 color2 #4ab118
 color3 #e7741e
@@ -198,8 +219,11 @@ cursor #efbf38
 cursor_text_color #08080a
 foreground #f8dcc0
 selection_background #f8dcc0
-"####),
-    ("Adventure", r####"color0 #040404
+"####
+  ),
+  (
+    "Adventure",
+    r####"color0 #040404
 color1 #d84a33
 color2 #5da602
 color3 #eebb6e
@@ -221,8 +245,11 @@ cursor #feffff
 cursor_text_color #000000
 foreground #feffff
 selection_background #feffff
-"####),
-    ("Adwaita Dark", r####"color0 #241f31
+"####
+  ),
+  (
+    "Adwaita Dark",
+    r####"color0 #241f31
 color1 #c01c28
 color2 #2ec27e
 color3 #f5c211
@@ -244,8 +271,11 @@ cursor #ffffff
 cursor_text_color #1c1c1f
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Adwaita", r####"color0 #1d1d20
+"####
+  ),
+  (
+    "Adwaita",
+    r####"color0 #1d1d20
 color1 #c01c28
 color2 #26a269
 color3 #a2734c
@@ -267,8 +297,11 @@ cursor #1d1d20
 cursor_text_color #ffffff
 foreground #1d1d20
 selection_background #1d1d20
-"####),
-    ("Afterglow", r####"color0 #151515
+"####
+  ),
+  (
+    "Afterglow",
+    r####"color0 #151515
 color1 #ac4142
 color2 #7e8e50
 color3 #e5b567
@@ -290,8 +323,11 @@ cursor #d0d0d0
 cursor_text_color #151515
 foreground #d0d0d0
 selection_background #d0d0d0
-"####),
-    ("Aizen Dark", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Aizen Dark",
+    r####"color0 #1a1a1a
 color1 #f08898
 color2 #a4e09c
 color3 #f5dea4
@@ -313,8 +349,11 @@ cursor #f8b080
 cursor_text_color #1a1a1a
 foreground #d0d6f0
 selection_background #d0d6f0
-"####),
-    ("Aizen Light", r####"color0 #f0f2f6
+"####
+  ),
+  (
+    "Aizen Light",
+    r####"color0 #f0f2f6
 color1 #d00c36
 color2 #3e9e28
 color3 #dd8c1a
@@ -336,8 +375,11 @@ cursor #fc6008
 cursor_text_color #f0f2f6
 foreground #4a4d66
 selection_background #4a4d66
-"####),
-    ("Alabaster", r####"color0 #000000
+"####
+  ),
+  (
+    "Alabaster",
+    r####"color0 #000000
 color1 #aa3731
 color2 #448c27
 color3 #cb9000
@@ -359,8 +401,11 @@ cursor #007acc
 cursor_text_color #bfdbfe
 foreground #000000
 selection_background #000000
-"####),
-    ("Alien Blood", r####"color0 #112616
+"####
+  ),
+  (
+    "Alien Blood",
+    r####"color0 #112616
 color1 #7f2b27
 color2 #2f7e25
 color3 #717f24
@@ -382,8 +427,11 @@ cursor #73fa91
 cursor_text_color #0f1610
 foreground #637d75
 selection_background #637d75
-"####),
-    ("Andromeda", r####"color0 #000000
+"####
+  ),
+  (
+    "Andromeda",
+    r####"color0 #000000
 color1 #cd3131
 color2 #05bc79
 color3 #e5e512
@@ -405,8 +453,11 @@ cursor #f8f8f0
 cursor_text_color #b5b5a8
 foreground #e5e5e5
 selection_background #e5e5e5
-"####),
-    ("Apple Classic", r####"color0 #000000
+"####
+  ),
+  (
+    "Apple Classic",
+    r####"color0 #000000
 color1 #c91b00
 color2 #00c200
 color3 #c7c400
@@ -428,8 +479,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #d5a200
 selection_background #d5a200
-"####),
-    ("Apple System Colors Light", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Apple System Colors Light",
+    r####"color0 #1a1a1a
 color1 #cc372e
 color2 #26a439
 color3 #cdac08
@@ -451,8 +505,11 @@ cursor #98989d
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Apple System Colors", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Apple System Colors",
+    r####"color0 #1a1a1a
 color1 #cc372e
 color2 #26a439
 color3 #cdac08
@@ -474,8 +531,11 @@ cursor #98989d
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Arcoiris", r####"color0 #333333
+"####
+  ),
+  (
+    "Arcoiris",
+    r####"color0 #333333
 color1 #da2700
 color2 #12c258
 color3 #ffc656
@@ -499,8 +559,11 @@ foreground #eee4d9
 selection_background #eee4d9
 underline_color #596181
 url_color #596181
-"####),
-    ("Ardoise", r####"color0 #2c2c2c
+"####
+  ),
+  (
+    "Ardoise",
+    r####"color0 #2c2c2c
 color1 #d3322d
 color2 #588b35
 color3 #fca93a
@@ -522,8 +585,11 @@ cursor #f7f7f7
 cursor_text_color #000000
 foreground #eaeaea
 selection_background #eaeaea
-"####),
-    ("Argonaut", r####"color0 #232323
+"####
+  ),
+  (
+    "Argonaut",
+    r####"color0 #232323
 color1 #ff000f
 color2 #8ce10b
 color3 #ffb900
@@ -545,8 +611,11 @@ cursor #ff0018
 cursor_text_color #ff8ca4
 foreground #fffaf4
 selection_background #fffaf4
-"####),
-    ("Arthur", r####"color0 #3d352a
+"####
+  ),
+  (
+    "Arthur",
+    r####"color0 #3d352a
 color1 #cd5c5c
 color2 #86af80
 color3 #e8ae5b
@@ -568,8 +637,11 @@ cursor #e2bbef
 cursor_text_color #000000
 foreground #ddeedd
 selection_background #ddeedd
-"####),
-    ("Atelier Sulphurpool", r####"color0 #202746
+"####
+  ),
+  (
+    "Atelier Sulphurpool",
+    r####"color0 #202746
 color1 #c94922
 color2 #ac9739
 color3 #c08b30
@@ -591,8 +663,11 @@ cursor #979db4
 cursor_text_color #202746
 foreground #979db4
 selection_background #979db4
-"####),
-    ("Atlas Ragnarok", r####"color0 #000000
+"####
+  ),
+  (
+    "Atlas Ragnarok",
+    r####"color0 #000000
 color1 #ff8080
 color2 #99ffe4
 color3 #2563eb
@@ -614,8 +689,11 @@ cursor #3b82f6
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Atom One Dark", r####"color0 #21252b
+"####
+  ),
+  (
+    "Atom One Dark",
+    r####"color0 #21252b
 color1 #e06c75
 color2 #98c379
 color3 #e5c07b
@@ -637,8 +715,11 @@ cursor #abb2bf
 cursor_text_color #21252b
 foreground #abb2bf
 selection_background #abb2bf
-"####),
-    ("Atom One Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Atom One Light",
+    r####"color0 #000000
 color1 #de3e35
 color2 #3f953a
 color3 #d2b67c
@@ -660,8 +741,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #2a2c33
 selection_background #2a2c33
-"####),
-    ("Atom", r####"color0 #000000
+"####
+  ),
+  (
+    "Atom",
+    r####"color0 #000000
 color1 #fd5ff1
 color2 #87c38a
 color3 #ffd7b1
@@ -683,8 +767,11 @@ cursor #d0d0d0
 cursor_text_color #151515
 foreground #c5c8c6
 selection_background #c5c8c6
-"####),
-    ("Aura Dark", r####"color0 #15141b
+"####
+  ),
+  (
+    "Aura Dark",
+    r####"color0 #15141b
 color1 #ff6767
 color2 #61ffca
 color3 #ffca85
@@ -706,8 +793,11 @@ cursor #a277ff
 cursor_text_color #15141b
 foreground #cdccce
 selection_background #cdccce
-"####),
-    ("Aura", r####"color0 #110f18
+"####
+  ),
+  (
+    "Aura",
+    r####"color0 #110f18
 color1 #ff6767
 color2 #61ffca
 color3 #ffca85
@@ -731,8 +821,11 @@ foreground #edecee
 selection_background #edecee
 underline_color #a277ff
 url_color #a277ff
-"####),
-    ("Aurora", r####"color0 #23262e
+"####
+  ),
+  (
+    "Aurora",
+    r####"color0 #23262e
 color1 #f0266f
 color2 #8fd46d
 color3 #ffe66d
@@ -756,8 +849,11 @@ foreground #ffca28
 selection_background #ffca28
 underline_color #596181
 url_color #596181
-"####),
-    ("Ayu Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Ayu Light",
+    r####"color0 #000000
 color1 #ea6c6d
 color2 #6cbf43
 color3 #eca944
@@ -779,8 +875,11 @@ cursor #ffaa33
 cursor_text_color #f8f9fa
 foreground #5c6166
 selection_background #5c6166
-"####),
-    ("Ayu Mirage", r####"color0 #171b24
+"####
+  ),
+  (
+    "Ayu Mirage",
+    r####"color0 #171b24
 color1 #ed8274
 color2 #87d96c
 color3 #facc6e
@@ -802,8 +901,11 @@ cursor #ffcc66
 cursor_text_color #1f2430
 foreground #cccac2
 selection_background #cccac2
-"####),
-    ("Ayu", r####"color0 #11151c
+"####
+  ),
+  (
+    "Ayu",
+    r####"color0 #11151c
 color1 #ea6c73
 color2 #7fd962
 color3 #f9af4f
@@ -825,8 +927,11 @@ cursor #e6b450
 cursor_text_color #0b0e14
 foreground #bfbdb6
 selection_background #bfbdb6
-"####),
-    ("Banana Blueberry", r####"color0 #17141f
+"####
+  ),
+  (
+    "Banana Blueberry",
+    r####"color0 #17141f
 color1 #ff6b7f
 color2 #00bd9c
 color3 #e6c62f
@@ -848,8 +953,11 @@ cursor #e07d13
 cursor_text_color #ffffff
 foreground #cccccc
 selection_background #cccccc
-"####),
-    ("Batman", r####"color0 #1b1d1e
+"####
+  ),
+  (
+    "Batman",
+    r####"color0 #1b1d1e
 color1 #e6dc44
 color2 #c8be46
 color3 #f4fd22
@@ -871,8 +979,11 @@ cursor #fcef0c
 cursor_text_color #000000
 foreground #6f6f6f
 selection_background #6f6f6f
-"####),
-    ("Belafonte Day", r####"color0 #20111b
+"####
+  ),
+  (
+    "Belafonte Day",
+    r####"color0 #20111b
 color1 #be100e
 color2 #858162
 color3 #d08b30
@@ -894,8 +1005,11 @@ cursor #45373c
 cursor_text_color #d5ccba
 foreground #45373c
 selection_background #45373c
-"####),
-    ("Belafonte Night", r####"color0 #20111b
+"####
+  ),
+  (
+    "Belafonte Night",
+    r####"color0 #20111b
 color1 #be100e
 color2 #858162
 color3 #eaa549
@@ -917,8 +1031,11 @@ cursor #968c83
 cursor_text_color #20111b
 foreground #968c83
 selection_background #968c83
-"####),
-    ("Birds Of Paradise", r####"color0 #573d26
+"####
+  ),
+  (
+    "Birds Of Paradise",
+    r####"color0 #573d26
 color1 #be2d26
 color2 #6ba18a
 color3 #e99d2a
@@ -940,8 +1057,11 @@ cursor #644a33
 cursor_text_color #8a7059
 foreground #e0dbb7
 selection_background #e0dbb7
-"####),
-    ("Black Metal (Bathory)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Bathory)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #fbcb97
 color3 #e78a53
@@ -963,8 +1083,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Burzum)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Burzum)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #ddeecc
 color3 #99bbaa
@@ -986,8 +1109,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Dark Funeral)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Dark Funeral)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #d0dfee
 color3 #5f81a5
@@ -1009,8 +1135,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Gorgoroth)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Gorgoroth)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #9b8d7f
 color3 #8c7f70
@@ -1032,8 +1161,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Immortal)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Immortal)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #7799bb
 color3 #556677
@@ -1055,8 +1187,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Khold)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Khold)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #eceee3
 color3 #974b46
@@ -1078,8 +1213,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Marduk)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Marduk)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #a5aaa7
 color3 #626b67
@@ -1101,8 +1239,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Mayhem)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Mayhem)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #f3ecd4
 color3 #eecc6c
@@ -1124,8 +1265,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Nile)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Nile)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #aa9988
 color3 #777755
@@ -1147,8 +1291,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal (Venom)", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal (Venom)",
+    r####"color0 #000000
 color1 #5f8787
 color2 #f8f7f2
 color3 #79241f
@@ -1170,8 +1317,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Black Metal", r####"color0 #000000
+"####
+  ),
+  (
+    "Black Metal",
+    r####"color0 #000000
 color1 #486e6f
 color2 #dd9999
 color3 #a06666
@@ -1193,8 +1343,11 @@ cursor #c1c1c1
 cursor_text_color #8e8e8e
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Blazer", r####"color0 #000000
+"####
+  ),
+  (
+    "Blazer",
+    r####"color0 #000000
 color1 #b87a7a
 color2 #7ab87a
 color3 #b8b87a
@@ -1216,8 +1369,11 @@ cursor #d9e6f2
 cursor_text_color #0d1926
 foreground #d9e6f2
 selection_background #d9e6f2
-"####),
-    ("Blue Berry Pie", r####"color0 #0a4c62
+"####
+  ),
+  (
+    "Blue Berry Pie",
+    r####"color0 #0a4c62
 color1 #99246e
 color2 #5cb1b3
 color3 #eab9a8
@@ -1241,8 +1397,11 @@ foreground #babab9
 selection_background #babab9
 underline_color #59175a
 url_color #59175a
-"####),
-    ("Blue Dolphin", r####"color0 #292d3e
+"####
+  ),
+  (
+    "Blue Dolphin",
+    r####"color0 #292d3e
 color1 #ff8288
 color2 #b4e88d
 color3 #f4d69f
@@ -1264,8 +1423,11 @@ cursor #ffcc00
 cursor_text_color #292d3e
 foreground #c5f2ff
 selection_background #c5f2ff
-"####),
-    ("Blue Matrix", r####"color0 #101116
+"####
+  ),
+  (
+    "Blue Matrix",
+    r####"color0 #101116
 color1 #ff5680
 color2 #00ff9c
 color3 #fffc58
@@ -1287,8 +1449,11 @@ cursor #76ff9f
 cursor_text_color #a6a6a6
 foreground #00a2ff
 selection_background #00a2ff
-"####),
-    ("Bluloco Dark", r####"color0 #41444d
+"####
+  ),
+  (
+    "Bluloco Dark",
+    r####"color0 #41444d
 color1 #fc2f52
 color2 #25a45c
 color3 #ff936a
@@ -1310,8 +1475,11 @@ cursor #ffcc00
 cursor_text_color #282c34
 foreground #b9c0cb
 selection_background #b9c0cb
-"####),
-    ("Bluloco Light", r####"color0 #373a41
+"####
+  ),
+  (
+    "Bluloco Light",
+    r####"color0 #373a41
 color1 #d52753
 color2 #23974a
 color3 #df631c
@@ -1333,8 +1501,11 @@ cursor #f32759
 cursor_text_color #ffffff
 foreground #373a41
 selection_background #373a41
-"####),
-    ("Borland", r####"color0 #4f4f4f
+"####
+  ),
+  (
+    "Borland",
+    r####"color0 #4f4f4f
 color1 #ff6c60
 color2 #a8ff60
 color3 #ffffb6
@@ -1356,8 +1527,11 @@ cursor #ffa560
 cursor_text_color #ffffff
 foreground #ffff4e
 selection_background #ffff4e
-"####),
-    ("Box", r####"color0 #000000
+"####
+  ),
+  (
+    "Box",
+    r####"color0 #000000
 color1 #cc0403
 color2 #19cb00
 color3 #cecb00
@@ -1379,8 +1553,11 @@ cursor #9fef00
 cursor_text_color #111111
 foreground #9fef00
 selection_background #9fef00
-"####),
-    ("Breadog", r####"color0 #362c24
+"####
+  ),
+  (
+    "Breadog",
+    r####"color0 #362c24
 color1 #b10b00
 color2 #007232
 color3 #8b4c00
@@ -1402,8 +1579,11 @@ cursor #362c24
 cursor_text_color #f1ebe6
 foreground #362c24
 selection_background #362c24
-"####),
-    ("Breeze", r####"color0 #31363b
+"####
+  ),
+  (
+    "Breeze",
+    r####"color0 #31363b
 color1 #ed1515
 color2 #11d116
 color3 #f67400
@@ -1425,8 +1605,11 @@ cursor #eff0f1
 cursor_text_color #31363b
 foreground #eff0f1
 selection_background #eff0f1
-"####),
-    ("Bright Lights", r####"color0 #191919
+"####
+  ),
+  (
+    "Bright Lights",
+    r####"color0 #191919
 color1 #ff355b
 color2 #b7e876
 color3 #ffc251
@@ -1448,8 +1631,11 @@ cursor #f34b00
 cursor_text_color #002831
 foreground #b3c9d7
 selection_background #b3c9d7
-"####),
-    ("Broadcast", r####"color0 #000000
+"####
+  ),
+  (
+    "Broadcast",
+    r####"color0 #000000
 color1 #da4939
 color2 #519f50
 color3 #ffd24a
@@ -1471,8 +1657,11 @@ cursor #ffffff
 cursor_text_color #c0bbb6
 foreground #e6e1dc
 selection_background #e6e1dc
-"####),
-    ("Brogrammer", r####"color0 #1f1f1f
+"####
+  ),
+  (
+    "Brogrammer",
+    r####"color0 #1f1f1f
 color1 #f81118
 color2 #2dc55e
 color3 #ecba0f
@@ -1494,8 +1683,11 @@ cursor #b9b9b9
 cursor_text_color #101010
 foreground #d6dbe5
 selection_background #d6dbe5
-"####),
-    ("Builtin Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Builtin Dark",
+    r####"color0 #000000
 color1 #bb0000
 color2 #00bb00
 color3 #bbbb00
@@ -1517,8 +1709,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Builtin Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Builtin Light",
+    r####"color0 #000000
 color1 #bb0000
 color2 #00bb00
 color3 #bbbb00
@@ -1540,8 +1735,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Builtin Pastel Dark", r####"color0 #4f4f4f
+"####
+  ),
+  (
+    "Builtin Pastel Dark",
+    r####"color0 #4f4f4f
 color1 #ff6c60
 color2 #a8ff60
 color3 #ffffb6
@@ -1563,8 +1761,11 @@ cursor #ffa560
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Builtin Tango Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Builtin Tango Dark",
+    r####"color0 #000000
 color1 #cc0000
 color2 #4e9a06
 color3 #c4a000
@@ -1586,8 +1787,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Builtin Tango Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Builtin Tango Light",
+    r####"color0 #000000
 color1 #cc0000
 color2 #4e9a06
 color3 #c4a000
@@ -1609,8 +1813,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("C64", r####"color0 #090300
+"####
+  ),
+  (
+    "C64",
+    r####"color0 #090300
 color1 #a2524c
 color2 #55a049
 color3 #bfce72
@@ -1632,8 +1839,11 @@ cursor #7869c4
 cursor_text_color #40318d
 foreground #7869c4
 selection_background #7869c4
-"####),
-    ("CGA", r####"color0 #000000
+"####
+  ),
+  (
+    "CGA",
+    r####"color0 #000000
 color1 #aa0000
 color2 #00aa00
 color3 #aa5500
@@ -1655,8 +1865,11 @@ cursor #b8b8b8
 cursor_text_color #ffffff
 foreground #aaaaaa
 selection_background #aaaaaa
-"####),
-    ("CLRS", r####"color0 #000000
+"####
+  ),
+  (
+    "CLRS",
+    r####"color0 #000000
 color1 #f8282a
 color2 #328a5d
 color3 #fa701d
@@ -1678,8 +1891,11 @@ cursor #62c6ef
 cursor_text_color #ffffff
 foreground #262626
 selection_background #262626
-"####),
-    ("Calamity", r####"color0 #2f2833
+"####
+  ),
+  (
+    "Calamity",
+    r####"color0 #2f2833
 color1 #fc644d
 color2 #a5f69c
 color3 #e9d7a5
@@ -1701,8 +1917,11 @@ cursor #d5ced9
 cursor_text_color #2f2833
 foreground #d5ced9
 selection_background #d5ced9
-"####),
-    ("Carbonfox", r####"color0 #282828
+"####
+  ),
+  (
+    "Carbonfox",
+    r####"color0 #282828
 color1 #ee5396
 color2 #25be6a
 color3 #08bdba
@@ -1724,8 +1943,11 @@ cursor #f2f4f8
 cursor_text_color #161616
 foreground #f2f4f8
 selection_background #f2f4f8
-"####),
-    ("Catppuccin Frappe", r####"color0 #51576d
+"####
+  ),
+  (
+    "Catppuccin Frappe",
+    r####"color0 #51576d
 color1 #e78284
 color2 #a6d189
 color3 #e5c890
@@ -1747,8 +1969,11 @@ cursor #f2d5cf
 cursor_text_color #303446
 foreground #c6d0f5
 selection_background #c6d0f5
-"####),
-    ("Catppuccin Latte", r####"color0 #bcc0cc
+"####
+  ),
+  (
+    "Catppuccin Latte",
+    r####"color0 #bcc0cc
 color1 #d20f39
 color2 #40a02b
 color3 #df8e1d
@@ -1770,8 +1995,11 @@ cursor #dc8a78
 cursor_text_color #eff1f5
 foreground #4c4f69
 selection_background #4c4f69
-"####),
-    ("Catppuccin Macchiato", r####"color0 #494d64
+"####
+  ),
+  (
+    "Catppuccin Macchiato",
+    r####"color0 #494d64
 color1 #ed8796
 color2 #a6da95
 color3 #eed49f
@@ -1793,8 +2021,11 @@ cursor #f4dbd6
 cursor_text_color #24273a
 foreground #cad3f5
 selection_background #cad3f5
-"####),
-    ("Catppuccin Mocha", r####"color0 #45475a
+"####
+  ),
+  (
+    "Catppuccin Mocha",
+    r####"color0 #45475a
 color1 #f38ba8
 color2 #a6e3a1
 color3 #f9e2af
@@ -1816,8 +2047,11 @@ cursor #f5e0dc
 cursor_text_color #1e1e2e
 foreground #cdd6f4
 selection_background #cdd6f4
-"####),
-    ("Chalk", r####"color0 #7d8b8f
+"####
+  ),
+  (
+    "Chalk",
+    r####"color0 #7d8b8f
 color1 #b23a52
 color2 #789b6a
 color3 #b9ac4a
@@ -1839,8 +2073,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #d2d8d9
 selection_background #d2d8d9
-"####),
-    ("Chalkboard", r####"color0 #000000
+"####
+  ),
+  (
+    "Chalkboard",
+    r####"color0 #000000
 color1 #c37372
 color2 #72c373
 color3 #c2c372
@@ -1862,8 +2099,11 @@ cursor #d9e6f2
 cursor_text_color #29262f
 foreground #d9e6f2
 selection_background #d9e6f2
-"####),
-    ("Challenger Deep", r####"color0 #141228
+"####
+  ),
+  (
+    "Challenger Deep",
+    r####"color0 #141228
 color1 #ff5458
 color2 #62d196
 color3 #ffb378
@@ -1885,8 +2125,11 @@ cursor #fbfcfc
 cursor_text_color #ff271d
 foreground #cbe1e7
 selection_background #cbe1e7
-"####),
-    ("Chester", r####"color0 #080200
+"####
+  ),
+  (
+    "Chester",
+    r####"color0 #080200
 color1 #fa5e5b
 color2 #16c98d
 color3 #ffc83f
@@ -1908,8 +2151,11 @@ cursor #b4b1b1
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Ciapre", r####"color0 #181818
+"####
+  ),
+  (
+    "Ciapre",
+    r####"color0 #181818
 color1 #8e0d16
 color2 #48513b
 color3 #cc8b3f
@@ -1931,8 +2177,11 @@ cursor #92805b
 cursor_text_color #181818
 foreground #aea47a
 selection_background #aea47a
-"####),
-    ("Citruszest", r####"color0 #404040
+"####
+  ),
+  (
+    "Citruszest",
+    r####"color0 #404040
 color1 #ff5454
 color2 #00cc7a
 color3 #ffd400
@@ -1954,8 +2203,11 @@ cursor #666666
 cursor_text_color #f9f9f9
 foreground #bfbfbf
 selection_background #bfbfbf
-"####),
-    ("Claude Dark", r####"color0 #888681
+"####
+  ),
+  (
+    "Claude Dark",
+    r####"color0 #888681
 color1 #d47563
 color2 #9aca86
 color3 #e8c96b
@@ -1977,8 +2229,11 @@ cursor #d97757
 cursor_text_color #262624
 foreground #e5e4e1
 selection_background #e5e4e1
-"####),
-    ("Claude Light", r####"color0 #0a0a0a
+"####
+  ),
+  (
+    "Claude Light",
+    r####"color0 #0a0a0a
 color1 #a84b3a
 color2 #2e7c4c
 color3 #8a6220
@@ -2000,8 +2255,11 @@ cursor #d97757
 cursor_text_color #faf9f5
 foreground #141413
 selection_background #141413
-"####),
-    ("Claude", r####"color0 #c15f3c
+"####
+  ),
+  (
+    "Claude",
+    r####"color0 #c15f3c
 color1 #788c5d
 color2 #b16803
 color3 #6a9bcc
@@ -2023,8 +2281,11 @@ cursor #d97757
 cursor_text_color #faf9f5
 foreground #141413
 selection_background #141413
-"####),
-    ("Clear Dark", r####"color0 #35424c
+"####
+  ),
+  (
+    "Clear Dark",
+    r####"color0 #35424c
 color1 #b45648
 color2 #6caa71
 color3 #c4ac62
@@ -2046,8 +2307,11 @@ cursor #9d9d9d
 cursor_text_color #212734
 foreground #e6e6e6
 selection_background #e6e6e6
-"####),
-    ("Clear Light", r####"color0 #2d3840
+"####
+  ),
+  (
+    "Clear Light",
+    r####"color0 #2d3840
 color1 #b45648
 color2 #6caa71
 color3 #c4ac62
@@ -2069,8 +2333,11 @@ cursor #919191
 cursor_text_color #ffffff
 foreground #3a4851
 selection_background #3a4851
-"####),
-    ("Cobalt Neon", r####"color0 #142631
+"####
+  ),
+  (
+    "Cobalt Neon",
+    r####"color0 #142631
 color1 #ff2320
 color2 #3ba5ff
 color3 #e9e75c
@@ -2092,8 +2359,11 @@ cursor #c4206f
 cursor_text_color #8ff586
 foreground #8ff586
 selection_background #8ff586
-"####),
-    ("Cobalt Next Dark", r####"color0 #262f37
+"####
+  ),
+  (
+    "Cobalt Next Dark",
+    r####"color0 #262f37
 color1 #f94967
 color2 #8cc98f
 color3 #ffc64c
@@ -2115,8 +2385,11 @@ cursor #ffc64c
 cursor_text_color #999999
 foreground #d7deea
 selection_background #d7deea
-"####),
-    ("Cobalt Next Minimal", r####"color0 #323d47
+"####
+  ),
+  (
+    "Cobalt Next Minimal",
+    r####"color0 #323d47
 color1 #ff657a
 color2 #8cc98f
 color3 #ffc64c
@@ -2138,8 +2411,11 @@ cursor #37b5b4
 cursor_text_color #ffffff
 foreground #d7deea
 selection_background #d7deea
-"####),
-    ("Cobalt Next", r####"color0 #000000
+"####
+  ),
+  (
+    "Cobalt Next",
+    r####"color0 #000000
 color1 #ff527b
 color2 #8cc98f
 color3 #ffc64c
@@ -2161,8 +2437,11 @@ cursor #ffc64c
 cursor_text_color #8a919d
 foreground #d7deea
 selection_background #d7deea
-"####),
-    ("Cobalt2", r####"color0 #000000
+"####
+  ),
+  (
+    "Cobalt2",
+    r####"color0 #000000
 color1 #ff0000
 color2 #38de21
 color3 #ffe50a
@@ -2184,8 +2463,11 @@ cursor #f0cc09
 cursor_text_color #98998c
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Coffee Theme", r####"color0 #000000
+"####
+  ),
+  (
+    "Coffee Theme",
+    r####"color0 #000000
 color1 #c91b00
 color2 #00c200
 color3 #adaa00
@@ -2207,8 +2489,11 @@ cursor #a1a1a1
 cursor_text_color #fffc67
 foreground #000000
 selection_background #000000
-"####),
-    ("Cool Night", r####"color0 #0b3b61
+"####
+  ),
+  (
+    "Cool Night",
+    r####"color0 #0b3b61
 color1 #ff3a3a
 color2 #52ffd0
 color3 #fff383
@@ -2230,8 +2515,11 @@ cursor #38ff9d
 cursor_text_color #000000
 foreground #ecdef4
 selection_background #ecdef4
-"####),
-    ("Crayon Pony Fish", r####"color0 #2b1b1d
+"####
+  ),
+  (
+    "Crayon Pony Fish",
+    r####"color0 #2b1b1d
 color1 #91002b
 color2 #579524
 color3 #ab311b
@@ -2253,8 +2541,11 @@ cursor #68525a
 cursor_text_color #140707
 foreground #68525a
 selection_background #68525a
-"####),
-    ("Cursor Dark", r####"color0 #242424
+"####
+  ),
+  (
+    "Cursor Dark",
+    r####"color0 #242424
 color1 #fc6b83
 color2 #3fa266
 color3 #d2943e
@@ -2276,8 +2567,11 @@ cursor #d4d4d4
 cursor_text_color #141414
 foreground #d4d4d4
 selection_background #d4d4d4
-"####),
-    ("Cursor Light", r####"color0 #252525
+"####
+  ),
+  (
+    "Cursor Light",
+    r####"color0 #252525
 color1 #cf2d56
 color2 #1f8a65
 color3 #a16900
@@ -2299,8 +2593,11 @@ cursor #252525
 cursor_text_color #f3f3f3
 foreground #252525
 selection_background #252525
-"####),
-    ("Cutie Pro", r####"color0 #000000
+"####
+  ),
+  (
+    "Cutie Pro",
+    r####"color0 #000000
 color1 #f56e7f
 color2 #bec975
 color3 #f58669
@@ -2322,8 +2619,11 @@ cursor #efc4cd
 cursor_text_color #181818
 foreground #d5d0c9
 selection_background #d5d0c9
-"####),
-    ("Cyberdyne", r####"color0 #080808
+"####
+  ),
+  (
+    "Cyberdyne",
+    r####"color0 #080808
 color1 #ff8373
 color2 #00c172
 color3 #d2a700
@@ -2345,8 +2645,11 @@ cursor #00ff9c
 cursor_text_color #a6a6a6
 foreground #00ff92
 selection_background #00ff92
-"####),
-    ("Cyberpunk Scarlet Protocol", r####"color0 #101116
+"####
+  ),
+  (
+    "Cyberpunk Scarlet Protocol",
+    r####"color0 #101116
 color1 #ff0051
 color2 #01dc84
 color3 #faf945
@@ -2368,8 +2671,11 @@ cursor #76ff9f
 cursor_text_color #a6a6a6
 foreground #e41951
 selection_background #e41951
-"####),
-    ("Cyberpunk", r####"color0 #000000
+"####
+  ),
+  (
+    "Cyberpunk",
+    r####"color0 #000000
 color1 #ff7092
 color2 #00fbac
 color3 #fffa6a
@@ -2391,8 +2697,11 @@ cursor #21f6bc
 cursor_text_color #999999
 foreground #e5e5e5
 selection_background #e5e5e5
-"####),
-    ("Dalton Dark", r####"color0 #282828
+"####
+  ),
+  (
+    "Dalton Dark",
+    r####"color0 #282828
 color1 #d85050
 color2 #5b914e
 color3 #c4c40c
@@ -2414,8 +2723,11 @@ cursor #9a9a9a
 cursor_text_color #1b1b1b
 foreground #c8c9cc
 selection_background #c8c9cc
-"####),
-    ("Dark Modern", r####"color0 #272727
+"####
+  ),
+  (
+    "Dark Modern",
+    r####"color0 #272727
 color1 #f74949
 color2 #2ea043
 color3 #9e6a03
@@ -2437,8 +2749,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #cccccc
 selection_background #cccccc
-"####),
-    ("Dark Pastel", r####"color0 #000000
+"####
+  ),
+  (
+    "Dark Pastel",
+    r####"color0 #000000
 color1 #ff5555
 color2 #55ff55
 color3 #ffff55
@@ -2460,8 +2775,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Dark+", r####"color0 #000000
+"####
+  ),
+  (
+    "Dark+",
+    r####"color0 #000000
 color1 #cd3131
 color2 #0dbc79
 color3 #e5e510
@@ -2483,8 +2801,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #cccccc
 selection_background #cccccc
-"####),
-    ("Darkermatrix", r####"color0 #091013
+"####
+  ),
+  (
+    "Darkermatrix",
+    r####"color0 #091013
 color1 #1a4831
 color2 #6fa64c
 color3 #595900
@@ -2508,8 +2829,11 @@ foreground #35451a
 selection_background #35451a
 underline_color #302c2c
 url_color #302c2c
-"####),
-    ("Darkmatrix", r####"color0 #091013
+"####
+  ),
+  (
+    "Darkmatrix",
+    r####"color0 #091013
 color1 #006536
 color2 #6fa64c
 color3 #7e8000
@@ -2533,8 +2857,11 @@ foreground #3e5715
 selection_background #3e5715
 underline_color #302c2c
 url_color #302c2c
-"####),
-    ("Darkside", r####"color0 #000000
+"####
+  ),
+  (
+    "Darkside",
+    r####"color0 #000000
 color1 #e8341c
 color2 #68c256
 color3 #f2d42c
@@ -2556,8 +2883,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bababa
 selection_background #bababa
-"####),
-    ("Dawnfox", r####"color0 #575279
+"####
+  ),
+  (
+    "Dawnfox",
+    r####"color0 #575279
 color1 #b4637a
 color2 #618774
 color3 #ea9d34
@@ -2579,8 +2909,11 @@ cursor #575279
 cursor_text_color #faf4ed
 foreground #575279
 selection_background #575279
-"####),
-    ("Dayfox", r####"color0 #352c24
+"####
+  ),
+  (
+    "Dayfox",
+    r####"color0 #352c24
 color1 #a5222f
 color2 #396847
 color3 #ac5402
@@ -2602,8 +2935,11 @@ cursor #3d2b5a
 cursor_text_color #f6f2ee
 foreground #3d2b5a
 selection_background #3d2b5a
-"####),
-    ("Deep", r####"color0 #000000
+"####
+  ),
+  (
+    "Deep",
+    r####"color0 #000000
 color1 #d70005
 color2 #1cd915
 color3 #d9bd26
@@ -2625,8 +2961,11 @@ cursor #d0d0d0
 cursor_text_color #151515
 foreground #cdcdcd
 selection_background #cdcdcd
-"####),
-    ("Desert", r####"color0 #4d4d4d
+"####
+  ),
+  (
+    "Desert",
+    r####"color0 #4d4d4d
 color1 #ff2b2b
 color2 #98fb98
 color3 #f0e68c
@@ -2648,8 +2987,11 @@ cursor #00ff00
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Detuned", r####"color0 #171717
+"####
+  ),
+  (
+    "Detuned",
+    r####"color0 #171717
 color1 #fe4386
 color2 #a6e32d
 color3 #e6da73
@@ -2671,8 +3013,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #c7c7c7
 selection_background #c7c7c7
-"####),
-    ("Dimidium", r####"color0 #000000
+"####
+  ),
+  (
+    "Dimidium",
+    r####"color0 #000000
 color1 #cf494c
 color2 #60b442
 color3 #db9c11
@@ -2694,8 +3039,11 @@ cursor #37e57b
 cursor_text_color #141414
 foreground #bab7b6
 selection_background #bab7b6
-"####),
-    ("Dimmed Monokai", r####"color0 #3a3d43
+"####
+  ),
+  (
+    "Dimmed Monokai",
+    r####"color0 #3a3d43
 color1 #be3f48
 color2 #879a3b
 color3 #c5a635
@@ -2717,8 +3065,11 @@ cursor #f83e19
 cursor_text_color #171717
 foreground #b9bcba
 selection_background #b9bcba
-"####),
-    ("Django Reborn Again", r####"color0 #000000
+"####
+  ),
+  (
+    "Django Reborn Again",
+    r####"color0 #000000
 color1 #fd6209
 color2 #41a83e
 color3 #ffe862
@@ -2740,8 +3091,11 @@ cursor #ffcc00
 cursor_text_color #9a9e9c
 foreground #dadedc
 selection_background #dadedc
-"####),
-    ("Django Smooth", r####"color0 #000000
+"####
+  ),
+  (
+    "Django Smooth",
+    r####"color0 #000000
 color1 #fd6209
 color2 #41a83e
 color3 #ffe862
@@ -2763,8 +3117,11 @@ cursor #4c7e5c
 cursor_text_color #f8f8f8
 foreground #f8f8f8
 selection_background #f8f8f8
-"####),
-    ("Django", r####"color0 #000000
+"####
+  ),
+  (
+    "Django",
+    r####"color0 #000000
 color1 #fd6209
 color2 #41a83e
 color3 #ffe862
@@ -2786,8 +3143,11 @@ cursor #336442
 cursor_text_color #f8f8f8
 foreground #f8f8f8
 selection_background #f8f8f8
-"####),
-    ("Dogxi Misty", r####"color0 #000000
+"####
+  ),
+  (
+    "Dogxi Misty",
+    r####"color0 #000000
 color1 #ff5c57
 color2 #94e362
 color3 #eebd70
@@ -2809,8 +3169,11 @@ cursor #eaeaea
 cursor_text_color #282a36
 foreground #eff0eb
 selection_background #eff0eb
-"####),
-    ("Doom One", r####"color0 #000000
+"####
+  ),
+  (
+    "Doom One",
+    r####"color0 #000000
 color1 #ff6c6b
 color2 #98be65
 color3 #ecbe7b
@@ -2832,8 +3195,11 @@ cursor #51afef
 cursor_text_color #1b1b1b
 foreground #bbc2cf
 selection_background #bbc2cf
-"####),
-    ("Doom Peacock", r####"color0 #1c1f24
+"####
+  ),
+  (
+    "Doom Peacock",
+    r####"color0 #1c1f24
 color1 #cb4b16
 color2 #26a6a6
 color3 #bcd42a
@@ -2855,8 +3221,11 @@ cursor #9c9c9d
 cursor_text_color #36312b
 foreground #ede0ce
 selection_background #ede0ce
-"####),
-    ("Dot Gov", r####"color0 #191919
+"####
+  ),
+  (
+    "Dot Gov",
+    r####"color0 #191919
 color1 #bf091d
 color2 #3d9751
 color3 #f6bb34
@@ -2878,8 +3247,11 @@ cursor #d9002f
 cursor_text_color #ffffff
 foreground #ebebeb
 selection_background #ebebeb
-"####),
-    ("Dracula+", r####"color0 #21222c
+"####
+  ),
+  (
+    "Dracula+",
+    r####"color0 #21222c
 color1 #ff5555
 color2 #50fa7b
 color3 #ffcb6b
@@ -2901,8 +3273,11 @@ cursor #eceff4
 cursor_text_color #282828
 foreground #f8f8f2
 selection_background #f8f8f2
-"####),
-    ("Dracula", r####"color0 #21222c
+"####
+  ),
+  (
+    "Dracula",
+    r####"color0 #21222c
 color1 #ff5555
 color2 #50fa7b
 color3 #f1fa8c
@@ -2924,8 +3299,11 @@ cursor #f8f8f2
 cursor_text_color #282a36
 foreground #f8f8f2
 selection_background #f8f8f2
-"####),
-    ("Duckbones", r####"color0 #0e101a
+"####
+  ),
+  (
+    "Duckbones",
+    r####"color0 #0e101a
 color1 #e03600
 color2 #5dcd97
 color3 #e39500
@@ -2947,8 +3325,11 @@ cursor #edf2c2
 cursor_text_color #0e101a
 foreground #ebefc0
 selection_background #ebefc0
-"####),
-    ("Duotone Dark", r####"color0 #1f1d27
+"####
+  ),
+  (
+    "Duotone Dark",
+    r####"color0 #1f1d27
 color1 #d9393e
 color2 #2dcd73
 color3 #d9b76e
@@ -2970,8 +3351,11 @@ cursor #ff9839
 cursor_text_color #1f1d27
 foreground #b7a1ff
 selection_background #b7a1ff
-"####),
-    ("Duskfox", r####"color0 #393552
+"####
+  ),
+  (
+    "Duskfox",
+    r####"color0 #393552
 color1 #eb6f92
 color2 #a3be8c
 color3 #f6c177
@@ -2993,8 +3377,11 @@ cursor #e0def4
 cursor_text_color #232136
 foreground #e0def4
 selection_background #e0def4
-"####),
-    ("ENCOM", r####"color0 #000000
+"####
+  ),
+  (
+    "ENCOM",
+    r####"color0 #000000
 color1 #9f0000
 color2 #008b00
 color3 #ffd000
@@ -3016,8 +3403,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #00a595
 selection_background #00a595
-"####),
-    ("Earthsong", r####"color0 #121418
+"####
+  ),
+  (
+    "Earthsong",
+    r####"color0 #121418
 color1 #c94234
 color2 #85c54c
 color3 #f5ae2e
@@ -3039,8 +3429,11 @@ cursor #f6f7ec
 cursor_text_color #292520
 foreground #e5c7a9
 selection_background #e5c7a9
-"####),
-    ("Electron Highlighter Day", r####"color0 #c2c6d4
+"####
+  ),
+  (
+    "Electron Highlighter Day",
+    r####"color0 #c2c6d4
 color1 #f52a65
 color2 #10a877
 color3 #df8e1d
@@ -3062,8 +3455,11 @@ cursor #2f3b54
 cursor_text_color #eef0f5
 foreground #2f3b54
 selection_background #2f3b54
-"####),
-    ("Electron Highlighter", r####"color0 #15161f
+"####
+  ),
+  (
+    "Electron Highlighter",
+    r####"color0 #15161f
 color1 #ff6c8d
 color2 #00ffc3
 color3 #ffebb1
@@ -3085,8 +3481,11 @@ cursor #a5b6d4
 cursor_text_color #171b29
 foreground #a5b6d4
 selection_background #a5b6d4
-"####),
-    ("Elegant", r####"color0 #0a1222
+"####
+  ),
+  (
+    "Elegant",
+    r####"color0 #0a1222
 color1 #ff0257
 color2 #85cc95
 color3 #ffcb8b
@@ -3110,8 +3509,11 @@ foreground #ced2d6
 selection_background #ced2d6
 underline_color #000000
 url_color #000000
-"####),
-    ("Elemental", r####"color0 #3c3c30
+"####
+  ),
+  (
+    "Elemental",
+    r####"color0 #3c3c30
 color1 #98290f
 color2 #479a43
 color3 #7f7111
@@ -3133,8 +3535,11 @@ cursor #facb80
 cursor_text_color #161611
 foreground #807a74
 selection_background #807a74
-"####),
-    ("Elementary", r####"color0 #242424
+"####
+  ),
+  (
+    "Elementary",
+    r####"color0 #242424
 color1 #d71c15
 color2 #5aa513
 color3 #fdb40c
@@ -3156,8 +3561,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #efefef
 selection_background #efefef
-"####),
-    ("Embark", r####"color0 #1e1c31
+"####
+  ),
+  (
+    "Embark",
+    r####"color0 #1e1c31
 color1 #f0719b
 color2 #a1efd3
 color3 #ffe9aa
@@ -3181,8 +3589,11 @@ foreground #eeffff
 selection_background #eeffff
 underline_color #596181
 url_color #596181
-"####),
-    ("Embers Dark", r####"color0 #16130f
+"####
+  ),
+  (
+    "Embers Dark",
+    r####"color0 #16130f
 color1 #826d57
 color2 #57826d
 color3 #6d8257
@@ -3204,8 +3615,11 @@ cursor #a39a90
 cursor_text_color #16130f
 foreground #a39a90
 selection_background #a39a90
-"####),
-    ("Emerald Synth", r####"color0 #0a0118
+"####
+  ),
+  (
+    "Emerald Synth",
+    r####"color0 #0a0118
 color1 #ff2a6d
 color2 #00e67e
 color3 #ffcc66
@@ -3227,8 +3641,11 @@ cursor #ff79c6
 cursor_text_color #0d0221
 foreground #00ffcc
 selection_background #00ffcc
-"####),
-    ("Espresso Libre", r####"color0 #000000
+"####
+  ),
+  (
+    "Espresso Libre",
+    r####"color0 #000000
 color1 #cc0000
 color2 #1a921c
 color3 #f0e53a
@@ -3250,8 +3667,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #b8a898
 selection_background #b8a898
-"####),
-    ("Espresso", r####"color0 #353535
+"####
+  ),
+  (
+    "Espresso",
+    r####"color0 #353535
 color1 #d25252
 color2 #a5c261
 color3 #ffc66d
@@ -3273,8 +3693,11 @@ cursor #d6d6d6
 cursor_text_color #999999
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Everblush", r####"color0 #232a2d
+"####
+  ),
+  (
+    "Everblush",
+    r####"color0 #232a2d
 color1 #e57474
 color2 #8ccf7e
 color3 #e5c76b
@@ -3296,8 +3719,11 @@ cursor #dadada
 cursor_text_color #141b1e
 foreground #dadada
 selection_background #dadada
-"####),
-    ("Everforest Dark Hard", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Dark Hard",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #a7c080
 color3 #dbbc7f
@@ -3319,8 +3745,11 @@ cursor #e69875
 cursor_text_color #4c3743
 foreground #d3c6aa
 selection_background #d3c6aa
-"####),
-    ("Everforest Dark Med", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Dark Med",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #a7c080
 color3 #dbbc7f
@@ -3342,8 +3771,11 @@ cursor #e69875
 cursor_text_color #543a48
 foreground #d3c6aa
 selection_background #d3c6aa
-"####),
-    ("Everforest Dark Soft", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Dark Soft",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #a7c080
 color3 #dbbc7f
@@ -3365,8 +3797,11 @@ cursor #e69875
 cursor_text_color #5c3f4f
 foreground #d3c6aa
 selection_background #d3c6aa
-"####),
-    ("Everforest Light Hard", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Light Hard",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #9ab373
 color3 #ceaf72
@@ -3388,8 +3823,11 @@ cursor #f57d26
 cursor_text_color #f0f2d4
 foreground #5c6a72
 selection_background #5c6a72
-"####),
-    ("Everforest Light Med", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Light Med",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #9ab373
 color3 #c1a266
@@ -3411,8 +3849,11 @@ cursor #f57d26
 cursor_text_color #eaedc8
 foreground #5c6a72
 selection_background #5c6a72
-"####),
-    ("Everforest Light Soft", r####"color0 #7a8478
+"####
+  ),
+  (
+    "Everforest Light Soft",
+    r####"color0 #7a8478
 color1 #e67e80
 color2 #8da666
 color3 #c1a266
@@ -3434,8 +3875,11 @@ cursor #f57d26
 cursor_text_color #e1e4bd
 foreground #5c6a72
 selection_background #5c6a72
-"####),
-    ("Fahrenheit", r####"color0 #1d1d1d
+"####
+  ),
+  (
+    "Fahrenheit",
+    r####"color0 #1d1d1d
 color1 #cda074
 color2 #9e744d
 color3 #fecf75
@@ -3457,8 +3901,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #ffffce
 selection_background #ffffce
-"####),
-    ("Fairyfloss", r####"color0 #040303
+"####
+  ),
+  (
+    "Fairyfloss",
+    r####"color0 #040303
 color1 #f92672
 color2 #c2ffdf
 color3 #e6c000
@@ -3480,8 +3927,11 @@ cursor #f8f8f0
 cursor_text_color #060709
 foreground #f8f8f2
 selection_background #f8f8f2
-"####),
-    ("Farmhouse Dark", r####"color0 #1d2027
+"####
+  ),
+  (
+    "Farmhouse Dark",
+    r####"color0 #1d2027
 color1 #ba0004
 color2 #549d00
 color3 #c87300
@@ -3503,8 +3953,11 @@ cursor #006efe
 cursor_text_color #e8e4e1
 foreground #e8e4e1
 selection_background #e8e4e1
-"####),
-    ("Farmhouse Light", r####"color0 #1d2027
+"####
+  ),
+  (
+    "Farmhouse Light",
+    r####"color0 #1d2027
 color1 #8d0003
 color2 #3a7d00
 color3 #a95600
@@ -3526,8 +3979,11 @@ cursor #006efe
 cursor_text_color #1d2027
 foreground #1d2027
 selection_background #1d2027
-"####),
-    ("Fideloper", r####"color0 #292f33
+"####
+  ),
+  (
+    "Fideloper",
+    r####"color0 #292f33
 color1 #cb1e2d
 color2 #edb8ac
 color3 #b7ab9b
@@ -3549,8 +4005,11 @@ cursor #d4605a
 cursor_text_color #fefff2
 foreground #dbdae0
 selection_background #dbdae0
-"####),
-    ("Firefly Traditional", r####"color0 #000000
+"####
+  ),
+  (
+    "Firefly Traditional",
+    r####"color0 #000000
 color1 #c23720
 color2 #33bc26
 color3 #afad24
@@ -3572,8 +4031,11 @@ cursor #00f900
 cursor_text_color #999999
 foreground #f5f5f5
 selection_background #f5f5f5
-"####),
-    ("Firefox Dev", r####"color0 #002831
+"####
+  ),
+  (
+    "Firefox Dev",
+    r####"color0 #002831
 color1 #e63853
 color2 #5eb83c
 color3 #a57706
@@ -3595,8 +4057,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #7c8fa4
 selection_background #7c8fa4
-"####),
-    ("Firewatch", r####"color0 #585f6d
+"####
+  ),
+  (
+    "Firewatch",
+    r####"color0 #585f6d
 color1 #d95360
 color2 #5ab977
 color3 #dfb563
@@ -3618,8 +4083,11 @@ cursor #f6f7ec
 cursor_text_color #b7b8a8
 foreground #9ba2b2
 selection_background #9ba2b2
-"####),
-    ("Fish Tank", r####"color0 #03073c
+"####
+  ),
+  (
+    "Fish Tank",
+    r####"color0 #03073c
 color1 #c6004a
 color2 #acf157
 color3 #fecd5e
@@ -3641,8 +4109,11 @@ cursor #fecd5e
 cursor_text_color #232537
 foreground #ecf0fe
 selection_background #ecf0fe
-"####),
-    ("Flat", r####"color0 #222d3f
+"####
+  ),
+  (
+    "Flat",
+    r####"color0 #222d3f
 color1 #a82320
 color2 #32a548
 color3 #e58d11
@@ -3664,8 +4135,11 @@ cursor #e5be0c
 cursor_text_color #ffffff
 foreground #2cc55d
 selection_background #2cc55d
-"####),
-    ("Flatland", r####"color0 #1d1d19
+"####
+  ),
+  (
+    "Flatland",
+    r####"color0 #1d1d19
 color1 #f18339
 color2 #9fd364
 color3 #f4ef6d
@@ -3687,8 +4161,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #b8dbef
 selection_background #b8dbef
-"####),
-    ("Flexoki Dark", r####"color0 #100f0f
+"####
+  ),
+  (
+    "Flexoki Dark",
+    r####"color0 #100f0f
 color1 #d14d41
 color2 #879a39
 color3 #d0a215
@@ -3710,8 +4187,11 @@ cursor #cecdc3
 cursor_text_color #100f0f
 foreground #cecdc3
 selection_background #cecdc3
-"####),
-    ("Flexoki Light", r####"color0 #100f0f
+"####
+  ),
+  (
+    "Flexoki Light",
+    r####"color0 #100f0f
 color1 #af3029
 color2 #66800b
 color3 #ad8301
@@ -3733,8 +4213,11 @@ cursor #100f0f
 cursor_text_color #fffcf0
 foreground #100f0f
 selection_background #100f0f
-"####),
-    ("Floraverse", r####"color0 #08002e
+"####
+  ),
+  (
+    "Floraverse",
+    r####"color0 #08002e
 color1 #7e1a46
 color2 #5d731a
 color3 #cd751c
@@ -3756,8 +4239,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #dbd1b9
 selection_background #dbd1b9
-"####),
-    ("Forest Blue", r####"color0 #333333
+"####
+  ),
+  (
+    "Forest Blue",
+    r####"color0 #333333
 color1 #f8818e
 color2 #92d3a2
 color3 #1a8e63
@@ -3779,8 +4265,11 @@ cursor #9e9ecb
 cursor_text_color #000000
 foreground #e2d8cd
 selection_background #e2d8cd
-"####),
-    ("Framer", r####"color0 #141414
+"####
+  ),
+  (
+    "Framer",
+    r####"color0 #141414
 color1 #ff5555
 color2 #98ec65
 color3 #ffcc33
@@ -3802,8 +4291,11 @@ cursor #fcdc08
 cursor_text_color #161616
 foreground #777777
 selection_background #777777
-"####),
-    ("Front End Delight", r####"color0 #242526
+"####
+  ),
+  (
+    "Front End Delight",
+    r####"color0 #242526
 color1 #f8511b
 color2 #565747
 color3 #fa771d
@@ -3825,8 +4317,11 @@ cursor #cdcdcd
 cursor_text_color #1b1c1d
 foreground #adadad
 selection_background #adadad
-"####),
-    ("Fun Forrest", r####"color0 #000000
+"####
+  ),
+  (
+    "Fun Forrest",
+    r####"color0 #000000
 color1 #d6262b
 color2 #919c00
 color3 #be8a13
@@ -3848,8 +4343,11 @@ cursor #e5591c
 cursor_text_color #000000
 foreground #dec165
 selection_background #dec165
-"####),
-    ("Galaxy", r####"color0 #000000
+"####
+  ),
+  (
+    "Galaxy",
+    r####"color0 #000000
 color1 #f9555f
 color2 #21b089
 color3 #fef02a
@@ -3871,8 +4369,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Galizur", r####"color0 #223344
+"####
+  ),
+  (
+    "Galizur",
+    r####"color0 #223344
 color1 #aa1122
 color2 #33aa11
 color3 #ccaa22
@@ -3894,8 +4395,11 @@ cursor #ddeeff
 cursor_text_color #071317
 foreground #ddeeff
 selection_background #ddeeff
-"####),
-    ("Ghostty Default Style Dark", r####"color0 #1d1f21
+"####
+  ),
+  (
+    "Ghostty Default Style Dark",
+    r####"color0 #1d1f21
 color1 #cc6566
 color2 #b6bd68
 color3 #f0c674
@@ -3917,8 +4421,11 @@ cursor #ffffff
 cursor_text_color #353a44
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("GitHub Dark Colorblind", r####"color0 #484f58
+"####
+  ),
+  (
+    "GitHub Dark Colorblind",
+    r####"color0 #484f58
 color1 #ec8e2c
 color2 #58a6ff
 color3 #d29922
@@ -3940,8 +4447,11 @@ cursor #58a6ff
 cursor_text_color #98e6ff
 foreground #c9d1d9
 selection_background #c9d1d9
-"####),
-    ("GitHub Dark Default", r####"color0 #484f58
+"####
+  ),
+  (
+    "GitHub Dark Default",
+    r####"color0 #484f58
 color1 #ff7b72
 color2 #3fb950
 color3 #d29922
@@ -3963,8 +4473,11 @@ cursor #2f81f7
 cursor_text_color #6fc1ff
 foreground #e6edf3
 selection_background #e6edf3
-"####),
-    ("GitHub Dark Dimmed", r####"color0 #545d68
+"####
+  ),
+  (
+    "GitHub Dark Dimmed",
+    r####"color0 #545d68
 color1 #f47067
 color2 #57ab5a
 color3 #c69026
@@ -3986,8 +4499,11 @@ cursor #539bf5
 cursor_text_color #93dbff
 foreground #adbac7
 selection_background #adbac7
-"####),
-    ("GitHub Dark High Contrast", r####"color0 #7a828e
+"####
+  ),
+  (
+    "GitHub Dark High Contrast",
+    r####"color0 #7a828e
 color1 #ff9492
 color2 #26cd4d
 color3 #f0b72f
@@ -4009,8 +4525,11 @@ cursor #71b7ff
 cursor_text_color #b1f7ff
 foreground #f0f3f6
 selection_background #f0f3f6
-"####),
-    ("GitHub Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "GitHub Dark",
+    r####"color0 #000000
 color1 #f78166
 color2 #56d364
 color3 #e3b341
@@ -4032,8 +4551,11 @@ cursor #c9d1d9
 cursor_text_color #101216
 foreground #8b949e
 selection_background #8b949e
-"####),
-    ("GitHub Light Colorblind", r####"color0 #24292f
+"####
+  ),
+  (
+    "GitHub Light Colorblind",
+    r####"color0 #24292f
 color1 #b35900
 color2 #0550ae
 color3 #4d2d00
@@ -4055,8 +4577,11 @@ cursor #0969da
 cursor_text_color #3c9cff
 foreground #24292f
 selection_background #24292f
-"####),
-    ("GitHub Light Default", r####"color0 #24292f
+"####
+  ),
+  (
+    "GitHub Light Default",
+    r####"color0 #24292f
 color1 #cf222e
 color2 #116329
 color3 #4d2d00
@@ -4078,8 +4603,11 @@ cursor #0969da
 cursor_text_color #3c9cff
 foreground #1f2328
 selection_background #1f2328
-"####),
-    ("GitHub Light High Contrast", r####"color0 #0e1116
+"####
+  ),
+  (
+    "GitHub Light High Contrast",
+    r####"color0 #0e1116
 color1 #a0111f
 color2 #024c1a
 color3 #3f2200
@@ -4101,8 +4629,11 @@ cursor #0349b4
 cursor_text_color #367ce7
 foreground #0e1116
 selection_background #0e1116
-"####),
-    ("GitHub", r####"color0 #3e3e3e
+"####
+  ),
+  (
+    "GitHub",
+    r####"color0 #3e3e3e
 color1 #970b16
 color2 #07962a
 color3 #c5bb94
@@ -4124,8 +4655,11 @@ cursor #3f3f3f
 cursor_text_color #f4f4f4
 foreground #3e3e3e
 selection_background #3e3e3e
-"####),
-    ("GitLab Dark Grey", r####"color0 #000000
+"####
+  ),
+  (
+    "GitLab Dark Grey",
+    r####"color0 #000000
 color1 #f57f6c
 color2 #52b87a
 color3 #d99530
@@ -4147,8 +4681,11 @@ cursor #ffffff
 cursor_text_color #bfbfbf
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("GitLab Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "GitLab Dark",
+    r####"color0 #000000
 color1 #f57f6c
 color2 #52b87a
 color3 #d99530
@@ -4170,8 +4707,11 @@ cursor #ffffff
 cursor_text_color #bfbfbf
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("GitLab Light", r####"color0 #303030
+"####
+  ),
+  (
+    "GitLab Light",
+    r####"color0 #303030
 color1 #a31700
 color2 #0a7f3d
 color3 #af551d
@@ -4193,8 +4733,11 @@ cursor #303030
 cursor_text_color #565656
 foreground #303030
 selection_background #303030
-"####),
-    ("Glacier", r####"color0 #2e343c
+"####
+  ),
+  (
+    "Glacier",
+    r####"color0 #2e343c
 color1 #bd0f2f
 color2 #35a770
 color3 #fb9435
@@ -4216,8 +4759,11 @@ cursor #6c6c6c
 cursor_text_color #9f9f9f
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Gleam Classic", r####"color0 #000000
+"####
+  ),
+  (
+    "Gleam Classic",
+    r####"color0 #000000
 color1 #f44747
 color2 #aadd8b
 color3 #ffd596
@@ -4239,8 +4785,11 @@ cursor #ffffff
 cursor_text_color #2f2f2f
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Gleam", r####"color0 #000000
+"####
+  ),
+  (
+    "Gleam",
+    r####"color0 #000000
 color1 #f44747
 color2 #aadd8b
 color3 #ffd596
@@ -4262,8 +4811,11 @@ cursor #ffffff
 cursor_text_color #2f2f2f
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Grape", r####"color0 #2d283f
+"####
+  ),
+  (
+    "Grape",
+    r####"color0 #2d283f
 color1 #ed2261
 color2 #1fa91b
 color3 #8ddc20
@@ -4285,8 +4837,11 @@ cursor #a288f7
 cursor_text_color #171422
 foreground #9f9fa1
 selection_background #9f9fa1
-"####),
-    ("Grass", r####"color0 #000000
+"####
+  ),
+  (
+    "Grass",
+    r####"color0 #000000
 color1 #ff5959
 color2 #00bb00
 color3 #e7b000
@@ -4308,8 +4863,11 @@ cursor #d9744c
 cursor_text_color #ffffff
 foreground #fff0a5
 selection_background #fff0a5
-"####),
-    ("Grey Green", r####"color0 #000000
+"####
+  ),
+  (
+    "Grey Green",
+    r####"color0 #000000
 color1 #fe1414
 color2 #74ff00
 color3 #f1ff01
@@ -4331,8 +4889,11 @@ cursor #fff400
 cursor_text_color #aeb1b0
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Gruber Darker", r####"color0 #181818
+"####
+  ),
+  (
+    "Gruber Darker",
+    r####"color0 #181818
 color1 #ff0a36
 color2 #42dc00
 color3 #ffdb00
@@ -4354,8 +4915,11 @@ cursor #ffdb00
 cursor_text_color #a6a6a6
 foreground #e4e4e4
 selection_background #e4e4e4
-"####),
-    ("Gruvbox Dark Hard", r####"color0 #1d2021
+"####
+  ),
+  (
+    "Gruvbox Dark Hard",
+    r####"color0 #1d2021
 color1 #cc241d
 color2 #98971a
 color3 #d79921
@@ -4377,8 +4941,11 @@ cursor #ebdbb2
 cursor_text_color #1d2021
 foreground #ebdbb2
 selection_background #ebdbb2
-"####),
-    ("Gruvbox Dark", r####"color0 #282828
+"####
+  ),
+  (
+    "Gruvbox Dark",
+    r####"color0 #282828
 color1 #cc241d
 color2 #98971a
 color3 #d79921
@@ -4400,8 +4967,11 @@ cursor #ebdbb2
 cursor_text_color #282828
 foreground #ebdbb2
 selection_background #ebdbb2
-"####),
-    ("Gruvbox Light Hard", r####"color0 #f9f5d7
+"####
+  ),
+  (
+    "Gruvbox Light Hard",
+    r####"color0 #f9f5d7
 color1 #cc241d
 color2 #98971a
 color3 #d79921
@@ -4423,8 +4993,11 @@ cursor #3c3836
 cursor_text_color #f9f5d7
 foreground #3c3836
 selection_background #3c3836
-"####),
-    ("Gruvbox Light", r####"color0 #fbf1c7
+"####
+  ),
+  (
+    "Gruvbox Light",
+    r####"color0 #fbf1c7
 color1 #cc241d
 color2 #98971a
 color3 #d79921
@@ -4446,8 +5019,11 @@ cursor #3c3836
 cursor_text_color #fbf1c7
 foreground #3c3836
 selection_background #3c3836
-"####),
-    ("Gruvbox Material Dark", r####"color0 #282828
+"####
+  ),
+  (
+    "Gruvbox Material Dark",
+    r####"color0 #282828
 color1 #ea6962
 color2 #a9b665
 color3 #d8a657
@@ -4469,8 +5045,11 @@ cursor #d4be98
 cursor_text_color #282828
 foreground #d4be98
 selection_background #d4be98
-"####),
-    ("Gruvbox Material Light", r####"color0 #fbf1c7
+"####
+  ),
+  (
+    "Gruvbox Material Light",
+    r####"color0 #fbf1c7
 color1 #c14a4a
 color2 #6c782e
 color3 #b47109
@@ -4492,8 +5071,11 @@ cursor #654735
 cursor_text_color #fbf1c7
 foreground #654735
 selection_background #654735
-"####),
-    ("Gruvbox Material", r####"color0 #141617
+"####
+  ),
+  (
+    "Gruvbox Material",
+    r####"color0 #141617
 color1 #ea6926
 color2 #c1d041
 color3 #eecf75
@@ -4517,8 +5099,11 @@ foreground #d4be98
 selection_background #d4be98
 underline_color #97c8f7
 url_color #97c8f7
-"####),
-    ("Guezwhoz", r####"color0 #333333
+"####
+  ),
+  (
+    "Guezwhoz",
+    r####"color0 #333333
 color1 #e85181
 color2 #7ad694
 color3 #b7d074
@@ -4540,8 +5125,11 @@ cursor #99d4b1
 cursor_text_color #1d1d1d
 foreground #d9d9d9
 selection_background #d9d9d9
-"####),
-    ("HaX0R Blue", r####"color0 #010921
+"####
+  ),
+  (
+    "HaX0R Blue",
+    r####"color0 #010921
 color1 #10b6ff
 color2 #10b6ff
 color3 #10b6ff
@@ -4563,8 +5151,11 @@ cursor #10b6ff
 cursor_text_color #ffffff
 foreground #11b7ff
 selection_background #11b7ff
-"####),
-    ("HaX0R Gr33N", r####"color0 #001f0b
+"####
+  ),
+  (
+    "HaX0R Gr33N",
+    r####"color0 #001f0b
 color1 #15d00d
 color2 #15d00d
 color3 #15d00d
@@ -4586,8 +5177,11 @@ cursor #15d00d
 cursor_text_color #ffffff
 foreground #16b10e
 selection_background #16b10e
-"####),
-    ("HaX0R R3D", r####"color0 #1f0000
+"####
+  ),
+  (
+    "HaX0R R3D",
+    r####"color0 #1f0000
 color1 #b00d0d
 color2 #b00d0d
 color3 #b00d0d
@@ -4609,8 +5203,11 @@ cursor #b00d0d
 cursor_text_color #ffffff
 foreground #b10e0e
 selection_background #b10e0e
-"####),
-    ("Hacktober", r####"color0 #191918
+"####
+  ),
+  (
+    "Hacktober",
+    r####"color0 #191918
 color1 #b34538
 color2 #587744
 color3 #d08949
@@ -4632,8 +5229,11 @@ cursor #c9c9c9
 cursor_text_color #141414
 foreground #c9c9c9
 selection_background #c9c9c9
-"####),
-    ("Hardcore", r####"color0 #1b1d1e
+"####
+  ),
+  (
+    "Hardcore",
+    r####"color0 #1b1d1e
 color1 #f92672
 color2 #a6e22e
 color3 #fd971f
@@ -4655,8 +5255,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #a0a0a0
 selection_background #a0a0a0
-"####),
-    ("Harper", r####"color0 #010101
+"####
+  ),
+  (
+    "Harper",
+    r####"color0 #010101
 color1 #f8b63f
 color2 #7fb5e1
 color3 #d6da25
@@ -4678,8 +5281,11 @@ cursor #a8a49d
 cursor_text_color #010101
 foreground #a8a49d
 selection_background #a8a49d
-"####),
-    ("Havn Daggry", r####"color0 #1f2842
+"####
+  ),
+  (
+    "Havn Daggry",
+    r####"color0 #1f2842
 color1 #985248
 color2 #577159
 color3 #be6b00
@@ -4701,8 +5307,11 @@ cursor #226c4f
 cursor_text_color #d6dbeb
 foreground #3b4a7a
 selection_background #3b4a7a
-"####),
-    ("Havn Skumring", r####"color0 #252c47
+"####
+  ),
+  (
+    "Havn Skumring",
+    r####"color0 #252c47
 color1 #ea563e
 color2 #6ead7b
 color3 #f8b330
@@ -4724,8 +5333,11 @@ cursor #277a6f
 cursor_text_color #e0e4f3
 foreground #d6dbeb
 selection_background #d6dbeb
-"####),
-    ("Heeler", r####"color0 #000000
+"####
+  ),
+  (
+    "Heeler",
+    r####"color0 #000000
 color1 #e44c2e
 color2 #bdd100
 color3 #f4ce65
@@ -4749,8 +5361,11 @@ foreground #fdfdfd
 selection_background #fdfdfd
 underline_color #88cafc
 url_color #88cafc
-"####),
-    ("Highway", r####"color0 #000000
+"####
+  ),
+  (
+    "Highway",
+    r####"color0 #000000
 color1 #d00e18
 color2 #138034
 color3 #ffcb3e
@@ -4772,8 +5387,11 @@ cursor #e0d9b9
 cursor_text_color #1f192a
 foreground #ededed
 selection_background #ededed
-"####),
-    ("Hipster Green", r####"color0 #000000
+"####
+  ),
+  (
+    "Hipster Green",
+    r####"color0 #000000
 color1 #b6214a
 color2 #00a600
 color3 #bfbf00
@@ -4795,8 +5413,11 @@ cursor #23ff18
 cursor_text_color #ff0018
 foreground #84c138
 selection_background #84c138
-"####),
-    ("Hivacruz", r####"color0 #202746
+"####
+  ),
+  (
+    "Hivacruz",
+    r####"color0 #202746
 color1 #c94922
 color2 #ac9739
 color3 #c08b30
@@ -4818,8 +5439,11 @@ cursor #979db4
 cursor_text_color #202746
 foreground #ede4e4
 selection_background #ede4e4
-"####),
-    ("Homebrew", r####"color0 #000000
+"####
+  ),
+  (
+    "Homebrew",
+    r####"color0 #000000
 color1 #990000
 color2 #00a600
 color3 #999900
@@ -4841,8 +5465,11 @@ cursor #23ff18
 cursor_text_color #ff0018
 foreground #00ff00
 selection_background #00ff00
-"####),
-    ("Hopscotch.256", r####"color0 #322931
+"####
+  ),
+  (
+    "Hopscotch.256",
+    r####"color0 #322931
 color1 #dd464c
 color2 #8fc13e
 color3 #fdcc59
@@ -4864,8 +5491,11 @@ cursor #b9b5b8
 cursor_text_color #322931
 foreground #b9b5b8
 selection_background #b9b5b8
-"####),
-    ("Hopscotch", r####"color0 #322931
+"####
+  ),
+  (
+    "Hopscotch",
+    r####"color0 #322931
 color1 #dd464c
 color2 #8fc13e
 color3 #fdcc59
@@ -4887,8 +5517,11 @@ cursor #b9b5b8
 cursor_text_color #322931
 foreground #b9b5b8
 selection_background #b9b5b8
-"####),
-    ("Horizon Bright", r####"color0 #16161d
+"####
+  ),
+  (
+    "Horizon Bright",
+    r####"color0 #16161d
 color1 #fc4777
 color2 #00ca86
 color3 #f2a682
@@ -4912,8 +5545,11 @@ foreground #16161d
 selection_background #16161d
 underline_color #596181
 url_color #596181
-"####),
-    ("Horizon", r####"color0 #000000
+"####
+  ),
+  (
+    "Horizon",
+    r####"color0 #000000
 color1 #e95678
 color2 #29d398
 color3 #fab795
@@ -4935,8 +5571,11 @@ cursor #6c6f93
 cursor_text_color #9fa2c6
 foreground #d5d8da
 selection_background #d5d8da
-"####),
-    ("Hot Dog Stand (Mustard)", r####"color0 #000000
+"####
+  ),
+  (
+    "Hot Dog Stand (Mustard)",
+    r####"color0 #000000
 color1 #ea3323
 color2 #ea3323
 color3 #ea3323
@@ -4958,8 +5597,11 @@ cursor #ea3323
 cursor_text_color #ffff54
 foreground #000000
 selection_background #000000
-"####),
-    ("Hot Dog Stand", r####"color0 #000000
+"####
+  ),
+  (
+    "Hot Dog Stand",
+    r####"color0 #000000
 color1 #ffff54
 color2 #ffff54
 color3 #ffff54
@@ -4981,8 +5623,11 @@ cursor #ffff54
 cursor_text_color #ea3323
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Hurtado", r####"color0 #575757
+"####
+  ),
+  (
+    "Hurtado",
+    r####"color0 #575757
 color1 #ff1b00
 color2 #a5e055
 color3 #fbe74a
@@ -5004,8 +5649,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #dbdbdb
 selection_background #dbdbdb
-"####),
-    ("Hybrid", r####"color0 #2a2e33
+"####
+  ),
+  (
+    "Hybrid",
+    r####"color0 #2a2e33
 color1 #b84d51
 color2 #b3bf5a
 color3 #e4b55e
@@ -5027,8 +5675,11 @@ cursor #b7bcba
 cursor_text_color #1e1f22
 foreground #b7bcba
 selection_background #b7bcba
-"####),
-    ("IBM 5153 CGA (Black)", r####"color0 #000000
+"####
+  ),
+  (
+    "IBM 5153 CGA (Black)",
+    r####"color0 #000000
 color1 #c40000
 color2 #00c400
 color3 #c47e00
@@ -5050,8 +5701,11 @@ cursor #c4c4c4
 cursor_text_color #000000
 foreground #c4c4c4
 selection_background #c4c4c4
-"####),
-    ("IBM 5153 CGA", r####"color0 #141414
+"####
+  ),
+  (
+    "IBM 5153 CGA",
+    r####"color0 #141414
 color1 #d03333
 color2 #1bd01b
 color3 #d08c1b
@@ -5073,8 +5727,11 @@ cursor #cecece
 cursor_text_color #141414
 foreground #cecece
 selection_background #cecece
-"####),
-    ("IC Green PPL", r####"color0 #014401
+"####
+  ),
+  (
+    "IC Green PPL",
+    r####"color0 #014401
 color1 #ff2736
 color2 #41a638
 color3 #76a831
@@ -5096,8 +5753,11 @@ cursor #47fa6b
 cursor_text_color #292929
 foreground #e0f1dc
 selection_background #e0f1dc
-"####),
-    ("IC Orange PPL", r####"color0 #000000
+"####
+  ),
+  (
+    "IC Orange PPL",
+    r####"color0 #000000
 color1 #c13900
 color2 #a4a900
 color3 #caaf00
@@ -5119,8 +5779,11 @@ cursor #fc531d
 cursor_text_color #ffc88a
 foreground #ffcb83
 selection_background #ffcb83
-"####),
-    ("IR Black", r####"color0 #4f4f4f
+"####
+  ),
+  (
+    "IR Black",
+    r####"color0 #4f4f4f
 color1 #fa6c60
 color2 #a8ff60
 color3 #fffeb7
@@ -5142,8 +5805,11 @@ cursor #808080
 cursor_text_color #ffffff
 foreground #f1f1f1
 selection_background #f1f1f1
-"####),
-    ("IRIX Console", r####"color0 #1a1919
+"####
+  ),
+  (
+    "IRIX Console",
+    r####"color0 #1a1919
 color1 #d42426
 color2 #37a327
 color3 #c29d28
@@ -5165,8 +5831,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #f2f2f2
 selection_background #f2f2f2
-"####),
-    ("IRIX Terminal", r####"color0 #1a1919
+"####
+  ),
+  (
+    "IRIX Terminal",
+    r####"color0 #1a1919
 color1 #ff2b1e
 color2 #57ff3d
 color3 #ffff44
@@ -5188,8 +5857,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #f2f2f2
 selection_background #f2f2f2
-"####),
-    ("Iceberg Dark", r####"color0 #1e2132
+"####
+  ),
+  (
+    "Iceberg Dark",
+    r####"color0 #1e2132
 color1 #e27878
 color2 #b4be82
 color3 #e2a478
@@ -5211,8 +5883,11 @@ cursor #c6c8d1
 cursor_text_color #161821
 foreground #c6c8d1
 selection_background #c6c8d1
-"####),
-    ("Iceberg Light", r####"color0 #dcdfe7
+"####
+  ),
+  (
+    "Iceberg Light",
+    r####"color0 #dcdfe7
 color1 #cc517a
 color2 #668e3d
 color3 #c57339
@@ -5234,8 +5909,11 @@ cursor #33374c
 cursor_text_color #e8e9ec
 foreground #33374c
 selection_background #33374c
-"####),
-    ("Idea", r####"color0 #adadad
+"####
+  ),
+  (
+    "Idea",
+    r####"color0 #adadad
 color1 #fc5256
 color2 #98b61c
 color3 #ccb444
@@ -5257,8 +5935,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #adadad
 selection_background #adadad
-"####),
-    ("Idle Toes", r####"color0 #323232
+"####
+  ),
+  (
+    "Idle Toes",
+    r####"color0 #323232
 color1 #d25252
 color2 #7fe173
 color3 #ffc66d
@@ -5280,8 +5961,11 @@ cursor #d6d6d6
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Jackie Brown", r####"color0 #2c1d16
+"####
+  ),
+  (
+    "Jackie Brown",
+    r####"color0 #2c1d16
 color1 #ef5734
 color2 #2baf2b
 color3 #bebf00
@@ -5303,8 +5987,11 @@ cursor #23ff18
 cursor_text_color #ff0018
 foreground #ffcc2f
 selection_background #ffcc2f
-"####),
-    ("Japanesque", r####"color0 #343935
+"####
+  ),
+  (
+    "Japanesque",
+    r####"color0 #343935
 color1 #cf3f61
 color2 #7bb75b
 color3 #e9b32a
@@ -5326,8 +6013,11 @@ cursor #edcf4f
 cursor_text_color #343935
 foreground #f7f6ec
 selection_background #f7f6ec
-"####),
-    ("Jellybeans", r####"color0 #929292
+"####
+  ),
+  (
+    "Jellybeans",
+    r####"color0 #929292
 color1 #e27373
 color2 #94b979
 color3 #ffba7b
@@ -5349,8 +6039,11 @@ cursor #ffa560
 cursor_text_color #ffffff
 foreground #dedede
 selection_background #dedede
-"####),
-    ("JetBrains Darcula", r####"color0 #000000
+"####
+  ),
+  (
+    "JetBrains Darcula",
+    r####"color0 #000000
 color1 #fa5355
 color2 #126e00
 color3 #c2c300
@@ -5372,8 +6065,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #adadad
 selection_background #adadad
-"####),
-    ("JetCalm Light", r####"color0 #383a42
+"####
+  ),
+  (
+    "JetCalm Light",
+    r####"color0 #383a42
 color1 #a52a2a
 color2 #556b2f
 color3 #5c3e00
@@ -5395,8 +6091,11 @@ cursor #082108
 cursor_text_color #ededed
 foreground #1c2410
 selection_background #1c2410
-"####),
-    ("Jubi", r####"color0 #3b3750
+"####
+  ),
+  (
+    "Jubi",
+    r####"color0 #3b3750
 color1 #cf7b98
 color2 #90a94b
 color3 #6ebfc0
@@ -5418,8 +6117,11 @@ cursor #c3d3de
 cursor_text_color #1e1b2e
 foreground #c3d3de
 selection_background #c3d3de
-"####),
-    ("Kanagawa Dragon", r####"color0 #0d0c0c
+"####
+  ),
+  (
+    "Kanagawa Dragon",
+    r####"color0 #0d0c0c
 color1 #c4746e
 color2 #8a9a7b
 color3 #c4b28a
@@ -5441,8 +6143,11 @@ cursor #c8c093
 cursor_text_color #181616
 foreground #c5c9c5
 selection_background #c5c9c5
-"####),
-    ("Kanagawa Lotus", r####"color0 #1f1f28
+"####
+  ),
+  (
+    "Kanagawa Lotus",
+    r####"color0 #1f1f28
 color1 #c84053
 color2 #6f894e
 color3 #77713f
@@ -5464,8 +6169,11 @@ cursor #43436c
 cursor_text_color #f2ecbc
 foreground #545464
 selection_background #545464
-"####),
-    ("Kanagawa Wave", r####"color0 #090618
+"####
+  ),
+  (
+    "Kanagawa Wave",
+    r####"color0 #090618
 color1 #c34043
 color2 #76946a
 color3 #c0a36e
@@ -5487,8 +6195,11 @@ cursor #dcd7ba
 cursor_text_color #1f1f28
 foreground #dcd7ba
 selection_background #dcd7ba
-"####),
-    ("Kanagawabones", r####"color0 #1f1f28
+"####
+  ),
+  (
+    "Kanagawabones",
+    r####"color0 #1f1f28
 color1 #e46a78
 color2 #98bc6d
 color3 #e5c283
@@ -5510,8 +6221,11 @@ cursor #e6e0c2
 cursor_text_color #1f1f28
 foreground #ddd8bb
 selection_background #ddd8bb
-"####),
-    ("Kanso Ink", r####"color0 #14171d
+"####
+  ),
+  (
+    "Kanso Ink",
+    r####"color0 #14171d
 color1 #c4746e
 color2 #8a9a7b
 color3 #c4b28a
@@ -5533,8 +6247,11 @@ cursor #c5c9c7
 cursor_text_color #14171d
 foreground #c5c9c7
 selection_background #c5c9c7
-"####),
-    ("Kanso Mist", r####"color0 #22262d
+"####
+  ),
+  (
+    "Kanso Mist",
+    r####"color0 #22262d
 color1 #c4746e
 color2 #8a9a7b
 color3 #c4b28a
@@ -5556,8 +6273,11 @@ cursor #c5c9c7
 cursor_text_color #22262d
 foreground #c5c9c7
 selection_background #c5c9c7
-"####),
-    ("Kanso Pearl", r####"color0 #22262d
+"####
+  ),
+  (
+    "Kanso Pearl",
+    r####"color0 #22262d
 color1 #c84053
 color2 #6f894e
 color3 #77713f
@@ -5579,8 +6299,11 @@ cursor #22262d
 cursor_text_color #f2f1ef
 foreground #22262d
 selection_background #22262d
-"####),
-    ("Kanso Zen", r####"color0 #0d0c0c
+"####
+  ),
+  (
+    "Kanso Zen",
+    r####"color0 #0d0c0c
 color1 #c4746e
 color2 #8a9a7b
 color3 #c4b28a
@@ -5602,8 +6325,11 @@ cursor #c5c9c7
 cursor_text_color #090e13
 foreground #c5c9c7
 selection_background #c5c9c7
-"####),
-    ("Karasu Night", r####"color0 #0a0a0a
+"####
+  ),
+  (
+    "Karasu Night",
+    r####"color0 #0a0a0a
 color1 #e06c75
 color2 #8fbf7a
 color3 #d4b86a
@@ -5625,8 +6351,11 @@ cursor #f5f5f5
 cursor_text_color #0a0a0a
 foreground #e7e5e4
 selection_background #e7e5e4
-"####),
-    ("Karasu Snow", r####"color0 #0a0a0a
+"####
+  ),
+  (
+    "Karasu Snow",
+    r####"color0 #0a0a0a
 color1 #b84755
 color2 #3f7e4a
 color3 #8a6a1f
@@ -5648,8 +6377,11 @@ cursor #0a0a0a
 cursor_text_color #fafafa
 foreground #292524
 selection_background #292524
-"####),
-    ("Karma Dark Dimmed", r####"color0 #14181f
+"####
+  ),
+  (
+    "Karma Dark Dimmed",
+    r####"color0 #14181f
 color1 #e87691
 color2 #82c891
 color3 #ebd870
@@ -5671,8 +6403,11 @@ cursor #ebd870
 cursor_text_color #14181f
 foreground #e2def0
 selection_background #e2def0
-"####),
-    ("Karma Dark HC", r####"color0 #000000
+"####
+  ),
+  (
+    "Karma Dark HC",
+    r####"color0 #000000
 color1 #ff5c87
 color2 #80e598
 color3 #fce566
@@ -5694,8 +6429,11 @@ cursor #fce566
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Karma Dark", r####"color0 #0a0e14
+"####
+  ),
+  (
+    "Karma Dark",
+    r####"color0 #0a0e14
 color1 #fc618d
 color2 #7bd88f
 color3 #fce566
@@ -5717,8 +6455,11 @@ cursor #fce566
 cursor_text_color #0a0e14
 foreground #f7f1ff
 selection_background #f7f1ff
-"####),
-    ("Karma Light Dimmed", r####"color0 #1c1f24
+"####
+  ),
+  (
+    "Karma Light Dimmed",
+    r####"color0 #1c1f24
 color1 #e07a90
 color2 #4a9a4c
 color3 #d49a26
@@ -5740,8 +6481,11 @@ cursor #9676d0
 cursor_text_color #f5f3f7
 foreground #1c1f24
 selection_background #1c1f24
-"####),
-    ("Karma Light HC", r####"color0 #000000
+"####
+  ),
+  (
+    "Karma Light HC",
+    r####"color0 #000000
 color1 #c01650
 color2 #1a6e1c
 color3 #9c6800
@@ -5763,8 +6507,11 @@ cursor #4d2d9a
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Karma Light", r####"color0 #0a0e14
+"####
+  ),
+  (
+    "Karma Light",
+    r####"color0 #0a0e14
 color1 #fc618d
 color2 #2d972f
 color3 #eeae11
@@ -5786,8 +6533,11 @@ cursor #a86efd
 cursor_text_color #ffffff
 foreground #0a0e14
 selection_background #0a0e14
-"####),
-    ("Keys Ocean Sunset HC", r####"color0 #7a92a8
+"####
+  ),
+  (
+    "Keys Ocean Sunset HC",
+    r####"color0 #7a92a8
 color1 #ff6361
 color2 #4ad68a
 color3 #ffa600
@@ -5809,8 +6559,11 @@ cursor #ff8531
 cursor_text_color #060910
 foreground #f0f4fa
 selection_background #f0f4fa
-"####),
-    ("Keys Ocean Sunset", r####"color0 #101927
+"####
+  ),
+  (
+    "Keys Ocean Sunset",
+    r####"color0 #101927
 color1 #e85a52
 color2 #4a9a72
 color3 #e89a2e
@@ -5832,8 +6585,11 @@ cursor #fc9077
 cursor_text_color #0a1018
 foreground #b8c8dc
 selection_background #b8c8dc
-"####),
-    ("Kibble", r####"color0 #4d4d4d
+"####
+  ),
+  (
+    "Kibble",
+    r####"color0 #4d4d4d
 color1 #c70031
 color2 #29cf13
 color3 #d8e30e
@@ -5855,8 +6611,11 @@ cursor #9fda9c
 cursor_text_color #000000
 foreground #f7f7f7
 selection_background #f7f7f7
-"####),
-    ("Kitty Default", r####"color0 #000000
+"####
+  ),
+  (
+    "Kitty Default",
+    r####"color0 #000000
 color1 #cc0403
 color2 #19cb00
 color3 #cecb00
@@ -5878,8 +6637,11 @@ cursor #cccccc
 cursor_text_color #111111
 foreground #dddddd
 selection_background #dddddd
-"####),
-    ("Kitty Low Contrast", r####"color0 #000000
+"####
+  ),
+  (
+    "Kitty Low Contrast",
+    r####"color0 #000000
 color1 #cc0403
 color2 #19cb00
 color3 #cecb00
@@ -5901,8 +6663,11 @@ cursor #cccccc
 cursor_text_color #111111
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Klein Void", r####"color0 #1a1c24
+"####
+  ),
+  (
+    "Klein Void",
+    r####"color0 #1a1c24
 color1 #f09890
 color2 #a6c080
 color3 #e8bc75
@@ -5924,8 +6689,11 @@ cursor #ede6d3
 cursor_text_color #0b0d14
 foreground #ede6d3
 selection_background #ede6d3
-"####),
-    ("Kolorit", r####"color0 #1d1a1e
+"####
+  ),
+  (
+    "Kolorit",
+    r####"color0 #1d1a1e
 color1 #ff5b82
 color2 #47d7a1
 color3 #e8e562
@@ -5947,8 +6715,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #efecec
 selection_background #efecec
-"####),
-    ("Konsolas", r####"color0 #000000
+"####
+  ),
+  (
+    "Konsolas",
+    r####"color0 #000000
 color1 #aa1717
 color2 #18b218
 color3 #ebae1f
@@ -5970,8 +6741,11 @@ cursor #c8c1c1
 cursor_text_color #060606
 foreground #c8c1c1
 selection_background #c8c1c1
-"####),
-    ("Kurokula", r####"color0 #333333
+"####
+  ),
+  (
+    "Kurokula",
+    r####"color0 #333333
 color1 #c35a52
 color2 #78b3a9
 color3 #e1b917
@@ -5995,8 +6769,11 @@ foreground #e0cfc2
 selection_background #e0cfc2
 underline_color #596181
 url_color #596181
-"####),
-    ("Lab Fox", r####"color0 #2e2e2e
+"####
+  ),
+  (
+    "Lab Fox",
+    r####"color0 #2e2e2e
 color1 #fc6d26
 color2 #3eb383
 color3 #fca121
@@ -6018,8 +6795,11 @@ cursor #7f7f7f
 cursor_text_color #b2b2b2
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Laser", r####"color0 #626262
+"####
+  ),
+  (
+    "Laser",
+    r####"color0 #626262
 color1 #ff8373
 color2 #b4fb73
 color3 #09b4bd
@@ -6041,8 +6821,11 @@ cursor #00ff9c
 cursor_text_color #a6a6a6
 foreground #f106e3
 selection_background #f106e3
-"####),
-    ("Later This Evening", r####"color0 #2b2b2b
+"####
+  ),
+  (
+    "Later This Evening",
+    r####"color0 #2b2b2b
 color1 #d45a60
 color2 #afba67
 color3 #e5d289
@@ -6064,8 +6847,11 @@ cursor #4f4f4f
 cursor_text_color #959595
 foreground #959595
 selection_background #959595
-"####),
-    ("Lavandula", r####"color0 #230046
+"####
+  ),
+  (
+    "Lavandula",
+    r####"color0 #230046
 color1 #7d1625
 color2 #337e6f
 color3 #7f6f49
@@ -6087,8 +6873,11 @@ cursor #8c91fa
 cursor_text_color #050014
 foreground #736e7d
 selection_background #736e7d
-"####),
-    ("Light Owl", r####"color0 #403f53
+"####
+  ),
+  (
+    "Light Owl",
+    r####"color0 #403f53
 color1 #de3d3b
 color2 #08916a
 color3 #e0af02
@@ -6110,8 +6899,11 @@ cursor #403f53
 cursor_text_color #f6f6f6
 foreground #403f53
 selection_background #403f53
-"####),
-    ("Liquid Carbon Transparent", r####"color0 #000000
+"####
+  ),
+  (
+    "Liquid Carbon Transparent",
+    r####"color0 #000000
 color1 #ff3030
 color2 #559a70
 color3 #ccac00
@@ -6133,8 +6925,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #afc2c2
 selection_background #afc2c2
-"####),
-    ("Liquid Carbon", r####"color0 #000000
+"####
+  ),
+  (
+    "Liquid Carbon",
+    r####"color0 #000000
 color1 #ff3030
 color2 #559a70
 color3 #ccac00
@@ -6156,8 +6951,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #afc2c2
 selection_background #afc2c2
-"####),
-    ("London Bonfire Night", r####"color0 #1a1418
+"####
+  ),
+  (
+    "London Bonfire Night",
+    r####"color0 #1a1418
 color1 #d65a3a
 color2 #6a8a4a
 color3 #e8b048
@@ -6179,8 +6977,11 @@ cursor #e85aa8
 cursor_text_color #0e0c0e
 foreground #e8e0c8
 selection_background #e8e0c8
-"####),
-    ("London Columbia Road", r####"color0 #2a2520
+"####
+  ),
+  (
+    "London Columbia Road",
+    r####"color0 #2a2520
 color1 #c14a4a
 color2 #5a8a3a
 color3 #d4a82c
@@ -6202,8 +7003,11 @@ cursor #d4708e
 cursor_text_color #f8f5ec
 foreground #1f3a2f
 selection_background #1f3a2f
-"####),
-    ("London Embankment Dusk", r####"color0 #1c2533
+"####
+  ),
+  (
+    "London Embankment Dusk",
+    r####"color0 #1c2533
 color1 #c5573f
 color2 #6a8e85
 color3 #e2bd5c
@@ -6225,8 +7029,11 @@ cursor #f2c455
 cursor_text_color #161f2c
 foreground #e8eef2
 selection_background #e8eef2
-"####),
-    ("London Soho Night", r####"color0 #2a221a
+"####
+  ),
+  (
+    "London Soho Night",
+    r####"color0 #2a221a
 color1 #d4574a
 color2 #8fae5e
 color3 #e8b04a
@@ -6248,8 +7055,11 @@ cursor #ff5db1
 cursor_text_color #1a1612
 foreground #ebe0c8
 selection_background #ebe0c8
-"####),
-    ("Lovelace", r####"color0 #282a36
+"####
+  ),
+  (
+    "Lovelace",
+    r####"color0 #282a36
 color1 #f37f97
 color2 #5adecd
 color3 #f2a272
@@ -6271,8 +7081,11 @@ cursor #c574dd
 cursor_text_color #ffffff
 foreground #fdfdfd
 selection_background #fdfdfd
-"####),
-    ("Man Page", r####"color0 #000000
+"####
+  ),
+  (
+    "Man Page",
+    r####"color0 #000000
 color1 #cc0000
 color2 #00a600
 color3 #999900
@@ -6294,8 +7107,11 @@ cursor #7f7f7f
 cursor_text_color #000000
 foreground #000000
 selection_background #000000
-"####),
-    ("Mariana", r####"color0 #000000
+"####
+  ),
+  (
+    "Mariana",
+    r####"color0 #000000
 color1 #ec5f66
 color2 #99c794
 color3 #f9ae58
@@ -6317,8 +7133,11 @@ cursor #fcbb6a
 cursor_text_color #8c8c8c
 foreground #d8dee9
 selection_background #d8dee9
-"####),
-    ("Material Dark", r####"color0 #212121
+"####
+  ),
+  (
+    "Material Dark",
+    r####"color0 #212121
 color1 #b7141f
 color2 #457b24
 color3 #f6981e
@@ -6340,8 +7159,11 @@ cursor #16afca
 cursor_text_color #dfdfdf
 foreground #e5e5e5
 selection_background #e5e5e5
-"####),
-    ("Material Darker", r####"color0 #000000
+"####
+  ),
+  (
+    "Material Darker",
+    r####"color0 #000000
 color1 #ff5370
 color2 #c3e88d
 color3 #ffcb6b
@@ -6365,8 +7187,11 @@ foreground #eeffff
 selection_background #eeffff
 underline_color #596181
 url_color #596181
-"####),
-    ("Material Design Colors", r####"color0 #435b67
+"####
+  ),
+  (
+    "Material Design Colors",
+    r####"color0 #435b67
 color1 #fc3841
 color2 #5cf19e
 color3 #fed032
@@ -6388,8 +7213,11 @@ cursor #eaeaea
 cursor_text_color #000000
 foreground #e7ebed
 selection_background #e7ebed
-"####),
-    ("Material Ocean", r####"color0 #546e7a
+"####
+  ),
+  (
+    "Material Ocean",
+    r####"color0 #546e7a
 color1 #ff5370
 color2 #c3e88d
 color3 #ffcb6b
@@ -6411,8 +7239,11 @@ cursor #ffcc00
 cursor_text_color #0f111a
 foreground #8f93a2
 selection_background #8f93a2
-"####),
-    ("Material", r####"color0 #212121
+"####
+  ),
+  (
+    "Material",
+    r####"color0 #212121
 color1 #b7141f
 color2 #457b24
 color3 #f6981e
@@ -6434,8 +7265,11 @@ cursor #16afca
 cursor_text_color #2e2e2d
 foreground #232322
 selection_background #232322
-"####),
-    ("Mathias", r####"color0 #000000
+"####
+  ),
+  (
+    "Mathias",
+    r####"color0 #000000
 color1 #e52222
 color2 #a6e32d
 color3 #fc951e
@@ -6457,8 +7291,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Matrix", r####"color0 #0f191c
+"####
+  ),
+  (
+    "Matrix",
+    r####"color0 #0f191c
 color1 #23755a
 color2 #82d967
 color3 #ffd700
@@ -6482,8 +7319,11 @@ foreground #426644
 selection_background #426644
 underline_color #302c2c
 url_color #302c2c
-"####),
-    ("Matte Black", r####"color0 #333333
+"####
+  ),
+  (
+    "Matte Black",
+    r####"color0 #333333
 color1 #d35f5f
 color2 #ffc107
 color3 #b91c1c
@@ -6505,8 +7345,11 @@ cursor #eaeaea
 cursor_text_color #121212
 foreground #bebebe
 selection_background #bebebe
-"####),
-    ("Medallion", r####"color0 #000000
+"####
+  ),
+  (
+    "Medallion",
+    r####"color0 #000000
 color1 #b64c00
 color2 #7c8b16
 color3 #d3bd26
@@ -6528,8 +7371,11 @@ cursor #d3ba30
 cursor_text_color #fffc7d
 foreground #cac296
 selection_background #cac296
-"####),
-    ("Melange Dark", r####"color0 #34302c
+"####
+  ),
+  (
+    "Melange Dark",
+    r####"color0 #34302c
 color1 #bd8183
 color2 #78997a
 color3 #e49b5d
@@ -6551,8 +7397,11 @@ cursor #ece1d7
 cursor_text_color #292522
 foreground #ece1d7
 selection_background #ece1d7
-"####),
-    ("Melange Light", r####"color0 #e9e1db
+"####
+  ),
+  (
+    "Melange Light",
+    r####"color0 #e9e1db
 color1 #c77b8b
 color2 #6e9b72
 color3 #bc5c00
@@ -6574,8 +7423,11 @@ cursor #54433a
 cursor_text_color #f1f1f1
 foreground #54433a
 selection_background #54433a
-"####),
-    ("Mellifluous", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Mellifluous",
+    r####"color0 #1a1a1a
 color1 #d29393
 color2 #b3b393
 color3 #cbaa89
@@ -6597,8 +7449,11 @@ cursor #bfad9e
 cursor_text_color #1a1a1a
 foreground #dadada
 selection_background #dadada
-"####),
-    ("Mellow", r####"color0 #27272a
+"####
+  ),
+  (
+    "Mellow",
+    r####"color0 #27272a
 color1 #f5a191
 color2 #90b99f
 color3 #e6b99d
@@ -6620,8 +7475,11 @@ cursor #cac9dd
 cursor_text_color #161617
 foreground #c9c7cd
 selection_background #c9c7cd
-"####),
-    ("Mesila One", r####"color0 #101418
+"####
+  ),
+  (
+    "Mesila One",
+    r####"color0 #101418
 color1 #93867f
 color2 #5cc8ff
 color3 #ebb3a9
@@ -6643,8 +7501,11 @@ cursor #5cc8ff
 cursor_text_color #1b1f23
 foreground #e9fae3
 selection_background #e9fae3
-"####),
-    ("Miasma", r####"color0 #000000
+"####
+  ),
+  (
+    "Miasma",
+    r####"color0 #000000
 color1 #685742
 color2 #5f875f
 color3 #b36d43
@@ -6666,8 +7527,11 @@ cursor #c7c7c7
 cursor_text_color #959595
 foreground #c2c2b0
 selection_background #c2c2b0
-"####),
-    ("Midnight In Mojave", r####"color0 #1e1e1e
+"####
+  ),
+  (
+    "Midnight In Mojave",
+    r####"color0 #1e1e1e
 color1 #ff453a
 color2 #32d74b
 color3 #ffd60a
@@ -6689,8 +7553,11 @@ cursor #32d74b
 cursor_text_color #1c1c1c
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Mirage", r####"color0 #011627
+"####
+  ),
+  (
+    "Mirage",
+    r####"color0 #011627
 color1 #ff9999
 color2 #85cc95
 color3 #ffd700
@@ -6712,8 +7579,11 @@ cursor #ddb3ff
 cursor_text_color #ffffff
 foreground #a6b2c0
 selection_background #a6b2c0
-"####),
-    ("Misterioso", r####"color0 #000000
+"####
+  ),
+  (
+    "Misterioso",
+    r####"color0 #000000
 color1 #ff4242
 color2 #74af68
 color3 #ffad29
@@ -6735,8 +7605,11 @@ cursor #666666
 cursor_text_color #ffffff
 foreground #e1e1e0
 selection_background #e1e1e0
-"####),
-    ("Modus Operandi Tinted", r####"color0 #000000
+"####
+  ),
+  (
+    "Modus Operandi Tinted",
+    r####"color0 #000000
 color1 #a60000
 color2 #006800
 color3 #6f5500
@@ -6758,8 +7631,11 @@ cursor #d00000
 cursor_text_color #fbf7f0
 foreground #000000
 selection_background #000000
-"####),
-    ("Modus Operandi", r####"color0 #000000
+"####
+  ),
+  (
+    "Modus Operandi",
+    r####"color0 #000000
 color1 #a60000
 color2 #006800
 color3 #6f5500
@@ -6781,8 +7657,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Modus Vivendi Tinted", r####"color0 #0d0e1c
+"####
+  ),
+  (
+    "Modus Vivendi Tinted",
+    r####"color0 #0d0e1c
 color1 #ff5f59
 color2 #44bc44
 color3 #d0bc00
@@ -6804,8 +7683,11 @@ cursor #ff66ff
 cursor_text_color #0d0e1c
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Modus Vivendi", r####"color0 #000000
+"####
+  ),
+  (
+    "Modus Vivendi",
+    r####"color0 #000000
 color1 #ff5f59
 color2 #44bc44
 color3 #d0bc00
@@ -6827,8 +7709,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Molokai", r####"color0 #121212
+"####
+  ),
+  (
+    "Molokai",
+    r####"color0 #121212
 color1 #fa2573
 color2 #98e123
 color3 #dfd460
@@ -6850,8 +7735,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Mona Lisa", r####"color0 #351b0e
+"####
+  ),
+  (
+    "Mona Lisa",
+    r####"color0 #351b0e
 color1 #9b291c
 color2 #636232
 color3 #c36e28
@@ -6873,8 +7761,11 @@ cursor #c46c32
 cursor_text_color #120b0d
 foreground #f7d66a
 selection_background #f7d66a
-"####),
-    ("Monokai Classic", r####"color0 #272822
+"####
+  ),
+  (
+    "Monokai Classic",
+    r####"color0 #272822
 color1 #f92672
 color2 #a6e22e
 color3 #e6db74
@@ -6896,8 +7787,11 @@ cursor #c0c1b5
 cursor_text_color #8d8e82
 foreground #fdfff1
 selection_background #fdfff1
-"####),
-    ("Monokai Pro Light Sun", r####"color0 #f8efe7
+"####
+  ),
+  (
+    "Monokai Pro Light Sun",
+    r####"color0 #f8efe7
 color1 #ce4770
 color2 #218871
 color3 #b16803
@@ -6919,8 +7813,11 @@ cursor #72696d
 cursor_text_color #a59ca0
 foreground #2c232e
 selection_background #2c232e
-"####),
-    ("Monokai Pro Light", r####"color0 #faf4f2
+"####
+  ),
+  (
+    "Monokai Pro Light",
+    r####"color0 #faf4f2
 color1 #e14775
 color2 #269d69
 color3 #cc7a0a
@@ -6942,8 +7839,11 @@ cursor #706b6e
 cursor_text_color #a39ea1
 foreground #29242a
 selection_background #29242a
-"####),
-    ("Monokai Pro Machine", r####"color0 #273136
+"####
+  ),
+  (
+    "Monokai Pro Machine",
+    r####"color0 #273136
 color1 #ff6d7e
 color2 #a2e57b
 color3 #ffed72
@@ -6965,8 +7865,11 @@ cursor #b8c4c3
 cursor_text_color #859190
 foreground #f2fffc
 selection_background #f2fffc
-"####),
-    ("Monokai Pro Octagon", r####"color0 #282a3a
+"####
+  ),
+  (
+    "Monokai Pro Octagon",
+    r####"color0 #282a3a
 color1 #ff657a
 color2 #bad761
 color3 #ffd76d
@@ -6988,8 +7891,11 @@ cursor #b2b9bd
 cursor_text_color #f2f9fd
 foreground #eaf2f1
 selection_background #eaf2f1
-"####),
-    ("Monokai Pro Ristretto", r####"color0 #2c2525
+"####
+  ),
+  (
+    "Monokai Pro Ristretto",
+    r####"color0 #2c2525
 color1 #fd6883
 color2 #adda78
 color3 #f9cc6c
@@ -7011,8 +7917,11 @@ cursor #c3b7b8
 cursor_text_color #fff7f8
 foreground #fff1f3
 selection_background #fff1f3
-"####),
-    ("Monokai Pro Spectrum", r####"color0 #222222
+"####
+  ),
+  (
+    "Monokai Pro Spectrum",
+    r####"color0 #222222
 color1 #fc618d
 color2 #7bd88f
 color3 #fce566
@@ -7034,8 +7943,11 @@ cursor #bab6c0
 cursor_text_color #faf6ff
 foreground #f7f1ff
 selection_background #f7f1ff
-"####),
-    ("Monokai Pro", r####"color0 #2d2a2e
+"####
+  ),
+  (
+    "Monokai Pro",
+    r####"color0 #2d2a2e
 color1 #ff6188
 color2 #a9dc76
 color3 #ffd866
@@ -7057,8 +7969,11 @@ cursor #c1c0c0
 cursor_text_color #8e8d8d
 foreground #fcfcfa
 selection_background #fcfcfa
-"####),
-    ("Monokai Remastered", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Monokai Remastered",
+    r####"color0 #1a1a1a
 color1 #f4005f
 color2 #98e024
 color3 #fd971f
@@ -7080,8 +7995,11 @@ cursor #fc971f
 cursor_text_color #000000
 foreground #d9d9d9
 selection_background #d9d9d9
-"####),
-    ("Monokai Soda", r####"color0 #1a1a1a
+"####
+  ),
+  (
+    "Monokai Soda",
+    r####"color0 #1a1a1a
 color1 #f4005f
 color2 #98e024
 color3 #fa8419
@@ -7103,8 +8021,11 @@ cursor #f6f7ec
 cursor_text_color #b7b8a8
 foreground #c4c5b5
 selection_background #c4c5b5
-"####),
-    ("Monokai SublimeText", r####"color0 #333333
+"####
+  ),
+  (
+    "Monokai SublimeText",
+    r####"color0 #333333
 color1 #c4265e
 color2 #86b42b
 color3 #b3b42b
@@ -7126,8 +8047,11 @@ cursor #f8f8f0
 cursor_text_color #272822
 foreground #f8f8f2
 selection_background #f8f8f2
-"####),
-    ("Monokai Vivid", r####"color0 #121212
+"####
+  ),
+  (
+    "Monokai Vivid",
+    r####"color0 #121212
 color1 #fa2934
 color2 #98e123
 color3 #fff30a
@@ -7149,8 +8073,11 @@ cursor #fb0007
 cursor_text_color #ff8c95
 foreground #f9f9f9
 selection_background #f9f9f9
-"####),
-    ("Monospace Dark", r####"color0 #738295
+"####
+  ),
+  (
+    "Monospace Dark",
+    r####"color0 #738295
 color1 #f76769
 color2 #17b877
 color3 #ffa23e
@@ -7172,8 +8099,11 @@ cursor #c8aaff
 cursor_text_color #10151d
 foreground #a4afbd
 selection_background #a4afbd
-"####),
-    ("Monospace Light", r####"color0 #333e4f
+"####
+  ),
+  (
+    "Monospace Light",
+    r####"color0 #333e4f
 color1 #d03941
 color2 #007b49
 color3 #a65921
@@ -7195,8 +8125,11 @@ cursor #6f4cde
 cursor_text_color #f4f7fd
 foreground #475365
 selection_background #475365
-"####),
-    ("Moonfly", r####"color0 #323437
+"####
+  ),
+  (
+    "Moonfly",
+    r####"color0 #323437
 color1 #ff5454
 color2 #8cc85f
 color3 #e3c78a
@@ -7218,8 +8151,11 @@ cursor #9e9e9e
 cursor_text_color #080808
 foreground #bdbdbd
 selection_background #bdbdbd
-"####),
-    ("Moonwalk", r####"color0 #080808
+"####
+  ),
+  (
+    "Moonwalk",
+    r####"color0 #080808
 color1 #7a0047
 color2 #145b0e
 color3 #733a11
@@ -7241,8 +8177,11 @@ cursor #061f4a
 cursor_text_color #e4e2e0
 foreground #061f4a
 selection_background #061f4a
-"####),
-    ("N0Tch2K", r####"color0 #383838
+"####
+  ),
+  (
+    "N0Tch2K",
+    r####"color0 #383838
 color1 #a95551
 color2 #666666
 color3 #a98051
@@ -7264,8 +8203,11 @@ cursor #aa9175
 cursor_text_color #000000
 foreground #a0a0a0
 selection_background #a0a0a0
-"####),
-    ("Neobones Dark", r####"color0 #0f191f
+"####
+  ),
+  (
+    "Neobones Dark",
+    r####"color0 #0f191f
 color1 #de6e7c
 color2 #90ff6b
 color3 #b77e64
@@ -7287,8 +8229,11 @@ cursor #ceddd7
 cursor_text_color #0f191f
 foreground #c6d5cf
 selection_background #c6d5cf
-"####),
-    ("Neobones Light", r####"color0 #e5ede6
+"####
+  ),
+  (
+    "Neobones Light",
+    r####"color0 #e5ede6
 color1 #a8334c
 color2 #567a30
 color3 #944927
@@ -7310,8 +8255,11 @@ cursor #202e18
 cursor_text_color #e5ede6
 foreground #202e18
 selection_background #202e18
-"####),
-    ("Neon Purple", r####"color0 #000000
+"####
+  ),
+  (
+    "Neon Purple",
+    r####"color0 #000000
 color1 #cd0d76
 color2 #03eba5
 color3 #fffa6a
@@ -7333,8 +8281,11 @@ cursor #21f6bc
 cursor_text_color #999999
 foreground #e5e5e5
 selection_background #e5e5e5
-"####),
-    ("Neon", r####"color0 #000000
+"####
+  ),
+  (
+    "Neon",
+    r####"color0 #000000
 color1 #ff3045
 color2 #5ffa74
 color3 #fffc7e
@@ -7356,8 +8307,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #00fffc
 selection_background #00fffc
-"####),
-    ("Neopolitan", r####"color0 #000000
+"####
+  ),
+  (
+    "Neopolitan",
+    r####"color0 #000000
 color1 #9a1a1a
 color2 #61ce3c
 color3 #fbde2d
@@ -7379,8 +8333,11 @@ cursor #ffffff
 cursor_text_color #bfbfbf
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Neutron", r####"color0 #23252b
+"####
+  ),
+  (
+    "Neutron",
+    r####"color0 #23252b
 color1 #b54036
 color2 #5ab977
 color3 #deb566
@@ -7402,8 +8359,11 @@ cursor #f6f7ec
 cursor_text_color #b7b8a8
 foreground #e6e8ef
 selection_background #e6e8ef
-"####),
-    ("Night Lion V1", r####"color0 #4c4c4c
+"####
+  ),
+  (
+    "Night Lion V1",
+    r####"color0 #4c4c4c
 color1 #bb0000
 color2 #5fde8f
 color3 #f3f167
@@ -7425,8 +8385,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Night Lion V2", r####"color0 #4c4c4c
+"####
+  ),
+  (
+    "Night Lion V2",
+    r####"color0 #4c4c4c
 color1 #bb0000
 color2 #04f623
 color3 #f3f167
@@ -7448,8 +8411,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Night Owl", r####"color0 #011627
+"####
+  ),
+  (
+    "Night Owl",
+    r####"color0 #011627
 color1 #ef5350
 color2 #22da6e
 color3 #addb67
@@ -7471,8 +8437,11 @@ cursor #7e57c2
 cursor_text_color #ffffff
 foreground #d6deeb
 selection_background #d6deeb
-"####),
-    ("Night Owlish Light", r####"color0 #011627
+"####
+  ),
+  (
+    "Night Owlish Light",
+    r####"color0 #011627
 color1 #d3423e
 color2 #2aa298
 color3 #daaa01
@@ -7494,8 +8463,11 @@ cursor #403f53
 cursor_text_color #fbfbfb
 foreground #403f53
 selection_background #403f53
-"####),
-    ("Nightfox", r####"color0 #393b44
+"####
+  ),
+  (
+    "Nightfox",
+    r####"color0 #393b44
 color1 #c94f6d
 color2 #81b29a
 color3 #dbc074
@@ -7517,8 +8489,11 @@ cursor #cdcecf
 cursor_text_color #192330
 foreground #cdcecf
 selection_background #cdcecf
-"####),
-    ("Niji", r####"color0 #333333
+"####
+  ),
+  (
+    "Niji",
+    r####"color0 #333333
 color1 #d23e08
 color2 #54ca74
 color3 #fff700
@@ -7540,8 +8515,11 @@ cursor #ffc663
 cursor_text_color #141515
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("No Clown Fiesta Light", r####"color0 #d6d6d6
+"####
+  ),
+  (
+    "No Clown Fiesta Light",
+    r####"color0 #d6d6d6
 color1 #874e42
 color2 #677940
 color3 #b89058
@@ -7563,8 +8541,11 @@ cursor #151515
 cursor_text_color #d0d0d0
 foreground #151515
 selection_background #151515
-"####),
-    ("No Clown Fiesta", r####"color0 #151515
+"####
+  ),
+  (
+    "No Clown Fiesta",
+    r####"color0 #151515
 color1 #b46958
 color2 #90a959
 color3 #f4bf75
@@ -7586,8 +8567,11 @@ cursor #e0e1e4
 cursor_text_color #18191b
 foreground #e0e1e4
 selection_background #e0e1e4
-"####),
-    ("Nocturnal Winter", r####"color0 #4d4d4d
+"####
+  ),
+  (
+    "Nocturnal Winter",
+    r####"color0 #4d4d4d
 color1 #f12d52
 color2 #09cd7e
 color3 #f5f17a
@@ -7609,8 +8593,11 @@ cursor #e6e5e5
 cursor_text_color #a6a6a6
 foreground #e6e5e5
 selection_background #e6e5e5
-"####),
-    ("Nord Light", r####"color0 #3b4252
+"####
+  ),
+  (
+    "Nord Light",
+    r####"color0 #3b4252
 color1 #bf616a
 color2 #96b17f
 color3 #c5a565
@@ -7632,8 +8619,11 @@ cursor #7bb3c3
 cursor_text_color #3b4252
 foreground #414858
 selection_background #414858
-"####),
-    ("Nord Wave", r####"color0 #3b4252
+"####
+  ),
+  (
+    "Nord Wave",
+    r####"color0 #3b4252
 color1 #bf616a
 color2 #a3be8c
 color3 #ebcb8b
@@ -7655,8 +8645,11 @@ cursor #ebcb8b
 cursor_text_color #b89858
 foreground #d8dee9
 selection_background #d8dee9
-"####),
-    ("Nord", r####"color0 #3b4252
+"####
+  ),
+  (
+    "Nord",
+    r####"color0 #3b4252
 color1 #bf616a
 color2 #a3be8c
 color3 #ebcb8b
@@ -7678,8 +8671,11 @@ cursor #eceff4
 cursor_text_color #282828
 foreground #d8dee9
 selection_background #d8dee9
-"####),
-    ("Nordfox", r####"color0 #3b4252
+"####
+  ),
+  (
+    "Nordfox",
+    r####"color0 #3b4252
 color1 #bf616a
 color2 #a3be8c
 color3 #ebcb8b
@@ -7701,8 +8697,11 @@ cursor #cdcecf
 cursor_text_color #2e3440
 foreground #cdcecf
 selection_background #cdcecf
-"####),
-    ("Novel", r####"color0 #000000
+"####
+  ),
+  (
+    "Novel",
+    r####"color0 #000000
 color1 #cc0000
 color2 #009600
 color3 #d06b00
@@ -7724,8 +8723,11 @@ cursor #73635a
 cursor_text_color #000000
 foreground #3b2322
 selection_background #3b2322
-"####),
-    ("Nvim Dark", r####"color0 #07080d
+"####
+  ),
+  (
+    "Nvim Dark",
+    r####"color0 #07080d
 color1 #ffc0b9
 color2 #b3f6c0
 color3 #fce094
@@ -7747,8 +8749,11 @@ cursor #9b9ea4
 cursor_text_color #e0e2ea
 foreground #e0e2ea
 selection_background #e0e2ea
-"####),
-    ("Nvim Light", r####"color0 #07080d
+"####
+  ),
+  (
+    "Nvim Light",
+    r####"color0 #07080d
 color1 #590008
 color2 #005523
 color3 #6b5300
@@ -7770,8 +8775,11 @@ cursor #9b9ea4
 cursor_text_color #14161b
 foreground #14161b
 selection_background #14161b
-"####),
-    ("Obsidian", r####"color0 #000000
+"####
+  ),
+  (
+    "Obsidian",
+    r####"color0 #000000
 color1 #b30d0e
 color2 #00bb00
 color3 #fecd22
@@ -7793,8 +8801,11 @@ cursor #c0cad0
 cursor_text_color #8d8d8d
 foreground #cdcdcd
 selection_background #cdcdcd
-"####),
-    ("Ocean", r####"color0 #000000
+"####
+  ),
+  (
+    "Ocean",
+    r####"color0 #000000
 color1 #e64c4c
 color2 #00a600
 color3 #999900
@@ -7816,8 +8827,11 @@ cursor #7f7f7f
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Oceanic Material", r####"color0 #000000
+"####
+  ),
+  (
+    "Oceanic Material",
+    r####"color0 #000000
 color1 #ee2b2a
 color2 #40a33f
 color3 #ffea2e
@@ -7839,8 +8853,11 @@ cursor #b3b8c3
 cursor_text_color #ffffff
 foreground #c2c8d7
 selection_background #c2c8d7
-"####),
-    ("Oceanic Next", r####"color0 #162c35
+"####
+  ),
+  (
+    "Oceanic Next",
+    r####"color0 #162c35
 color1 #ec5f67
 color2 #99c794
 color3 #fac863
@@ -7862,8 +8879,11 @@ cursor #c0c5ce
 cursor_text_color #1b2b34
 foreground #c0c5ce
 selection_background #c0c5ce
-"####),
-    ("Ollie", r####"color0 #000000
+"####
+  ),
+  (
+    "Ollie",
+    r####"color0 #000000
 color1 #ac2e31
 color2 #31ac61
 color3 #ac4300
@@ -7885,8 +8905,11 @@ cursor #5b6ea7
 cursor_text_color #2a292d
 foreground #8a8dae
 selection_background #8a8dae
-"####),
-    ("One Dark Two", r####"color0 #1d1f23
+"####
+  ),
+  (
+    "One Dark Two",
+    r####"color0 #1d1f23
 color1 #e27881
 color2 #98c379
 color3 #eac786
@@ -7908,8 +8931,11 @@ cursor #e6e6e6
 cursor_text_color #1d1f23
 foreground #e6e6e6
 selection_background #e6e6e6
-"####),
-    ("One Double Dark", r####"color0 #3d4452
+"####
+  ),
+  (
+    "One Double Dark",
+    r####"color0 #3d4452
 color1 #f16372
 color2 #8cc570
 color3 #ecbe70
@@ -7933,8 +8959,11 @@ foreground #dbdfe5
 selection_background #dbdfe5
 underline_color #783232
 url_color #783232
-"####),
-    ("One Double Light", r####"color0 #454b58
+"####
+  ),
+  (
+    "One Double Light",
+    r####"color0 #454b58
 color1 #f74840
 color2 #25a343
 color3 #cc8100
@@ -7956,8 +8985,11 @@ cursor #1a1919
 cursor_text_color #dbdfe5
 foreground #383a43
 selection_background #383a43
-"####),
-    ("One Half Dark", r####"color0 #282c34
+"####
+  ),
+  (
+    "One Half Dark",
+    r####"color0 #282c34
 color1 #e06c75
 color2 #98c379
 color3 #e5c07b
@@ -7979,8 +9011,11 @@ cursor #a3b3cc
 cursor_text_color #e9ecf1
 foreground #dcdfe4
 selection_background #dcdfe4
-"####),
-    ("One Half Light", r####"color0 #383a42
+"####
+  ),
+  (
+    "One Half Light",
+    r####"color0 #383a42
 color1 #e45649
 color2 #50a14f
 color3 #c18401
@@ -8002,8 +9037,11 @@ cursor #a5b4e5
 cursor_text_color #383a42
 foreground #383a42
 selection_background #383a42
-"####),
-    ("Onenord Light", r####"color0 #2e3440
+"####
+  ),
+  (
+    "Onenord Light",
+    r####"color0 #2e3440
 color1 #cb4f53
 color2 #48a53d
 color3 #ee5e25
@@ -8025,8 +9063,11 @@ cursor #3879c5
 cursor_text_color #f7f8fa
 foreground #2e3440
 selection_background #2e3440
-"####),
-    ("Onenord", r####"color0 #3b4252
+"####
+  ),
+  (
+    "Onenord",
+    r####"color0 #3b4252
 color1 #e06c75
 color2 #9ec183
 color3 #ebcb8b
@@ -8048,8 +9089,11 @@ cursor #81a1c1
 cursor_text_color #3b4252
 foreground #e5e9f0
 selection_background #e5e9f0
-"####),
-    ("Operator Mono Dark", r####"color0 #5a5a5a
+"####
+  ),
+  (
+    "Operator Mono Dark",
+    r####"color0 #5a5a5a
 color1 #ca372d
 color2 #4d7b3a
 color3 #d4d697
@@ -8071,8 +9115,11 @@ cursor #fcdc08
 cursor_text_color #161616
 foreground #c3cac2
 selection_background #c3cac2
-"####),
-    ("Overnight Slumber", r####"color0 #0a1222
+"####
+  ),
+  (
+    "Overnight Slumber",
+    r####"color0 #0a1222
 color1 #ffa7c4
 color2 #85cc95
 color3 #ffcb8b
@@ -8094,8 +9141,11 @@ cursor #ffa7c4
 cursor_text_color #ffffff
 foreground #ced2d6
 selection_background #ced2d6
-"####),
-    ("Oxide", r####"color0 #262626
+"####
+  ),
+  (
+    "Oxide",
+    r####"color0 #262626
 color1 #ed756e
 color2 #5bb661
 color3 #c39900
@@ -8117,8 +9167,11 @@ cursor #cecece
 cursor_text_color #161616
 foreground #cecece
 selection_background #cecece
-"####),
-    ("Oxocarbon", r####"color0 #161616
+"####
+  ),
+  (
+    "Oxocarbon",
+    r####"color0 #161616
 color1 #00dfdb
 color2 #00b4ff
 color3 #ff4297
@@ -8140,8 +9193,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #f2f4f8
 selection_background #f2f4f8
-"####),
-    ("Pale Night Hc", r####"color0 #000000
+"####
+  ),
+  (
+    "Pale Night Hc",
+    r####"color0 #000000
 color1 #f07178
 color2 #c3e88d
 color3 #ffcb6b
@@ -8163,8 +9219,11 @@ cursor #ffcb6b
 cursor_text_color #323232
 foreground #cccccc
 selection_background #cccccc
-"####),
-    ("Pandora", r####"color0 #000000
+"####
+  ),
+  (
+    "Pandora",
+    r####"color0 #000000
 color1 #ff4242
 color2 #74af68
 color3 #ffad29
@@ -8186,8 +9245,11 @@ cursor #43d58e
 cursor_text_color #ffffff
 foreground #e1e1e1
 selection_background #e1e1e1
-"####),
-    ("Paraiso Dark", r####"color0 #2f1e2e
+"####
+  ),
+  (
+    "Paraiso Dark",
+    r####"color0 #2f1e2e
 color1 #ef6155
 color2 #48b685
 color3 #fec418
@@ -8209,8 +9271,11 @@ cursor #a39e9b
 cursor_text_color #2f1e2e
 foreground #a39e9b
 selection_background #a39e9b
-"####),
-    ("Patina Dark Soft", r####"color0 #2e2e2e
+"####
+  ),
+  (
+    "Patina Dark Soft",
+    r####"color0 #2e2e2e
 color1 #cb7676
 color2 #549c7d
 color3 #e6cc77
@@ -8232,8 +9297,11 @@ cursor #dbd7ca
 cursor_text_color #1a1a1a
 foreground #dbd7ca
 selection_background #dbd7ca
-"####),
-    ("Patina Dark", r####"color0 #2e2e2e
+"####
+  ),
+  (
+    "Patina Dark",
+    r####"color0 #2e2e2e
 color1 #cb7676
 color2 #4d9375
 color3 #e6cc77
@@ -8255,8 +9323,11 @@ cursor #dbd7ca
 cursor_text_color #121212
 foreground #dbd7ca
 selection_background #dbd7ca
-"####),
-    ("Patina Lichen", r####"color0 #393a34
+"####
+  ),
+  (
+    "Patina Lichen",
+    r####"color0 #393a34
 color1 #8b4646
 color2 #33644d
 color3 #7f5031
@@ -8278,8 +9349,11 @@ cursor #393a34
 cursor_text_color #cdd1c6
 foreground #393a34
 selection_background #393a34
-"####),
-    ("Patina Light", r####"color0 #2e2a24
+"####
+  ),
+  (
+    "Patina Light",
+    r####"color0 #2e2a24
 color1 #9b3b3b
 color2 #34644c
 color3 #6e5817
@@ -8301,8 +9375,11 @@ cursor #2e2a24
 cursor_text_color #ddd7c4
 foreground #2e2a24
 selection_background #2e2a24
-"####),
-    ("Patina Moss", r####"color0 #33362e
+"####
+  ),
+  (
+    "Patina Moss",
+    r####"color0 #33362e
 color1 #c07878
 color2 #5ba886
 color3 #d4bf6e
@@ -8324,8 +9401,11 @@ cursor #dbd7ca
 cursor_text_color #20231f
 foreground #dbd7ca
 selection_background #dbd7ca
-"####),
-    ("Patina Stellar", r####"color0 #2e2a24
+"####
+  ),
+  (
+    "Patina Stellar",
+    r####"color0 #2e2a24
 color1 #a84040
 color2 #3a7055
 color3 #6e5817
@@ -8347,8 +9427,11 @@ cursor #2e2a24
 cursor_text_color #f5f2ed
 foreground #2e2a24
 selection_background #2e2a24
-"####),
-    ("Paul Millr", r####"color0 #2a2a2a
+"####
+  ),
+  (
+    "Paul Millr",
+    r####"color0 #2a2a2a
 color1 #ff0000
 color2 #79ff0f
 color3 #e7bf00
@@ -8370,8 +9453,11 @@ cursor #4d4d4d
 cursor_text_color #ffffff
 foreground #f2f2f2
 selection_background #f2f2f2
-"####),
-    ("Pencil Dark", r####"color0 #212121
+"####
+  ),
+  (
+    "Pencil Dark",
+    r####"color0 #212121
 color1 #c30771
 color2 #10a778
 color3 #a89c14
@@ -8393,8 +9479,11 @@ cursor #20bbfc
 cursor_text_color #f1f1f1
 foreground #f1f1f1
 selection_background #f1f1f1
-"####),
-    ("Pencil Light", r####"color0 #212121
+"####
+  ),
+  (
+    "Pencil Light",
+    r####"color0 #212121
 color1 #c30771
 color2 #10a778
 color3 #a89c14
@@ -8416,8 +9505,11 @@ cursor #20bbfc
 cursor_text_color #424242
 foreground #424242
 selection_background #424242
-"####),
-    ("Peppermint", r####"color0 #353535
+"####
+  ),
+  (
+    "Peppermint",
+    r####"color0 #353535
 color1 #e74669
 color2 #89d287
 color3 #dab853
@@ -8439,8 +9531,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #c8c8c8
 selection_background #c8c8c8
-"####),
-    ("Phala Green Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Phala Green Dark",
+    r####"color0 #000000
 color1 #ab1500
 color2 #00b100
 color3 #a9a700
@@ -8462,8 +9557,11 @@ cursor #c1fc03
 cursor_text_color #ff271d
 foreground #c1fc03
 selection_background #c1fc03
-"####),
-    ("Piatto Light", r####"color0 #414141
+"####
+  ),
+  (
+    "Piatto Light",
+    r####"color0 #414141
 color1 #b23771
 color2 #66781e
 color3 #cd6f34
@@ -8485,8 +9583,11 @@ cursor #5e77c8
 cursor_text_color #abbee5
 foreground #414141
 selection_background #414141
-"####),
-    ("Pierre Dark", r####"color0 #141415
+"####
+  ),
+  (
+    "Pierre Dark",
+    r####"color0 #141415
 color1 #ff2e3f
 color2 #0dbe4e
 color3 #ffca00
@@ -8508,8 +9609,11 @@ cursor #009fff
 cursor_text_color #070707
 foreground #fbfbfb
 selection_background #fbfbfb
-"####),
-    ("Pierre Light", r####"color0 #1f1f21
+"####
+  ),
+  (
+    "Pierre Light",
+    r####"color0 #1f1f21
 color1 #d52c36
 color2 #1d8138
 color3 #ac8816
@@ -8531,8 +9635,11 @@ cursor #009fff
 cursor_text_color #ffffff
 foreground #070707
 selection_background #070707
-"####),
-    ("Pnevma", r####"color0 #2f2e2d
+"####
+  ),
+  (
+    "Pnevma",
+    r####"color0 #2f2e2d
 color1 #a36666
 color2 #90a57d
 color3 #d7af87
@@ -8554,8 +9661,11 @@ cursor #e4c9af
 cursor_text_color #000000
 foreground #d0d0d0
 selection_background #d0d0d0
-"####),
-    ("Poimandres Darker", r####"color0 #16161e
+"####
+  ),
+  (
+    "Poimandres Darker",
+    r####"color0 #16161e
 color1 #d0679d
 color2 #5de4c7
 color3 #fffac2
@@ -8577,8 +9687,11 @@ cursor #ffffff
 cursor_text_color #16161e
 foreground #a6accd
 selection_background #a6accd
-"####),
-    ("Poimandres Storm", r####"color0 #252b37
+"####
+  ),
+  (
+    "Poimandres Storm",
+    r####"color0 #252b37
 color1 #d0679d
 color2 #5de4c7
 color3 #fffac2
@@ -8600,8 +9713,11 @@ cursor #ffffff
 cursor_text_color #252b37
 foreground #a6accd
 selection_background #a6accd
-"####),
-    ("Poimandres White", r####"color0 #fefeff
+"####
+  ),
+  (
+    "Poimandres White",
+    r####"color0 #fefeff
 color1 #ff2090
 color2 #01dab2
 color3 #e5ba4e
@@ -8623,8 +9739,11 @@ cursor #969cbd
 cursor_text_color #fefeff
 foreground #969cbd
 selection_background #969cbd
-"####),
-    ("Poimandres", r####"color0 #1a1e28
+"####
+  ),
+  (
+    "Poimandres",
+    r####"color0 #1a1e28
 color1 #d0679d
 color2 #5de4c7
 color3 #fffac2
@@ -8646,8 +9765,11 @@ cursor #ffffff
 cursor_text_color #1a1e29
 foreground #a6accd
 selection_background #a6accd
-"####),
-    ("Popping And Locking", r####"color0 #1d2021
+"####
+  ),
+  (
+    "Popping And Locking",
+    r####"color0 #1d2021
 color1 #cc241d
 color2 #98971a
 color3 #d79921
@@ -8671,8 +9793,11 @@ foreground #ebdbb2
 selection_background #ebdbb2
 underline_color #596181
 url_color #596181
-"####),
-    ("Powershell", r####"color0 #000000
+"####
+  ),
+  (
+    "Powershell",
+    r####"color0 #000000
 color1 #981a22
 color2 #098003
 color3 #c4a000
@@ -8694,8 +9819,11 @@ cursor #f6f6f7
 cursor_text_color #052454
 foreground #f6f6f7
 selection_background #f6f6f7
-"####),
-    ("Primary", r####"color0 #000000
+"####
+  ),
+  (
+    "Primary",
+    r####"color0 #000000
 color1 #db4437
 color2 #0f9d58
 color3 #f4b400
@@ -8719,8 +9847,11 @@ foreground #000000
 selection_background #000000
 underline_color #596181
 url_color #596181
-"####),
-    ("Pro Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Pro Light",
+    r####"color0 #000000
 color1 #e5492b
 color2 #50d148
 color3 #c6c440
@@ -8742,8 +9873,11 @@ cursor #4d4d4d
 cursor_text_color #f2f2f2
 foreground #191919
 selection_background #191919
-"####),
-    ("Pro", r####"color0 #000000
+"####
+  ),
+  (
+    "Pro",
+    r####"color0 #000000
 color1 #990000
 color2 #00a600
 color3 #999900
@@ -8765,8 +9899,11 @@ cursor #4d4d4d
 cursor_text_color #ffffff
 foreground #f2f2f2
 selection_background #f2f2f2
-"####),
-    ("Purple Rain", r####"color0 #000000
+"####
+  ),
+  (
+    "Purple Rain",
+    r####"color0 #000000
 color1 #ff260e
 color2 #9be205
 color3 #ffc400
@@ -8788,8 +9925,11 @@ cursor #ff271d
 cursor_text_color #ff9a90
 foreground #fffbf6
 selection_background #fffbf6
-"####),
-    ("Purplepeter", r####"color0 #0a0520
+"####
+  ),
+  (
+    "Purplepeter",
+    r####"color0 #0a0520
 color1 #ff796d
 color2 #99b481
 color3 #efdfac
@@ -8811,8 +9951,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #ece7fa
 selection_background #ece7fa
-"####),
-    ("Rapture", r####"color0 #000000
+"####
+  ),
+  (
+    "Rapture",
+    r####"color0 #000000
 color1 #fc644d
 color2 #7afde1
 color3 #fff09b
@@ -8834,8 +9977,11 @@ cursor #ffffff
 cursor_text_color #111e2a
 foreground #c0c9e5
 selection_background #c0c9e5
-"####),
-    ("Raycast Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Raycast Dark",
+    r####"color0 #000000
 color1 #ff5360
 color2 #59d499
 color3 #ffc531
@@ -8857,8 +10003,11 @@ cursor #cccccc
 cursor_text_color #999999
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Raycast Light", r####"color0 #000000
+"####
+  ),
+  (
+    "Raycast Light",
+    r####"color0 #000000
 color1 #b12424
 color2 #006b4f
 color3 #f8a300
@@ -8880,8 +10029,11 @@ cursor #000000
 cursor_text_color #404040
 foreground #000000
 selection_background #000000
-"####),
-    ("Rebecca", r####"color0 #12131e
+"####
+  ),
+  (
+    "Rebecca",
+    r####"color0 #12131e
 color1 #dd7755
 color2 #04dbb5
 color3 #f2e7b7
@@ -8905,8 +10057,11 @@ foreground #e8e6ed
 selection_background #e8e6ed
 underline_color #596181
 url_color #596181
-"####),
-    ("Red Alert", r####"color0 #000000
+"####
+  ),
+  (
+    "Red Alert",
+    r####"color0 #000000
 color1 #d62e4e
 color2 #71be6b
 color3 #beb86b
@@ -8928,8 +10083,11 @@ cursor #ffffff
 cursor_text_color #762423
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Red Planet", r####"color0 #202020
+"####
+  ),
+  (
+    "Red Planet",
+    r####"color0 #202020
 color1 #8c3432
 color2 #728271
 color3 #e8bf6a
@@ -8951,8 +10109,11 @@ cursor #c2b790
 cursor_text_color #202020
 foreground #c2b790
 selection_background #c2b790
-"####),
-    ("Red Sands", r####"color0 #000000
+"####
+  ),
+  (
+    "Red Sands",
+    r####"color0 #000000
 color1 #ff3f00
 color2 #00bb00
 color3 #e7b000
@@ -8974,8 +10135,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #d7c9a7
 selection_background #d7c9a7
-"####),
-    ("Relaxed", r####"color0 #151515
+"####
+  ),
+  (
+    "Relaxed",
+    r####"color0 #151515
 color1 #bc5653
 color2 #909d63
 color3 #ebc17a
@@ -8997,8 +10161,11 @@ cursor #d9d9d9
 cursor_text_color #1b1b1b
 foreground #d9d9d9
 selection_background #d9d9d9
-"####),
-    ("Retro Legends", r####"color0 #262626
+"####
+  ),
+  (
+    "Retro Legends",
+    r####"color0 #262626
 color1 #de5454
 color2 #45eb45
 color3 #f7bf2b
@@ -9020,8 +10187,11 @@ cursor #45eb45
 cursor_text_color #0d0d0d
 foreground #45eb45
 selection_background #45eb45
-"####),
-    ("Retro", r####"color0 #13a10e
+"####
+  ),
+  (
+    "Retro",
+    r####"color0 #13a10e
 color1 #13a10e
 color2 #13a10e
 color3 #13a10e
@@ -9043,8 +10213,11 @@ cursor #13a10e
 cursor_text_color #000000
 foreground #13a10e
 selection_background #13a10e
-"####),
-    ("Rippedcasts", r####"color0 #000000
+"####
+  ),
+  (
+    "Rippedcasts",
+    r####"color0 #000000
 color1 #cdaf95
 color2 #a8ff60
 color3 #bfbb1f
@@ -9066,8 +10239,11 @@ cursor #7f7f7f
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Rose Pine Dawn", r####"color0 #f2e9e1
+"####
+  ),
+  (
+    "Rose Pine Dawn",
+    r####"color0 #f2e9e1
 color1 #b4637a
 color2 #286983
 color3 #ea9d34
@@ -9089,8 +10265,11 @@ cursor #575279
 cursor_text_color #faf4ed
 foreground #575279
 selection_background #575279
-"####),
-    ("Rose Pine Moon", r####"color0 #393552
+"####
+  ),
+  (
+    "Rose Pine Moon",
+    r####"color0 #393552
 color1 #eb6f92
 color2 #3e8fb0
 color3 #f6c177
@@ -9112,8 +10291,11 @@ cursor #e0def4
 cursor_text_color #232136
 foreground #e0def4
 selection_background #e0def4
-"####),
-    ("Rose Pine", r####"color0 #26233a
+"####
+  ),
+  (
+    "Rose Pine",
+    r####"color0 #26233a
 color1 #eb6f92
 color2 #31748f
 color3 #f6c177
@@ -9135,8 +10317,11 @@ cursor #e0def4
 cursor_text_color #191724
 foreground #e0def4
 selection_background #e0def4
-"####),
-    ("Rouge 2", r####"color0 #5d5d6b
+"####
+  ),
+  (
+    "Rouge 2",
+    r####"color0 #5d5d6b
 color1 #c6797e
 color2 #969e92
 color3 #dbcdab
@@ -9158,8 +10343,11 @@ cursor #969e92
 cursor_text_color #ffffff
 foreground #a2a3aa
 selection_background #a2a3aa
-"####),
-    ("Royal", r####"color0 #241f2b
+"####
+  ),
+  (
+    "Royal",
+    r####"color0 #241f2b
 color1 #91284c
 color2 #23801c
 color3 #b49d27
@@ -9181,8 +10369,11 @@ cursor #524966
 cursor_text_color #100613
 foreground #514968
 selection_background #514968
-"####),
-    ("Ryuuko", r####"color0 #2c3941
+"####
+  ),
+  (
+    "Ryuuko",
+    r####"color0 #2c3941
 color1 #865f5b
 color2 #66907d
 color3 #b1a990
@@ -9204,8 +10395,11 @@ cursor #ececec
 cursor_text_color #002831
 foreground #ececec
 selection_background #ececec
-"####),
-    ("Sakura", r####"color0 #000000
+"####
+  ),
+  (
+    "Sakura",
+    r####"color0 #000000
 color1 #d52370
 color2 #41af1a
 color3 #bc7053
@@ -9227,8 +10421,11 @@ cursor #ff65fd
 cursor_text_color #24242e
 foreground #dd7bdc
 selection_background #dd7bdc
-"####),
-    ("Sandstone Classic", r####"color0 #073642
+"####
+  ),
+  (
+    "Sandstone Classic",
+    r####"color0 #073642
 color1 #cf2522
 color2 #5d7b00
 color3 #865e00
@@ -9250,8 +10447,11 @@ cursor #3d5259
 cursor_text_color #fdf6e3
 foreground #3d5259
 selection_background #3d5259
-"####),
-    ("Sandstone Ink", r####"color0 #002b36
+"####
+  ),
+  (
+    "Sandstone Ink",
+    r####"color0 #002b36
 color1 #cf2522
 color2 #4b7000
 color3 #906800
@@ -9273,8 +10473,11 @@ cursor #2b3d45
 cursor_text_color #fdf6e3
 foreground #2b3d45
 selection_background #2b3d45
-"####),
-    ("Sandstone Warm", r####"color0 #2e2010
+"####
+  ),
+  (
+    "Sandstone Warm",
+    r####"color0 #2e2010
 color1 #cf2522
 color2 #5d7b00
 color3 #865e00
@@ -9296,8 +10499,11 @@ cursor #3e3220
 cursor_text_color #fdf6e3
 foreground #3e3220
 selection_background #3e3220
-"####),
-    ("Sauber", r####"color0 #14191e
+"####
+  ),
+  (
+    "Sauber",
+    r####"color0 #14191e
 color1 #b43c2a
 color2 #00c200
 color3 #c7c400
@@ -9319,8 +10525,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #1345f6
 selection_background #1345f6
-"####),
-    ("Scarlet Protocol", r####"color0 #101116
+"####
+  ),
+  (
+    "Scarlet Protocol",
+    r####"color0 #101116
 color1 #ff0051
 color2 #00dc84
 color3 #faf945
@@ -9342,8 +10551,11 @@ cursor #76ff9f
 cursor_text_color #a6a6a6
 foreground #e41951
 selection_background #e41951
-"####),
-    ("Sea Shells", r####"color0 #17384c
+"####
+  ),
+  (
+    "Sea Shells",
+    r####"color0 #17384c
 color1 #d15123
 color2 #027c9b
 color3 #fca02f
@@ -9365,8 +10577,11 @@ cursor #fca02f
 cursor_text_color #08131a
 foreground #deb88d
 selection_background #deb88d
-"####),
-    ("Seafoam Pastel", r####"color0 #757575
+"####
+  ),
+  (
+    "Seafoam Pastel",
+    r####"color0 #757575
 color1 #825d4d
 color2 #728c62
 color3 #ada16d
@@ -9388,8 +10603,11 @@ cursor #57647a
 cursor_text_color #323232
 foreground #d4e7d4
 selection_background #d4e7d4
-"####),
-    ("SeedFlip Abyss", r####"color0 #030308
+"####
+  ),
+  (
+    "SeedFlip Abyss",
+    r####"color0 #030308
 color1 #d26060
 color2 #60d286
 color3 #d2bf60
@@ -9411,8 +10629,11 @@ cursor #6e56cf
 cursor_text_color #050510
 foreground #e0e0f0
 selection_background #e0e0f0
-"####),
-    ("SeedFlip Amethyst", r####"color0 #d7d1cb
+"####
+  ),
+  (
+    "SeedFlip Amethyst",
+    r####"color0 #d7d1cb
 color1 #bd0f0f
 color2 #0fbd49
 color3 #bda00f
@@ -9434,8 +10655,11 @@ cursor #635bff
 cursor_text_color #1a0a2e
 foreground #1a0a2e
 selection_background #1a0a2e
-"####),
-    ("SeedFlip Canopy", r####"color0 #0b110f
+"####
+  ),
+  (
+    "SeedFlip Canopy",
+    r####"color0 #0b110f
 color1 #d65c5c
 color2 #5cd685
 color3 #d6c25c
@@ -9457,8 +10681,11 @@ cursor #3ecf8e
 cursor_text_color #0f1714
 foreground #ededed
 selection_background #ededed
-"####),
-    ("SeedFlip Carbon", r####"color0 #d4d4d4
+"####
+  ),
+  (
+    "SeedFlip Carbon",
+    r####"color0 #d4d4d4
 color1 #993333
 color2 #339955
 color3 #998833
@@ -9480,8 +10707,11 @@ cursor #000000
 cursor_text_color #404040
 foreground #000000
 selection_background #000000
-"####),
-    ("SeedFlip Coral", r####"color0 #d9d9d9
+"####
+  ),
+  (
+    "SeedFlip Coral",
+    r####"color0 #d9d9d9
 color1 #bd0f0f
 color2 #0fbd49
 color3 #bda00f
@@ -9503,8 +10733,11 @@ cursor #f24e1e
 cursor_text_color #1d1d1d
 foreground #1d1d1d
 selection_background #1d1d1d
-"####),
-    ("SeedFlip Ember", r####"color0 #050505
+"####
+  ),
+  (
+    "SeedFlip Ember",
+    r####"color0 #050505
 color1 #f04242
 color2 #42f07c
 color3 #f0d342
@@ -9526,8 +10759,11 @@ cursor #ff6b3d
 cursor_text_color #0a0a0a
 foreground #ededed
 selection_background #ededed
-"####),
-    ("SeedFlip Glacier", r####"color0 #c2d4e5
+"####
+  ),
+  (
+    "SeedFlip Glacier",
+    r####"color0 #c2d4e5
 color1 #bd0f0f
 color2 #0fbd49
 color3 #bda00f
@@ -9549,8 +10785,11 @@ cursor #0ea5e9
 cursor_text_color #0f172a
 foreground #0f172a
 selection_background #0f172a
-"####),
-    ("SeedFlip Inkwell", r####"color0 #050505
+"####
+  ),
+  (
+    "SeedFlip Inkwell",
+    r####"color0 #050505
 color1 #cc6666
 color2 #66cc88
 color3 #ccbb66
@@ -9572,8 +10811,11 @@ cursor #c8b8a0
 cursor_text_color #0a0a0a
 foreground #e8e4df
 selection_background #e8e4df
-"####),
-    ("SeedFlip Ivory", r####"color0 #d9d9d9
+"####
+  ),
+  (
+    "SeedFlip Ivory",
+    r####"color0 #d9d9d9
 color1 #bd0f0f
 color2 #0fbd49
 color3 #bda00f
@@ -9595,8 +10837,11 @@ cursor #635bff
 cursor_text_color #0a2540
 foreground #0a2540
 selection_background #0a2540
-"####),
-    ("SeedFlip Nightfall", r####"color0 #060609
+"####
+  ),
+  (
+    "SeedFlip Nightfall",
+    r####"color0 #060609
 color1 #f04242
 color2 #42f07c
 color3 #f0d342
@@ -9618,8 +10863,11 @@ cursor #818cf8
 cursor_text_color #0a0a0f
 foreground #e4e4e7
 selection_background #e4e4e7
-"####),
-    ("SeedFlip Phosphor", r####"color0 #070707
+"####
+  ),
+  (
+    "SeedFlip Phosphor",
+    r####"color0 #070707
 color1 #f04242
 color2 #42f07c
 color3 #f0d342
@@ -9641,8 +10889,11 @@ cursor #00ff88
 cursor_text_color #0c0c0c
 foreground #b3ffb3
 selection_background #b3ffb3
-"####),
-    ("SeedFlip Pulse", r####"color0 #0d0d0d
+"####
+  ),
+  (
+    "SeedFlip Pulse",
+    r####"color0 #0d0d0d
 color1 #e34f4f
 color2 #4fe380
 color3 #e3cb4f
@@ -9664,8 +10915,11 @@ cursor #1db954
 cursor_text_color #121212
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("SeedFlip Ultraviolet", r####"color0 #05000a
+"####
+  ),
+  (
+    "SeedFlip Ultraviolet",
+    r####"color0 #05000a
 color1 #f04242
 color2 #42f07c
 color3 #f0d342
@@ -9687,8 +10941,11 @@ cursor #c77dff
 cursor_text_color #0b0014
 foreground #e8e0f5
 selection_background #e8e0f5
-"####),
-    ("SeedFlip Voltage", r####"color0 #050505
+"####
+  ),
+  (
+    "SeedFlip Voltage",
+    r####"color0 #050505
 color1 #f04242
 color2 #42f07c
 color3 #f0d342
@@ -9710,8 +10967,11 @@ cursor #a6ff00
 cursor_text_color #0a0a0a
 foreground #f0f0f0
 selection_background #f0f0f0
-"####),
-    ("SeedFlip Wavelength", r####"color0 #090c10
+"####
+  ),
+  (
+    "SeedFlip Wavelength",
+    r####"color0 #090c10
 color1 #d55d5d
 color2 #5dd585
 color3 #d5c15d
@@ -9733,8 +10993,11 @@ cursor #238636
 cursor_text_color #0d1117
 foreground #e6edf3
 selection_background #e6edf3
-"####),
-    ("Selenized Black", r####"color0 #252525
+"####
+  ),
+  (
+    "Selenized Black",
+    r####"color0 #252525
 color1 #ed4a46
 color2 #70b433
 color3 #dbb32d
@@ -9756,8 +11019,11 @@ cursor #777777
 cursor_text_color #181818
 foreground #b9b9b9
 selection_background #b9b9b9
-"####),
-    ("Selenized Dark", r####"color0 #184956
+"####
+  ),
+  (
+    "Selenized Dark",
+    r####"color0 #184956
 color1 #fa5750
 color2 #75b938
 color3 #dbb32d
@@ -9779,8 +11045,11 @@ cursor #adbcbc
 cursor_text_color #103c48
 foreground #adbcbc
 selection_background #adbcbc
-"####),
-    ("Selenized Light", r####"color0 #ece3cc
+"####
+  ),
+  (
+    "Selenized Light",
+    r####"color0 #ece3cc
 color1 #d2212d
 color2 #489100
 color3 #ad8900
@@ -9802,8 +11071,11 @@ cursor #53676d
 cursor_text_color #fbf3db
 foreground #53676d
 selection_background #53676d
-"####),
-    ("Seoulbones Dark", r####"color0 #4b4b4b
+"####
+  ),
+  (
+    "Seoulbones Dark",
+    r####"color0 #4b4b4b
 color1 #e388a3
 color2 #98bd99
 color3 #ffdf9b
@@ -9825,8 +11097,11 @@ cursor #e2e2e2
 cursor_text_color #4b4b4b
 foreground #dddddd
 selection_background #dddddd
-"####),
-    ("Seoulbones Light", r####"color0 #e2e2e2
+"####
+  ),
+  (
+    "Seoulbones Light",
+    r####"color0 #e2e2e2
 color1 #dc5284
 color2 #628562
 color3 #c48562
@@ -9848,8 +11123,11 @@ cursor #555555
 cursor_text_color #e2e2e2
 foreground #555555
 selection_background #555555
-"####),
-    ("Sequoia Monochrome Dark", r####"color0 #131317
+"####
+  ),
+  (
+    "Sequoia Monochrome Dark",
+    r####"color0 #131317
 color1 #999eb2
 color2 #626983
 color3 #d3d5de
@@ -9871,8 +11149,11 @@ cursor #43444d
 cursor_text_color #868690
 foreground #868690
 selection_background #868690
-"####),
-    ("Sequoia Monochrome Light", r####"color0 #d4d5dc
+"####
+  ),
+  (
+    "Sequoia Monochrome Light",
+    r####"color0 #d4d5dc
 color1 #525666
 color2 #2e3038
 color3 #50535e
@@ -9894,8 +11175,11 @@ cursor #565760
 cursor_text_color #282930
 foreground #282930
 selection_background #282930
-"####),
-    ("Sequoia Moonlight Dark", r####"color0 #131317
+"####
+  ),
+  (
+    "Sequoia Moonlight Dark",
+    r####"color0 #131317
 color1 #f58ee0
 color2 #8eb6f5
 color3 #9898a6
@@ -9917,8 +11201,11 @@ cursor #43444d
 cursor_text_color #868690
 foreground #868690
 selection_background #868690
-"####),
-    ("Sequoia Moonlight Light", r####"color0 #d4d5dc
+"####
+  ),
+  (
+    "Sequoia Moonlight Light",
+    r####"color0 #d4d5dc
 color1 #c94da8
 color2 #4a85d4
 color3 #6a6a78
@@ -9940,8 +11227,11 @@ cursor #565760
 cursor_text_color #282930
 foreground #282930
 selection_background #282930
-"####),
-    ("Sequoia Retro Dark", r####"color0 #131317
+"####
+  ),
+  (
+    "Sequoia Retro Dark",
+    r####"color0 #131317
 color1 #829fa7
 color2 #648f68
 color3 #da674b
@@ -9963,8 +11253,11 @@ cursor #43444d
 cursor_text_color #868690
 foreground #868690
 selection_background #868690
-"####),
-    ("Sequoia Retro Light", r####"color0 #d4d5dc
+"####
+  ),
+  (
+    "Sequoia Retro Light",
+    r####"color0 #d4d5dc
 color1 #5f7982
 color2 #4a704e
 color3 #bf5238
@@ -9986,8 +11279,11 @@ cursor #565760
 cursor_text_color #282930
 foreground #282930
 selection_background #282930
-"####),
-    ("Serendipity Midnight", r####"color0 #232534
+"####
+  ),
+  (
+    "Serendipity Midnight",
+    r####"color0 #232534
 color1 #ee8679
 color2 #5ba2d0
 color3 #a78bfa
@@ -10009,8 +11305,11 @@ cursor #6b6d7c
 cursor_text_color #dee0ef
 foreground #dee0ef
 selection_background #dee0ef
-"####),
-    ("Serendipity Morning", r####"color0 #ccd0dc
+"####
+  ),
+  (
+    "Serendipity Morning",
+    r####"color0 #ccd0dc
 color1 #c25a4d
 color2 #2f7aab
 color3 #785fd0
@@ -10032,8 +11331,11 @@ cursor #6d7296
 cursor_text_color #3f4363
 foreground #3f4363
 selection_background #3f4363
-"####),
-    ("Serendipity Sunset", r####"color0 #363847
+"####
+  ),
+  (
+    "Serendipity Sunset",
+    r####"color0 #363847
 color1 #d1918f
 color2 #709bbd
 color3 #a392dc
@@ -10055,8 +11357,11 @@ cursor #8d8f9e
 cursor_text_color #dee0ef
 foreground #dee0ef
 selection_background #dee0ef
-"####),
-    ("Seti", r####"color0 #323232
+"####
+  ),
+  (
+    "Seti",
+    r####"color0 #323232
 color1 #c22832
 color2 #8ec43d
 color3 #e0c64f
@@ -10078,8 +11383,11 @@ cursor #e3bf21
 cursor_text_color #ad8b00
 foreground #cacecd
 selection_background #cacecd
-"####),
-    ("Shades Of Purple", r####"color0 #000000
+"####
+  ),
+  (
+    "Shades Of Purple",
+    r####"color0 #000000
 color1 #d90429
 color2 #3ad900
 color3 #ffe700
@@ -10101,8 +11409,11 @@ cursor #fad000
 cursor_text_color #98998e
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Shaman", r####"color0 #012026
+"####
+  ),
+  (
+    "Shaman",
+    r####"color0 #012026
 color1 #b2302d
 color2 #00a941
 color3 #5e8baa
@@ -10124,8 +11435,11 @@ cursor #4afcd6
 cursor_text_color #031413
 foreground #405555
 selection_background #405555
-"####),
-    ("Shokunin", r####"color0 #303841
+"####
+  ),
+  (
+    "Shokunin",
+    r####"color0 #303841
 color1 #c84053
 color2 #157a5b
 color3 #9a6000
@@ -10147,8 +11461,11 @@ cursor #3a3e44
 cursor_text_color #fcfaf2
 foreground #303841
 selection_background #303841
-"####),
-    ("Slate", r####"color0 #222222
+"####
+  ),
+  (
+    "Slate",
+    r####"color0 #222222
 color1 #e2a8bf
 color2 #81d778
 color3 #c4c9c0
@@ -10170,8 +11487,11 @@ cursor #87d3c4
 cursor_text_color #323232
 foreground #35b1d2
 selection_background #35b1d2
-"####),
-    ("Sleepy Hollow", r####"color0 #572100
+"####
+  ),
+  (
+    "Sleepy Hollow",
+    r####"color0 #572100
 color1 #ba3934
 color2 #91773f
 color3 #b55600
@@ -10193,8 +11513,11 @@ cursor #af9a91
 cursor_text_color #391a02
 foreground #af9a91
 selection_background #af9a91
-"####),
-    ("Smyck", r####"color0 #000000
+"####
+  ),
+  (
+    "Smyck",
+    r####"color0 #000000
 color1 #b84131
 color2 #7da900
 color3 #c4a500
@@ -10216,8 +11539,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #f7f7f7
 selection_background #f7f7f7
-"####),
-    ("Snazzy Soft", r####"color0 #000000
+"####
+  ),
+  (
+    "Snazzy Soft",
+    r####"color0 #000000
 color1 #ff5c57
 color2 #5af78e
 color3 #f3f99d
@@ -10239,8 +11565,11 @@ cursor #eaeaea
 cursor_text_color #282a36
 foreground #eff0eb
 selection_background #eff0eb
-"####),
-    ("Snazzy", r####"color0 #000000
+"####
+  ),
+  (
+    "Snazzy",
+    r####"color0 #000000
 color1 #fc4346
 color2 #50fb7c
 color3 #f0fb8c
@@ -10262,8 +11591,11 @@ cursor #e4e4e4
 cursor_text_color #a9a9a9
 foreground #ebece6
 selection_background #ebece6
-"####),
-    ("Soft Server", r####"color0 #000000
+"####
+  ),
+  (
+    "Soft Server",
+    r####"color0 #000000
 color1 #a2686a
 color2 #9aa56a
 color3 #a3906a
@@ -10285,8 +11617,11 @@ cursor #d2e0de
 cursor_text_color #000000
 foreground #99a3a2
 selection_background #99a3a2
-"####),
-    ("Solarized Darcula", r####"color0 #25292a
+"####
+  ),
+  (
+    "Solarized Darcula",
+    r####"color0 #25292a
 color1 #f24840
 color2 #629655
 color3 #b68800
@@ -10308,8 +11643,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #d2d8d9
 selection_background #d2d8d9
-"####),
-    ("Solarized Dark Higher Contrast", r####"color0 #002831
+"####
+  ),
+  (
+    "Solarized Dark Higher Contrast",
+    r####"color0 #002831
 color1 #d11c24
 color2 #6cbe6c
 color3 #a57706
@@ -10331,8 +11669,11 @@ cursor #f34b00
 cursor_text_color #002831
 foreground #9cc2c3
 selection_background #9cc2c3
-"####),
-    ("Solarized Dark Patched", r####"color0 #002831
+"####
+  ),
+  (
+    "Solarized Dark Patched",
+    r####"color0 #002831
 color1 #d11c24
 color2 #738a05
 color3 #a57706
@@ -10354,8 +11695,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #708284
 selection_background #708284
-"####),
-    ("Solarized Osaka Night", r####"color0 #15161e
+"####
+  ),
+  (
+    "Solarized Osaka Night",
+    r####"color0 #15161e
 color1 #f7768e
 color2 #9ece6a
 color3 #e0af68
@@ -10377,8 +11721,11 @@ cursor #c0caf5
 cursor_text_color #1a1b26
 foreground #c0caf5
 selection_background #c0caf5
-"####),
-    ("Sonokai", r####"color0 #181819
+"####
+  ),
+  (
+    "Sonokai",
+    r####"color0 #181819
 color1 #fc5d7c
 color2 #9ed072
 color3 #e7c664
@@ -10400,8 +11747,11 @@ cursor #e2e2e3
 cursor_text_color #2c2e34
 foreground #e2e2e3
 selection_background #e2e2e3
-"####),
-    ("Spacedust", r####"color0 #6e5346
+"####
+  ),
+  (
+    "Spacedust",
+    r####"color0 #6e5346
 color1 #e35b00
 color2 #5cab96
 color3 #e3cd7b
@@ -10423,8 +11773,11 @@ cursor #708284
 cursor_text_color #002831
 foreground #ecf0c1
 selection_background #ecf0c1
-"####),
-    ("Spacegray Bright", r####"color0 #080808
+"####
+  ),
+  (
+    "Spacegray Bright",
+    r####"color0 #080808
 color1 #bc5553
 color2 #a0b56c
 color3 #f6c987
@@ -10446,8 +11799,11 @@ cursor #c6c6c6
 cursor_text_color #8c8c8c
 foreground #f3f3f3
 selection_background #f3f3f3
-"####),
-    ("Spacegray Eighties Dull", r####"color0 #15171c
+"####
+  ),
+  (
+    "Spacegray Eighties Dull",
+    r####"color0 #15171c
 color1 #b24a56
 color2 #92b477
 color3 #c6735a
@@ -10469,8 +11825,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #c9c6bc
 selection_background #c9c6bc
-"####),
-    ("Spacegray Eighties", r####"color0 #15171c
+"####
+  ),
+  (
+    "Spacegray Eighties",
+    r####"color0 #15171c
 color1 #ec5f67
 color2 #81a764
 color3 #fec254
@@ -10492,8 +11851,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #bdbaae
 selection_background #bdbaae
-"####),
-    ("Spacegray", r####"color0 #000000
+"####
+  ),
+  (
+    "Spacegray",
+    r####"color0 #000000
 color1 #b04b57
 color2 #87b379
 color3 #e5c179
@@ -10515,8 +11877,11 @@ cursor #b3b8c3
 cursor_text_color #1d1f21
 foreground #b3b8c3
 selection_background #b3b8c3
-"####),
-    ("Spiderman", r####"color0 #1b1d1e
+"####
+  ),
+  (
+    "Spiderman",
+    r####"color0 #1b1d1e
 color1 #e60813
 color2 #e22928
 color3 #e24756
@@ -10538,8 +11903,11 @@ cursor #2c3fff
 cursor_text_color #000000
 foreground #e3e3e3
 selection_background #e3e3e3
-"####),
-    ("Spring", r####"color0 #000000
+"####
+  ),
+  (
+    "Spring",
+    r####"color0 #000000
 color1 #ff4d83
 color2 #1f8c3b
 color3 #1fc95b
@@ -10561,8 +11929,11 @@ cursor #4d4d4c
 cursor_text_color #ffffff
 foreground #4d4d4c
 selection_background #4d4d4c
-"####),
-    ("Square", r####"color0 #050505
+"####
+  ),
+  (
+    "Square",
+    r####"color0 #050505
 color1 #e9897c
 color2 #b6377d
 color3 #ecebbe
@@ -10584,8 +11955,11 @@ cursor #fcfbcc
 cursor_text_color #000000
 foreground #acacab
 selection_background #acacab
-"####),
-    ("Squintless", r####"color0 #f2e5bc
+"####
+  ),
+  (
+    "Squintless",
+    r####"color0 #f2e5bc
 color1 #9d0006
 color2 #79740e
 color3 #b57614
@@ -10607,8 +11981,11 @@ cursor #282828
 cursor_text_color #f2e5bc
 foreground #3c3836
 selection_background #3c3836
-"####),
-    ("Squirrelsong Dark", r####"color0 #372920
+"####
+  ),
+  (
+    "Squirrelsong Dark",
+    r####"color0 #372920
 color1 #ba4138
 color2 #468336
 color3 #d4b139
@@ -10630,8 +12007,11 @@ cursor #b19b89
 cursor_text_color #372920
 foreground #b19b89
 selection_background #b19b89
-"####),
-    ("Srcery", r####"color0 #1c1b19
+"####
+  ),
+  (
+    "Srcery",
+    r####"color0 #1c1b19
 color1 #ef2f27
 color2 #519f50
 color3 #fbb829
@@ -10653,8 +12033,11 @@ cursor #fbb829
 cursor_text_color #1c1b19
 foreground #fce8c3
 selection_background #fce8c3
-"####),
-    ("Starlight", r####"color0 #242424
+"####
+  ),
+  (
+    "Starlight",
+    r####"color0 #242424
 color1 #f62b5a
 color2 #47b413
 color3 #e3c401
@@ -10676,8 +12059,11 @@ cursor #ffffff
 cursor_text_color #242424
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Sublette", r####"color0 #253045
+"####
+  ),
+  (
+    "Sublette",
+    r####"color0 #253045
 color1 #ee5577
 color2 #55ee77
 color3 #ffdd88
@@ -10699,8 +12085,11 @@ cursor #ccced0
 cursor_text_color #202535
 foreground #ccced0
 selection_background #ccced0
-"####),
-    ("Subliminal", r####"color0 #7f7f7f
+"####
+  ),
+  (
+    "Subliminal",
+    r####"color0 #7f7f7f
 color1 #e15a60
 color2 #a9cfa4
 color3 #ffe2a9
@@ -10722,8 +12111,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #d4d4d4
 selection_background #d4d4d4
-"####),
-    ("Sugarplum", r####"color0 #111147
+"####
+  ),
+  (
+    "Sugarplum",
+    r####"color0 #111147
 color1 #5ca8dc
 color2 #53b397
 color3 #249a84
@@ -10745,8 +12137,11 @@ cursor #53b397
 cursor_text_color #93f3d7
 foreground #db7ddd
 selection_background #db7ddd
-"####),
-    ("Sumi Linen", r####"color0 #3a342c
+"####
+  ),
+  (
+    "Sumi Linen",
+    r####"color0 #3a342c
 color1 #b83830
 color2 #2e8050
 color3 #a87820
@@ -10768,8 +12163,11 @@ cursor #18786c
 cursor_text_color #e6dfd0
 foreground #1c1814
 selection_background #1c1814
-"####),
-    ("Sumi Phosphor", r####"color0 #1e1a16
+"####
+  ),
+  (
+    "Sumi Phosphor",
+    r####"color0 #1e1a16
 color1 #d45848
 color2 #5ca868
 color3 #d4a03c
@@ -10791,8 +12189,11 @@ cursor #2ec4b6
 cursor_text_color #12100e
 foreground #bab4a8
 selection_background #bab4a8
-"####),
-    ("Sundried", r####"color0 #302b2a
+"####
+  ),
+  (
+    "Sundried",
+    r####"color0 #302b2a
 color1 #a7463d
 color2 #587744
 color3 #9d602a
@@ -10814,8 +12215,11 @@ cursor #ffffff
 cursor_text_color #191717
 foreground #c9c9c9
 selection_background #c9c9c9
-"####),
-    ("Sunset Drive", r####"color0 #0a0a13
+"####
+  ),
+  (
+    "Sunset Drive",
+    r####"color0 #0a0a13
 color1 #ff0063
 color2 #00f992
 color3 #ffe900
@@ -10837,8 +12241,11 @@ cursor #ededfe
 cursor_text_color #0f0f1a
 foreground #ededfe
 selection_background #ededfe
-"####),
-    ("Symfonic", r####"color0 #000000
+"####
+  ),
+  (
+    "Symfonic",
+    r####"color0 #000000
 color1 #dc322f
 color2 #56db3a
 color3 #ff8400
@@ -10860,8 +12267,11 @@ cursor #dc322f
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Synthwave Alpha", r####"color0 #241b30
+"####
+  ),
+  (
+    "Synthwave Alpha",
+    r####"color0 #241b30
 color1 #e60a70
 color2 #00986c
 color3 #adad3e
@@ -10883,8 +12293,11 @@ cursor #f2f2e3
 cursor_text_color #241b30
 foreground #f2f2e3
 selection_background #f2f2e3
-"####),
-    ("Synthwave Everything", r####"color0 #fefefe
+"####
+  ),
+  (
+    "Synthwave Everything",
+    r####"color0 #fefefe
 color1 #f97e72
 color2 #72f1b8
 color3 #fede5d
@@ -10906,8 +12319,11 @@ cursor #72f1b8
 cursor_text_color #1a1a1a
 foreground #f0eff1
 selection_background #f0eff1
-"####),
-    ("Synthwave", r####"color0 #000000
+"####
+  ),
+  (
+    "Synthwave",
+    r####"color0 #000000
 color1 #f6188f
 color2 #1ebb2b
 color3 #fdf834
@@ -10929,8 +12345,11 @@ cursor #19cde6
 cursor_text_color #ffffed
 foreground #dad9c7
 selection_background #dad9c7
-"####),
-    ("Tango Adapted", r####"color0 #000000
+"####
+  ),
+  (
+    "Tango Adapted",
+    r####"color0 #000000
 color1 #ff0000
 color2 #59d600
 color3 #e3be00
@@ -10952,8 +12371,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Tango Half Adapted", r####"color0 #000000
+"####
+  ),
+  (
+    "Tango Half Adapted",
+    r####"color0 #000000
 color1 #ff0000
 color2 #4cc300
 color3 #e2c000
@@ -10975,8 +12397,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Tearout", r####"color0 #685742
+"####
+  ),
+  (
+    "Tearout",
+    r####"color0 #685742
 color1 #cc967b
 color2 #97976d
 color3 #6c9861
@@ -10998,8 +12423,11 @@ cursor #d7c483
 cursor_text_color #141415
 foreground #f4d2ae
 selection_background #f4d2ae
-"####),
-    ("Teerb", r####"color0 #1c1c1c
+"####
+  ),
+  (
+    "Teerb",
+    r####"color0 #1c1c1c
 color1 #d68686
 color2 #aed686
 color3 #d7af87
@@ -11021,8 +12449,11 @@ cursor #e4c9af
 cursor_text_color #000000
 foreground #d0d0d0
 selection_background #d0d0d0
-"####),
-    ("Terafox", r####"color0 #2f3239
+"####
+  ),
+  (
+    "Terafox",
+    r####"color0 #2f3239
 color1 #e85c51
 color2 #7aa4a1
 color3 #fda47f
@@ -11044,8 +12475,11 @@ cursor #e6eaea
 cursor_text_color #152528
 foreground #e6eaea
 selection_background #e6eaea
-"####),
-    ("Terminal Basic Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Terminal Basic Dark",
+    r####"color0 #000000
 color1 #c65339
 color2 #6ac44b
 color3 #b8b74a
@@ -11067,8 +12501,11 @@ cursor #9d9d9d
 cursor_text_color #1d1e1d
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Terminal Basic", r####"color0 #000000
+"####
+  ),
+  (
+    "Terminal Basic",
+    r####"color0 #000000
 color1 #990000
 color2 #00a600
 color3 #999900
@@ -11090,8 +12527,11 @@ cursor #7f7f7f
 cursor_text_color #000000
 foreground #000000
 selection_background #000000
-"####),
-    ("Thayer Bright", r####"color0 #1b1d1e
+"####
+  ),
+  (
+    "Thayer Bright",
+    r####"color0 #1b1d1e
 color1 #f92672
 color2 #4df840
 color3 #f4fd22
@@ -11113,8 +12553,11 @@ cursor #fc971f
 cursor_text_color #000000
 foreground #f8f8f8
 selection_background #f8f8f8
-"####),
-    ("The Hulk", r####"color0 #1b1d1e
+"####
+  ),
+  (
+    "The Hulk",
+    r####"color0 #1b1d1e
 color1 #269d1b
 color2 #13ce30
 color3 #63e457
@@ -11136,8 +12579,11 @@ cursor #16b61b
 cursor_text_color #000000
 foreground #b5b5b5
 selection_background #b5b5b5
-"####),
-    ("Tinacious Design Dark", r####"color0 #1d1d26
+"####
+  ),
+  (
+    "Tinacious Design Dark",
+    r####"color0 #1d1d26
 color1 #ff3399
 color2 #00d364
 color3 #ffcc66
@@ -11159,8 +12605,11 @@ cursor #cbcbf0
 cursor_text_color #999999
 foreground #cbcbf0
 selection_background #cbcbf0
-"####),
-    ("Tinacious Design Light", r####"color0 #1d1d26
+"####
+  ),
+  (
+    "Tinacious Design Light",
+    r####"color0 #1d1d26
 color1 #ff3399
 color2 #00d364
 color3 #e5b24d
@@ -11182,8 +12631,11 @@ cursor #b1b1d6
 cursor_text_color #ffffff
 foreground #1d1d26
 selection_background #1d1d26
-"####),
-    ("Token Dark", r####"color0 #1d1d1c
+"####
+  ),
+  (
+    "Token Dark",
+    r####"color0 #1d1d1c
 color1 #c67777
 color2 #7da47a
 color3 #c4a855
@@ -11205,8 +12657,11 @@ cursor #e8e4dc
 cursor_text_color #262624
 foreground #e8e4dc
 selection_background #e8e4dc
-"####),
-    ("Token Light", r####"color0 #2a2920
+"####
+  ),
+  (
+    "Token Light",
+    r####"color0 #2a2920
 color1 #b05555
 color2 #3f643c
 color3 #6e5c20
@@ -11228,8 +12683,11 @@ cursor #2a2920
 cursor_text_color #faf9f5
 foreground #2a2920
 selection_background #2a2920
-"####),
-    ("TokyoNight Day", r####"color0 #e9e9ed
+"####
+  ),
+  (
+    "TokyoNight Day",
+    r####"color0 #e9e9ed
 color1 #f52a65
 color2 #587539
 color3 #8c6c3e
@@ -11251,8 +12709,11 @@ cursor #3760bf
 cursor_text_color #e1e2e7
 foreground #3760bf
 selection_background #3760bf
-"####),
-    ("TokyoNight Moon", r####"color0 #1b1d2b
+"####
+  ),
+  (
+    "TokyoNight Moon",
+    r####"color0 #1b1d2b
 color1 #ff757f
 color2 #c3e88d
 color3 #ffc777
@@ -11274,8 +12735,11 @@ cursor #c8d3f5
 cursor_text_color #222436
 foreground #c8d3f5
 selection_background #c8d3f5
-"####),
-    ("TokyoNight Night", r####"color0 #15161e
+"####
+  ),
+  (
+    "TokyoNight Night",
+    r####"color0 #15161e
 color1 #f7768e
 color2 #9ece6a
 color3 #e0af68
@@ -11297,8 +12761,11 @@ cursor #c0caf5
 cursor_text_color #1a1b26
 foreground #c0caf5
 selection_background #c0caf5
-"####),
-    ("TokyoNight Storm", r####"color0 #1d202f
+"####
+  ),
+  (
+    "TokyoNight Storm",
+    r####"color0 #1d202f
 color1 #f7768e
 color2 #9ece6a
 color3 #e0af68
@@ -11320,8 +12787,11 @@ cursor #c0caf5
 cursor_text_color #1d202f
 foreground #c0caf5
 selection_background #c0caf5
-"####),
-    ("TokyoNight", r####"color0 #15161e
+"####
+  ),
+  (
+    "TokyoNight",
+    r####"color0 #15161e
 color1 #f7768e
 color2 #9ece6a
 color3 #e0af68
@@ -11343,8 +12813,11 @@ cursor #c0caf5
 cursor_text_color #15161e
 foreground #c0caf5
 selection_background #c0caf5
-"####),
-    ("Tomorrow Night Blue", r####"color0 #000000
+"####
+  ),
+  (
+    "Tomorrow Night Blue",
+    r####"color0 #000000
 color1 #ff9da4
 color2 #d1f1a9
 color3 #ffeead
@@ -11366,8 +12839,11 @@ cursor #ffffff
 cursor_text_color #003f8e
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Tomorrow Night Bright", r####"color0 #000000
+"####
+  ),
+  (
+    "Tomorrow Night Bright",
+    r####"color0 #000000
 color1 #d54e53
 color2 #b9ca4a
 color3 #e7c547
@@ -11389,8 +12865,11 @@ cursor #eaeaea
 cursor_text_color #000000
 foreground #eaeaea
 selection_background #eaeaea
-"####),
-    ("Tomorrow Night Burns", r####"color0 #252525
+"####
+  ),
+  (
+    "Tomorrow Night Burns",
+    r####"color0 #252525
 color1 #832e31
 color2 #a63c40
 color3 #d3494e
@@ -11412,8 +12891,11 @@ cursor #ff443e
 cursor_text_color #b0c2c4
 foreground #a1b0b8
 selection_background #a1b0b8
-"####),
-    ("Tomorrow Night Eighties", r####"color0 #000000
+"####
+  ),
+  (
+    "Tomorrow Night Eighties",
+    r####"color0 #000000
 color1 #f2777a
 color2 #99cc99
 color3 #ffcc66
@@ -11435,8 +12917,11 @@ cursor #cccccc
 cursor_text_color #2d2d2d
 foreground #cccccc
 selection_background #cccccc
-"####),
-    ("Tomorrow Night", r####"color0 #000000
+"####
+  ),
+  (
+    "Tomorrow Night",
+    r####"color0 #000000
 color1 #cc6666
 color2 #b5bd68
 color3 #f0c674
@@ -11458,8 +12943,11 @@ cursor #c5c8c6
 cursor_text_color #1d1f21
 foreground #c5c8c6
 selection_background #c5c8c6
-"####),
-    ("Tomorrow", r####"color0 #000000
+"####
+  ),
+  (
+    "Tomorrow",
+    r####"color0 #000000
 color1 #c82829
 color2 #718c00
 color3 #eab700
@@ -11481,8 +12969,11 @@ cursor #4d4d4c
 cursor_text_color #ffffff
 foreground #4d4d4c
 selection_background #4d4d4c
-"####),
-    ("Toy Chest", r####"color0 #2c3f58
+"####
+  ),
+  (
+    "Toy Chest",
+    r####"color0 #2c3f58
 color1 #be2d26
 color2 #1a9172
 color3 #db8e27
@@ -11504,8 +12995,11 @@ cursor #d5d5d5
 cursor_text_color #141c25
 foreground #31d07b
 selection_background #31d07b
-"####),
-    ("Trapped in Amber", r####"color0 #4a3220
+"####
+  ),
+  (
+    "Trapped in Amber",
+    r####"color0 #4a3220
 color1 #e05c1c
 color2 #7a9c4a
 color3 #f0a020
@@ -11527,8 +13021,11 @@ cursor #ffc940
 cursor_text_color #0a1017
 foreground #f0a020
 selection_background #f0a020
-"####),
-    ("Treehouse", r####"color0 #321300
+"####
+  ),
+  (
+    "Treehouse",
+    r####"color0 #321300
 color1 #b2270e
 color2 #44a900
 color3 #aa820c
@@ -11550,8 +13047,11 @@ cursor #fac814
 cursor_text_color #191919
 foreground #786b53
 selection_background #786b53
-"####),
-    ("Twilight", r####"color0 #141414
+"####
+  ),
+  (
+    "Twilight",
+    r####"color0 #141414
 color1 #c06d44
 color2 #afb97a
 color3 #c2a86c
@@ -11573,8 +13073,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #ffffd4
 selection_background #ffffd4
-"####),
-    ("Ubuntu", r####"color0 #2e3436
+"####
+  ),
+  (
+    "Ubuntu",
+    r####"color0 #2e3436
 color1 #cc0000
 color2 #4e9a06
 color3 #c4a000
@@ -11596,8 +13099,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #eeeeec
 selection_background #eeeeec
-"####),
-    ("Ultra Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "Ultra Dark",
+    r####"color0 #000000
 color1 #f07178
 color2 #c3e88d
 color3 #ffcb6b
@@ -11619,8 +13125,11 @@ cursor #fefefe
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Ultra Violent", r####"color0 #242728
+"####
+  ),
+  (
+    "Ultra Violent",
+    r####"color0 #242728
 color1 #ff0090
 color2 #b6ff00
 color3 #fff727
@@ -11642,8 +13151,11 @@ cursor #c1c1c1
 cursor_text_color #ffffff
 foreground #c1c1c1
 selection_background #c1c1c1
-"####),
-    ("Under The Sea", r####"color0 #022026
+"####
+  ),
+  (
+    "Under The Sea",
+    r####"color0 #022026
 color1 #b2302d
 color2 #00a941
 color3 #59819c
@@ -11665,8 +13177,11 @@ cursor #4afcd6
 cursor_text_color #031413
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Unikitty", r####"color0 #0c0c0c
+"####
+  ),
+  (
+    "Unikitty",
+    r####"color0 #0c0c0c
 color1 #a80f20
 color2 #c7ff98
 color3 #fff964
@@ -11690,8 +13205,11 @@ foreground #0b0b0b
 selection_background #0b0b0b
 underline_color #38a276
 url_color #38a276
-"####),
-    ("Urple", r####"color0 #000000
+"####
+  ),
+  (
+    "Urple",
+    r####"color0 #000000
 color1 #b0425b
 color2 #37a415
 color3 #ad5c42
@@ -11713,8 +13231,11 @@ cursor #a063eb
 cursor_text_color #1b1b22
 foreground #877a9b
 selection_background #877a9b
-"####),
-    ("Vague", r####"color0 #252530
+"####
+  ),
+  (
+    "Vague",
+    r####"color0 #252530
 color1 #d8647e
 color2 #7fa563
 color3 #f3be7c
@@ -11736,8 +13257,11 @@ cursor #cdcdcd
 cursor_text_color #141415
 foreground #cdcdcd
 selection_background #cdcdcd
-"####),
-    ("Vaughn", r####"color0 #25234f
+"####
+  ),
+  (
+    "Vaughn",
+    r####"color0 #25234f
 color1 #705050
 color2 #60b48a
 color3 #dfaf8f
@@ -11759,8 +13283,11 @@ cursor #ff5555
 cursor_text_color #ffffff
 foreground #dcdccc
 selection_background #dcdccc
-"####),
-    ("Vercel", r####"color0 #000000
+"####
+  ),
+  (
+    "Vercel",
+    r####"color0 #000000
 color1 #fc0036
 color2 #29a948
 color3 #ffae00
@@ -11782,8 +13309,11 @@ cursor #f32882
 cursor_text_color #fafafa
 foreground #fafafa
 selection_background #fafafa
-"####),
-    ("Vesper", r####"color0 #101010
+"####
+  ),
+  (
+    "Vesper",
+    r####"color0 #101010
 color1 #f5a191
 color2 #90b99f
 color3 #e6b99d
@@ -11805,8 +13335,11 @@ cursor #acb1ab
 cursor_text_color #ffffff
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Vibrant Ink", r####"color0 #878787
+"####
+  ),
+  (
+    "Vibrant Ink",
+    r####"color0 #878787
 color1 #ff6600
 color2 #ccff04
 color3 #ffcc00
@@ -11828,8 +13361,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Vimbones", r####"color0 #f0f0ca
+"####
+  ),
+  (
+    "Vimbones",
+    r####"color0 #f0f0ca
 color1 #a8334c
 color2 #4f6c31
 color3 #944927
@@ -11851,8 +13387,11 @@ cursor #353535
 cursor_text_color #f0f0ca
 foreground #353535
 selection_background #353535
-"####),
-    ("Violet Dark", r####"color0 #56595c
+"####
+  ),
+  (
+    "Violet Dark",
+    r####"color0 #56595c
 color1 #c94c22
 color2 #85981c
 color3 #b4881d
@@ -11874,8 +13413,11 @@ cursor #708284
 cursor_text_color #1c1d1f
 foreground #708284
 selection_background #708284
-"####),
-    ("Violet Light", r####"color0 #56595c
+"####
+  ),
+  (
+    "Violet Light",
+    r####"color0 #56595c
 color1 #c94c22
 color2 #85981c
 color3 #b4881d
@@ -11897,8 +13439,11 @@ cursor #536870
 cursor_text_color #fcf4dc
 foreground #536870
 selection_background #536870
-"####),
-    ("Violite", r####"color0 #241c36
+"####
+  ),
+  (
+    "Violite",
+    r####"color0 #241c36
 color1 #ec7979
 color2 #79ecb3
 color3 #ece279
@@ -11920,8 +13465,11 @@ cursor #eef4f6
 cursor_text_color #241c36
 foreground #eef4f6
 selection_background #eef4f6
-"####),
-    ("Warm Neon", r####"color0 #000000
+"####
+  ),
+  (
+    "Warm Neon",
+    r####"color0 #000000
 color1 #e24346
 color2 #39b13a
 color3 #dae145
@@ -11943,8 +13491,11 @@ cursor #30ff24
 cursor_text_color #0bbc04
 foreground #afdab6
 selection_background #afdab6
-"####),
-    ("Wez", r####"color0 #000000
+"####
+  ),
+  (
+    "Wez",
+    r####"color0 #000000
 color1 #cc5555
 color2 #55cc55
 color3 #cdcd55
@@ -11966,8 +13517,11 @@ cursor #53ae71
 cursor_text_color #000000
 foreground #b3b3b3
 selection_background #b3b3b3
-"####),
-    ("Whimsy", r####"color0 #535178
+"####
+  ),
+  (
+    "Whimsy",
+    r####"color0 #535178
 color1 #ef6487
 color2 #5eca89
 color3 #fdd877
@@ -11989,8 +13543,11 @@ cursor #b3b0d6
 cursor_text_color #535178
 foreground #b3b0d6
 selection_background #b3b0d6
-"####),
-    ("Wild Cherry", r####"color0 #000507
+"####
+  ),
+  (
+    "Wild Cherry",
+    r####"color0 #000507
 color1 #d94085
 color2 #2ab250
 color3 #ffd16f
@@ -12012,8 +13569,11 @@ cursor #dd00ff
 cursor_text_color #ff7fff
 foreground #dafaff
 selection_background #dafaff
-"####),
-    ("Wilmersdorf", r####"color0 #34373e
+"####
+  ),
+  (
+    "Wilmersdorf",
+    r####"color0 #34373e
 color1 #e06383
 color2 #7ebebd
 color3 #cccccc
@@ -12035,8 +13595,11 @@ cursor #7ebebd
 cursor_text_color #1f2024
 foreground #c6c6c6
 selection_background #c6c6c6
-"####),
-    ("Wombat", r####"color0 #000000
+"####
+  ),
+  (
+    "Wombat",
+    r####"color0 #000000
 color1 #ff615a
 color2 #b1e969
 color3 #ebd99c
@@ -12058,8 +13621,11 @@ cursor #bbbbbb
 cursor_text_color #ffffff
 foreground #dedacf
 selection_background #dedacf
-"####),
-    ("Wryan", r####"color0 #333333
+"####
+  ),
+  (
+    "Wryan",
+    r####"color0 #333333
 color1 #8c4665
 color2 #287373
 color3 #7c7c99
@@ -12081,8 +13647,11 @@ cursor #9e9ecb
 cursor_text_color #000000
 foreground #999993
 selection_background #999993
-"####),
-    ("Xcode Dark hc", r####"color0 #43454b
+"####
+  ),
+  (
+    "Xcode Dark hc",
+    r####"color0 #43454b
 color1 #ff8a7a
 color2 #83c9bc
 color3 #d9c668
@@ -12104,8 +13673,11 @@ cursor #ffffff
 cursor_text_color #1f1f24
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("Xcode Dark", r####"color0 #414453
+"####
+  ),
+  (
+    "Xcode Dark",
+    r####"color0 #414453
 color1 #ff8170
 color2 #78c2b3
 color3 #d9c97c
@@ -12127,8 +13699,11 @@ cursor #dfdfe0
 cursor_text_color #292a30
 foreground #dfdfe0
 selection_background #dfdfe0
-"####),
-    ("Xcode Light hc", r####"color0 #b4d8fd
+"####
+  ),
+  (
+    "Xcode Light hc",
+    r####"color0 #b4d8fd
 color1 #ad1805
 color2 #355d61
 color3 #78492a
@@ -12150,8 +13725,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("Xcode Light", r####"color0 #b4d8fd
+"####
+  ),
+  (
+    "Xcode Light",
+    r####"color0 #b4d8fd
 color1 #d12f1b
 color2 #3e8087
 color3 #78492a
@@ -12173,8 +13751,11 @@ cursor #262626
 cursor_text_color #ffffff
 foreground #262626
 selection_background #262626
-"####),
-    ("Xcode WWDC", r####"color0 #494d5c
+"####
+  ),
+  (
+    "Xcode WWDC",
+    r####"color0 #494d5c
 color1 #bb383a
 color2 #94c66e
 color3 #d28e5d
@@ -12196,8 +13777,11 @@ cursor #e7e8eb
 cursor_text_color #292c36
 foreground #e7e8eb
 selection_background #e7e8eb
-"####),
-    ("Zenbones Dark", r####"color0 #1c1917
+"####
+  ),
+  (
+    "Zenbones Dark",
+    r####"color0 #1c1917
 color1 #de6e7c
 color2 #819b69
 color3 #b77e64
@@ -12219,8 +13803,11 @@ cursor #c4cacf
 cursor_text_color #1c1917
 foreground #b4bdc3
 selection_background #b4bdc3
-"####),
-    ("Zenbones Light", r####"color0 #f0edec
+"####
+  ),
+  (
+    "Zenbones Light",
+    r####"color0 #f0edec
 color1 #a8334c
 color2 #4f6c31
 color3 #944927
@@ -12242,8 +13829,11 @@ cursor #2c363c
 cursor_text_color #f0edec
 foreground #2c363c
 selection_background #2c363c
-"####),
-    ("Zenbones", r####"color0 #f0edec
+"####
+  ),
+  (
+    "Zenbones",
+    r####"color0 #f0edec
 color1 #a8334c
 color2 #4f6c31
 color3 #944927
@@ -12265,8 +13855,11 @@ cursor #2c363c
 cursor_text_color #f0edec
 foreground #2c363c
 selection_background #2c363c
-"####),
-    ("Zenburn", r####"color0 #4d4d4d
+"####
+  ),
+  (
+    "Zenburn",
+    r####"color0 #4d4d4d
 color1 #7d5d5d
 color2 #60b48a
 color3 #f0dfaf
@@ -12288,8 +13881,11 @@ cursor #73635a
 cursor_text_color #000000
 foreground #dcdccc
 selection_background #dcdccc
-"####),
-    ("Zenburned", r####"color0 #404040
+"####
+  ),
+  (
+    "Zenburned",
+    r####"color0 #404040
 color1 #e3716e
 color2 #819b69
 color3 #b77e64
@@ -12311,8 +13907,11 @@ cursor #f3eadb
 cursor_text_color #404040
 foreground #f0e4cf
 selection_background #f0e4cf
-"####),
-    ("Zenwritten Dark", r####"color0 #191919
+"####
+  ),
+  (
+    "Zenwritten Dark",
+    r####"color0 #191919
 color1 #de6e7c
 color2 #819b69
 color3 #b77e64
@@ -12334,8 +13933,11 @@ cursor #c9c9c9
 cursor_text_color #191919
 foreground #bbbbbb
 selection_background #bbbbbb
-"####),
-    ("Zenwritten Light", r####"color0 #eeeeee
+"####
+  ),
+  (
+    "Zenwritten Light",
+    r####"color0 #eeeeee
 color1 #a8334c
 color2 #4f6c31
 color3 #944927
@@ -12357,8 +13959,11 @@ cursor #353535
 cursor_text_color #eeeeee
 foreground #353535
 selection_background #353535
-"####),
-    ("base16-icy", r####"color0 #021012
+"####
+  ),
+  (
+    "base16-icy",
+    r####"color0 #021012
 color1 #16c2d9
 color2 #4dd0e1
 color3 #80deea
@@ -12380,8 +13985,11 @@ cursor #16c2d9
 cursor_text_color #021012
 foreground #095b67
 selection_background #095b67
-"####),
-    ("branch", r####"color0 #35241c
+"####
+  ),
+  (
+    "branch",
+    r####"color0 #35241c
 color1 #c2562d
 color2 #96a65e
 color3 #d29b5a
@@ -12403,8 +14011,11 @@ cursor #cfc1a9
 cursor_text_color #32221a
 foreground #cfc1a9
 selection_background #cfc1a9
-"####),
-    ("cyberpunk-icy", r####"color0 #1a1a2e
+"####
+  ),
+  (
+    "cyberpunk-icy",
+    r####"color0 #1a1a2e
 color1 #ff0055
 color2 #00ff9f
 color3 #fffc00
@@ -12426,8 +14037,11 @@ cursor #00ffff
 cursor_text_color #0a0a0f
 foreground #d4b3f7
 selection_background #d4b3f7
-"####),
-    ("iTerm2 Dark Background", r####"color0 #000000
+"####
+  ),
+  (
+    "iTerm2 Dark Background",
+    r####"color0 #000000
 color1 #c91b00
 color2 #00c200
 color3 #c7c400
@@ -12449,8 +14063,11 @@ cursor #c7c7c7
 cursor_text_color #8c8c8c
 foreground #c7c7c7
 selection_background #c7c7c7
-"####),
-    ("iTerm2 Default", r####"color0 #000000
+"####
+  ),
+  (
+    "iTerm2 Default",
+    r####"color0 #000000
 color1 #c91b00
 color2 #00c200
 color3 #c7c400
@@ -12472,8 +14089,11 @@ cursor #e5e5e5
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("iTerm2 Light Background", r####"color0 #000000
+"####
+  ),
+  (
+    "iTerm2 Light Background",
+    r####"color0 #000000
 color1 #c91b00
 color2 #00c200
 color3 #c7c400
@@ -12495,8 +14115,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("iTerm2 Pastel Dark Background", r####"color0 #626262
+"####
+  ),
+  (
+    "iTerm2 Pastel Dark Background",
+    r####"color0 #626262
 color1 #ff8373
 color2 #b4fb73
 color3 #fffdc3
@@ -12518,8 +14141,11 @@ cursor #ffb473
 cursor_text_color #8c8c8c
 foreground #c7c7c7
 selection_background #c7c7c7
-"####),
-    ("iTerm2 Smoooooth", r####"color0 #14191e
+"####
+  ),
+  (
+    "iTerm2 Smoooooth",
+    r####"color0 #14191e
 color1 #b43c2a
 color2 #00c200
 color3 #c7c400
@@ -12541,8 +14167,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #dcdcdc
 selection_background #dcdcdc
-"####),
-    ("iTerm2 Solarized Dark", r####"color0 #073642
+"####
+  ),
+  (
+    "iTerm2 Solarized Dark",
+    r####"color0 #073642
 color1 #dc322f
 color2 #859900
 color3 #b58900
@@ -12564,8 +14193,11 @@ cursor #839496
 cursor_text_color #073642
 foreground #839496
 selection_background #839496
-"####),
-    ("iTerm2 Solarized Light", r####"color0 #073642
+"####
+  ),
+  (
+    "iTerm2 Solarized Light",
+    r####"color0 #073642
 color1 #dc322f
 color2 #859900
 color3 #b58900
@@ -12587,8 +14219,11 @@ cursor #657b83
 cursor_text_color #eee8d5
 foreground #657b83
 selection_background #657b83
-"####),
-    ("iTerm2 Tango Dark", r####"color0 #000000
+"####
+  ),
+  (
+    "iTerm2 Tango Dark",
+    r####"color0 #000000
 color1 #d81e00
 color2 #5ea702
 color3 #cfae00
@@ -12610,8 +14245,11 @@ cursor #ffffff
 cursor_text_color #000000
 foreground #ffffff
 selection_background #ffffff
-"####),
-    ("iTerm2 Tango Light", r####"color0 #000000
+"####
+  ),
+  (
+    "iTerm2 Tango Light",
+    r####"color0 #000000
 color1 #d81e00
 color2 #5ea702
 color3 #cfae00
@@ -12633,8 +14271,11 @@ cursor #000000
 cursor_text_color #ffffff
 foreground #000000
 selection_background #000000
-"####),
-    ("novmbr", r####"color0 #282a2e
+"####
+  ),
+  (
+    "novmbr",
+    r####"color0 #282a2e
 color1 #9f6434
 color2 #9dac5f
 color3 #cca75f
@@ -12656,8 +14297,11 @@ cursor #c7b8ac
 cursor_text_color #241d1a
 foreground #c7b8ac
 selection_background #c7b8ac
-"####),
-    ("owl", r####"color0 #302c2c
+"####
+  ),
+  (
+    "owl",
+    r####"color0 #302c2c
 color1 #5a5a5a
 color2 #989898
 color3 #cacaca
@@ -12679,8 +14323,11 @@ cursor #dedede
 cursor_text_color #2f2b2c
 foreground #dedede
 selection_background #dedede
-"####),
-    ("traffic", r####"color0 #282d31
+"####
+  ),
+  (
+    "traffic",
+    r####"color0 #282d31
 color1 #934e46
 color2 #637268
 color3 #c79e84
@@ -12702,8 +14349,11 @@ cursor #cfb9a8
 cursor_text_color #272c30
 foreground #cfb9a8
 selection_background #cfb9a8
-"####),
-    ("urban", r####"color0 #33303b
+"####
+  ),
+  (
+    "urban",
+    r####"color0 #33303b
 color1 #87404f
 color2 #74934e
 color3 #ae835a
@@ -12725,5 +14375,6 @@ cursor #c0a79a
 cursor_text_color #312e39
 foreground #c0a79a
 selection_background #c0a79a
-"####),
+"####
+  )
 ];

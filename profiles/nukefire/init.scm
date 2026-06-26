@@ -11,7 +11,7 @@
 (option "keep_input" #t)
 (option "font" "JetBrains Mono")
 (option "font_size" 14)
-(option "scroll_lines" 3)
+(option "scroll_lines" 6)
 
 ;; 550+ built-in themes from https://iterm2colorschemes.com
 (load-theme "Gruvbox Dark")
@@ -200,7 +200,7 @@
 (define (on-input cmd)
   (let ((trimmed (trim cmd)))
     (when (not (equal? trimmed ""))
-      (pane-print "main" (to-string "\x1b;[32m> " trimmed "\x1b;[0m")))))
+      (pane-print "main" (to-string "\u{1b}[32m> " trimmed "\u{1b}[0m")))))
 
 (define (on-connect)
   (pane-print "main" "[Connected to NukeFire]")
