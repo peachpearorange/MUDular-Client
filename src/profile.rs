@@ -516,6 +516,8 @@ fn generate_scheme(t: &GameTemplate) -> String {
     ";; You can use any of 550+ built-in themes from https://iterm2colorschemes.com"
   );
   let _ = writeln!(s, "(load-theme \"Onenord\")");
+  let _ = writeln!(s, ";; (option \"font\" \"JetBrains Mono\")");
+  let _ = writeln!(s, "(option \"font_size\" 14)");
   let _ = writeln!(s, "(option \"scroll_lines\" 6)");
   let _ = writeln!(s);
   let _ = writeln!(s, ";; Scrolling");

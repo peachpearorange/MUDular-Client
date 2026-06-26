@@ -128,7 +128,9 @@ fn key_name_to_egui(name: &str) -> Option<egui::Key> {
   })
 }
 
-fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
+fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<String> {
+  let mut warning = None;
+
   #[cfg(not(target_arch = "wasm32"))]
   if let Some(name) = &appearance.font_name {
     if let Some(path) = find_system_font(name) {
@@ -148,8 +150,20 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
           .or_default()
           .insert(0, "custom_mono".into());
         ctx.set_fonts(fonts);
+      } else {
+        warning = Some(format!(
+          "[Font '{name}' was found but could not be loaded; using the default font]"
+        ));
       }
+    } else {
+      warning = Some(format!("[Font '{name}' is not available; using the default font]"));
     }
+  }
+  #[cfg(target_arch = "wasm32")]
+  if let Some(name) = &appearance.font_name {
+    warning = Some(format!(
+      "[Font '{name}' cannot be loaded from system fonts in the web build; using the default font]"
+    ));
   }
 
   let mut style = (*ctx.global_style()).clone();
@@ -188,6 +202,8 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
 
   style.spacing.window_margin = egui::Margin::ZERO;
   ctx.set_global_style(style);
+
+  warning
 }
 
 struct Session {
@@ -333,12 +349,18 @@ impl MudApp {
     #[cfg(not(target_arch = "wasm32"))]
     let (mssp_tx, mssp_rx) = std::sync::mpsc::channel();
 
+    cc.egui_ctx.set_visuals(egui::Visuals::dark());
     let appearance = Appearance::load();
-    apply_appearance(&cc.egui_ctx, &appearance);
+    let _ = apply_appearance(&cc.egui_ctx, &appearance);
+    let templates = Profile::templates();
+    #[cfg(not(target_arch = "wasm32"))]
+    let profiles = Profile::load_user();
+    #[cfg(target_arch = "wasm32")]
+    let profiles = templates.clone();
 
     Self {
-      profiles: Profile::load_user(),
-      templates: Profile::templates(),
+      profiles,
+      templates,
       sessions: Vec::new(),
       active_tab: 0,
       last_active_tab: 0,
@@ -558,7 +580,12 @@ impl MudApp {
       self.loaded_font_name = appearance.font_name.clone();
     }
 
-    apply_appearance(ctx, &appearance);
+    if let Some(warning) = apply_appearance(ctx, &appearance)
+      && let Some(si) = self.active_tab.checked_sub(1)
+      && let Some(session) = self.sessions.get_mut(si)
+    {
+      session.script_engine.append_system_message(&warning);
+    }
     appearance.save();
   }
 

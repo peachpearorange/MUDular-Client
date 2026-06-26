@@ -3,7 +3,7 @@ use eframe::egui;
 pub struct ScriptEditor {
   pub visible: bool,
   pub code: String,
-  pub status_message: Option<(String, std::time::Instant)>
+  pub status_message: Option<(String, f64)>
 }
 
 impl ScriptEditor {
@@ -32,13 +32,13 @@ impl ScriptEditor {
         ui.horizontal(|ui| {
           if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
             crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
-            self.status_message = Some(("Copied!".into(), std::time::Instant::now()));
+            self.status_message = Some(("Copied!".into(), ui.input(|input| input.time)));
           }
           if crate::ui::term_button(ui, "Save & Reload").clicked() {
             action = EditorAction::SaveAndReload(self.code.clone());
           }
           if let Some((ref msg, when)) = self.status_message {
-            if when.elapsed().as_secs() < 3 {
+            if ui.input(|input| input.time) - when < 3.0 {
               ui.label(msg);
             } else {
               self.status_message = None;

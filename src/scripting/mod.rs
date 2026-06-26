@@ -31,7 +31,7 @@ struct Alias {
 struct Timer {
   interval_secs: f64,
   callback: SteelVal,
-  last_fired: std::time::Instant,
+  last_fired_secs: f64,
   oneshot: bool
 }
 
@@ -226,7 +226,7 @@ impl ScriptEngine {
             self.timers.push(Timer {
               interval_secs: interval,
               callback,
-              last_fired: std::time::Instant::now(),
+              last_fired_secs: now_secs(),
               oneshot
             });
           }
@@ -324,12 +324,12 @@ impl ScriptEngine {
   }
 
   pub fn tick_timers(&mut self) {
-    let now = std::time::Instant::now();
+    let now = now_secs();
     let mut to_remove = Vec::new();
     let mut errors = Vec::new();
     for (i, timer) in self.timers.iter_mut().enumerate() {
-      if now.duration_since(timer.last_fired).as_secs_f64() >= timer.interval_secs {
-        timer.last_fired = now;
+      if now - timer.last_fired_secs >= timer.interval_secs {
+        timer.last_fired_secs = now;
         let callback = timer.callback.clone();
         if let Err(e) = self.engine.call_function_with_args(callback, vec![]) {
           errors.push(format!("[timer error: {e}]"));
@@ -453,5 +453,17 @@ pub fn json_to_steel(val: &serde_json::Value) -> SteelVal {
       }
       SteelVal::HashMapV(Gc::new(hm).into())
     }
+  }
+}
+
+fn now_secs() -> f64 {
+  #[cfg(target_arch = "wasm32")]
+  {
+    js_sys::Date::now() / 1000.0
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  {
+    static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+    START.get_or_init(std::time::Instant::now).elapsed().as_secs_f64()
   }
 }

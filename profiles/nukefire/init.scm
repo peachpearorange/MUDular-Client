@@ -11,7 +11,7 @@
 
 ;; Options
 (option "keep_input" #t)
-(option "font" "JetBrains Mono")
+;; (option "font" "JetBrains Mono")
 (option "font_size" 14)
 (option "scroll_lines" 6)
 

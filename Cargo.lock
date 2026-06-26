@@ -1877,6 +1877,7 @@ dependencies = [
  "egui_extras",
  "env_logger",
  "flate2",
+ "js-sys",
  "log",
  "regex",
  "rustls",
