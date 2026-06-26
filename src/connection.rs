@@ -23,6 +23,7 @@ pub enum ConnCommand {
     SendGmcp(String, serde_json::Value),
     SendMsdpReport(Vec<String>),
     SendMsdpSend(Vec<String>),
+    SendMsdpList(String),
     Disconnect,
 }
 
@@ -55,6 +56,10 @@ impl Connection {
 
     pub fn send_msdp_send(&self, vars: Vec<String>) {
         let _ = self.cmd_tx.send(ConnCommand::SendMsdpSend(vars));
+    }
+
+    pub fn send_msdp_list(&self, what: String) {
+        let _ = self.cmd_tx.send(ConnCommand::SendMsdpList(what));
     }
 
     pub fn disconnect(&self) {
@@ -174,6 +179,13 @@ async fn run_connection<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin 
                         break;
                     }
                 }
+                Ok(ConnCommand::SendMsdpList(what)) => {
+                    let payload = crate::protocol::msdp::encode_msdp_var("LIST", &what);
+                    let data = TelnetParser::build_subneg(OPT_MSDP, &payload);
+                    if cmd_write_tx.send(data).await.is_err() {
+                        break;
+                    }
+                }
                 Ok(ConnCommand::Disconnect) | Err(_) => break,
             }
         }
@@ -280,7 +292,12 @@ fn handle_negotiation(cmd: u8, opt: u8, mccp_pending: &mut bool, gmcp_enabled: &
                 *mccp_pending = true;
                 responses.push(TelnetParser::build_do(opt));
             }
-            OPT_MSSP | OPT_MSDP => responses.push(TelnetParser::build_do(opt)),
+            OPT_MSSP => responses.push(TelnetParser::build_do(opt)),
+            OPT_MSDP => {
+                responses.push(TelnetParser::build_do(opt));
+                let list_query = crate::protocol::msdp::encode_msdp_var("LIST", "REPORTABLE_VARIABLES");
+                responses.push(TelnetParser::build_subneg(OPT_MSDP, &list_query));
+            }
             OPT_GMCP => {
                 *gmcp_enabled = true;
                 responses.push(TelnetParser::build_do(opt));

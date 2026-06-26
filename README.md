@@ -1,11 +1,13 @@
 # MUDular Client
 
-A cross-platform MUD client with Lua scripting, built in Rust.
+A cross-platform MUD client with Scheme scripting, built in Rust.
+
+![screenshot](screenshot.png)
 
 - Multi-tab parallel connections
-- Full Lua scripting: panes, gauges, triggers, aliases, timers, keymaps
+- Full Scheme scripting: panes, gauges, triggers, aliases, timers, keymaps
 - ANSI color (256 + truecolor), MSDP, GMCP, MCCP2, MSSP
-- 550+ built-in terminal themes
+- 550+ built-in themes from [iterm2colorschemes.com](https://iterm2colorschemes.com)
 - TLS support
 
 ## Download
@@ -15,7 +17,6 @@ A cross-platform MUD client with Lua scripting, built in Rust.
 | Linux x86_64 | [mudular-linux-x86_64](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-linux-x86_64) |
 | Windows x86_64 | [mudular-windows-x86_64.exe](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-windows-x86_64.exe) |
 | macOS Apple Silicon | [mudular-macos-aarch64](https://github.com/peachpearorange/MUDular-Client/releases/latest/download/mudular-macos-aarch64) |
-| Web (WASM) | [Play in browser](https://peachpearorange.github.io/MUDular-Client/) |
 
 ## Building from source
 

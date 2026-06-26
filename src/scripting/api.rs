@@ -1,394 +1,245 @@
 use std::sync::{Arc, Mutex};
 
-use mlua::prelude::*;
+use steel::steel_vm::engine::Engine;
+use steel::steel_vm::register_fn::RegisterFn;
+use steel::rvals::SteelVal;
 
 use eframe::egui::Color32;
 
 use crate::ansi::{parse_ansi, strip_ansi, DEFAULT_PALETTE};
 use crate::buffer::TextBuffer;
-use crate::scripting::{LayoutDir, LayoutEntry, Layout, ScriptState};
+use crate::scripting::{Gauge, LayoutDir, LayoutEntry, Layout, ScriptState};
 
-pub fn register_api(lua: &Lua, state: Arc<Mutex<ScriptState>>) -> LuaResult<()> {
-    let mud = lua.create_table()?;
+pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
+    macro_rules! reg {
+        ($name:expr, $state:ident => $body:expr) => {{
+            let $state = state.clone();
+            engine.register_fn($name, $body);
+        }};
+    }
 
-    // mud.pane(name) -> PaneHandle
-    let pane_state = state.clone();
-    mud.set(
-        "pane",
-        lua.create_function(move |lua, name: String| {
-            {
-                let mut st = pane_state.lock().unwrap();
-                st.panes.entry(name.clone()).or_insert_with(|| TextBuffer::new(10000));
-            }
-            let handle = lua.create_table()?;
-            handle.set("_name", name)?;
-            Ok(handle)
-        })?,
-    )?;
+    reg!("pane", s => move |name: String| -> String {
+        s.lock().unwrap().panes.entry(name.clone()).or_insert_with(|| TextBuffer::new(10000));
+        name
+    });
 
-    // mud.send(text)
-    let send_state = state.clone();
-    mud.set(
-        "send",
-        lua.create_function(move |_, text: String| {
-            send_state.lock().unwrap().outgoing_commands.push(text);
-            Ok(())
-        })?,
-    )?;
+    reg!("pane-print", s => move |name: String, text: String| {
+        let mut st = s.lock().unwrap();
+        let palette = st.ansi_palette;
+        let lines = parse_ansi(&text, palette.as_ref());
+        let buf = st.panes.entry(name).or_insert_with(|| TextBuffer::new(10000));
+        buf.append_lines(lines);
+    });
 
-    // mud.send_gmcp(package, data)
-    let gmcp_state = state.clone();
-    mud.set(
-        "send_gmcp",
-        lua.create_function(move |_, (package, data): (String, LuaValue)| {
-            let json = lua_to_json(&data);
-            gmcp_state.lock().unwrap().outgoing_gmcp.push((package, json));
-            Ok(())
-        })?,
-    )?;
+    reg!("pane-clear", s => move |name: String| {
+        if let Some(buf) = s.lock().unwrap().panes.get_mut(&name) { buf.clear(); }
+    });
 
-    // mud.gauge(name, {current, max, color})
-    let gauge_state = state.clone();
-    mud.set(
-        "gauge",
-        lua.create_function(move |_, (name, opts): (String, LuaTable)| {
-            let current: Option<f64> = opts.get("current").ok();
-            let max: Option<f64> = opts.get("max").ok();
-            let color: Option<String> = opts.get("color").ok();
+    reg!("send", s => move |text: String| {
+        s.lock().unwrap().outgoing_commands.push(text);
+    });
 
-            let mut st = gauge_state.lock().unwrap();
-            if let Some(g) = st.gauges.iter_mut().find(|g| g.name == name) {
-                if let Some(v) = current { g.current = v; }
-                if let Some(v) = max { g.max = v; }
-                if let Some(v) = color { g.color = v; }
-            } else {
-                st.gauges.push(crate::scripting::Gauge {
-                    name,
-                    current: current.unwrap_or(0.0),
-                    max: max.unwrap_or(100.0),
-                    color: color.unwrap_or_else(|| "green".into()),
-                });
-            }
-            Ok(())
-        })?,
-    )?;
+    engine.register_fn("strip-ansi", |text: String| -> String { strip_ansi(&text) });
 
-    // mud.layout(direction, entries)
-    let layout_state = state.clone();
-    mud.set(
-        "layout",
-        lua.create_function(move |_, (dir, entries): (String, LuaTable)| {
-            let direction = match dir.as_str() {
-                "vertical" => LayoutDir::Vertical,
-                _ => LayoutDir::Horizontal,
-            };
-            let mut layout_entries = Vec::new();
-            entries.for_each(|_k: LuaValue, v: LuaTable| {
-                let pane: String = v.get("pane").unwrap_or_default();
-                let weight: f32 = v.get("weight").unwrap_or(1.0);
-                layout_entries.push(LayoutEntry { pane, weight });
-                Ok(())
-            })?;
-            layout_state.lock().unwrap().layout = Layout { direction, entries: layout_entries };
-            Ok(())
-        })?,
-    )?;
+    engine.register_fn("regexp-match?", |pattern: String, text: String| -> bool {
+        regex::Regex::new(&pattern).map(|re| re.is_match(&text)).unwrap_or(false)
+    });
 
-    // mud.strip_ansi(text)
-    mud.set(
-        "strip_ansi",
-        lua.create_function(|_, text: String| Ok(strip_ansi(&text)))?,
-    )?;
+    reg!("keymap", s => move |combo_str: String, command: String| {
+        s.lock().unwrap().keymaps.push(
+            crate::scripting::Keymap { combo: parse_key_combo(&combo_str), command },
+        );
+    });
 
-    // mud.keymap(combo_str, command) — bind a key combo to a command
-    let keymap_state = state.clone();
-    mud.set(
-        "keymap",
-        lua.create_function(move |_, (combo_str, command): (String, String)| {
-            let combo = parse_key_combo(&combo_str);
-            keymap_state.lock().unwrap().keymaps.push(
-                crate::scripting::Keymap { combo, command },
-            );
-            Ok(())
-        })?,
-    )?;
+    reg!("status", s => move |text: String| {
+        s.lock().unwrap().status_text = text;
+    });
 
-    // mud.option(name, value) — set a client option
-    let opt_state = state.clone();
-    mud.set(
-        "option",
-        lua.create_function(move |_, (name, value): (String, LuaValue)| {
-            let mut st = opt_state.lock().unwrap();
-            match name.as_str() {
-                "keep_input" => st.keep_input = matches!(value, LuaValue::Boolean(true)),
-                "font" => {
-                    if let LuaValue::String(s) = value {
-                        st.font_name = Some(s.to_string_lossy().to_string());
-                        st.theme_dirty = true;
+    reg!("gauge", s => move |name: String, opts: SteelVal| {
+        let (current, max, color) = parse_gauge_opts(&opts);
+        let mut st = s.lock().unwrap();
+        if let Some(g) = st.gauges.iter_mut().find(|g| g.name == name) {
+            if let Some(v) = current { g.current = v; }
+            if let Some(v) = max { g.max = v; }
+            if let Some(v) = color { g.color = v; }
+        } else {
+            st.gauges.push(Gauge {
+                name,
+                current: current.unwrap_or(0.0),
+                max: max.unwrap_or(100.0),
+                color: color.unwrap_or_else(|| "green".into()),
+            });
+        }
+    });
+
+    reg!("layout", s => move |dir: String, entries: SteelVal| {
+        let direction = match dir.as_str() {
+            "vertical" => LayoutDir::Vertical,
+            _ => LayoutDir::Horizontal,
+        };
+        let mut layout_entries = Vec::new();
+        if let SteelVal::ListV(list) = &entries {
+            for item in list.iter() {
+                if let SteelVal::ListV(pair) = item {
+                    let items: Vec<_> = pair.iter().collect();
+                    if items.len() >= 2 {
+                        if let SteelVal::StringV(pane) = &items[0] {
+                            let weight = steel_to_f32(&items[1]).unwrap_or(1.0);
+                            layout_entries.push(LayoutEntry { pane: pane.to_string(), weight });
+                        }
                     }
                 }
-                "font_size" => {
-                    let size = match value {
-                        LuaValue::Number(n) => n as f32,
-                        LuaValue::Integer(n) => n as f32,
-                        _ => st.font_size,
-                    };
-                    st.font_size = size;
-                    st.theme_dirty = true;
-                }
-                "bg_color" => {
-                    st.bg_color = parse_lua_color(&value);
-                    st.theme_dirty = true;
-                }
-                "fg_color" => {
-                    st.fg_color = parse_lua_color(&value);
-                    st.theme_dirty = true;
-                }
-                "scroll_lines" => {
-                    st.scroll_lines = match value {
-                        LuaValue::Number(n) => n as f32,
-                        LuaValue::Integer(n) => n as f32,
-                        _ => st.scroll_lines,
-                    };
-                }
-                _ => {}
-            }
-            Ok(())
-        })?,
-    )?;
-
-    // mud.colors({bg = "#...", fg = "#..."})
-    let colors_state = state.clone();
-    mud.set(
-        "colors",
-        lua.create_function(move |_, opts: LuaTable| {
-            let mut st = colors_state.lock().unwrap();
-            if let Ok(bg) = opts.get::<LuaValue>("bg") {
-                st.bg_color = parse_lua_color(&bg);
-            }
-            if let Ok(fg) = opts.get::<LuaValue>("fg") {
-                st.fg_color = parse_lua_color(&fg);
-            }
-            st.theme_dirty = true;
-            Ok(())
-        })?,
-    )?;
-
-    // mud.load_theme(name_or_path) — load a built-in theme by name or a Kitty .conf file by path
-    let theme_state = state.clone();
-    mud.set(
-        "load_theme",
-        lua.create_function(move |_, name_or_path: String| {
-            let mut st = theme_state.lock().unwrap();
-            if let Some(content) = crate::themes::get_builtin_theme(&name_or_path) {
-                parse_kitty_theme(content, &mut st);
-                st.theme_dirty = true;
-                Ok(())
-            } else {
-                let resolved = if std::path::Path::new(&name_or_path).is_absolute() {
-                    std::path::PathBuf::from(&name_or_path)
-                } else {
-                    st.profile_dir.as_ref()
-                        .map(|d| d.join(&name_or_path))
-                        .unwrap_or_else(|| std::path::PathBuf::from(&name_or_path))
-                };
-                match std::fs::read_to_string(&resolved) {
-                    Ok(content) => {
-                        parse_kitty_theme(&content, &mut st);
-                        st.theme_dirty = true;
-                        Ok(())
-                    }
-                    Err(e) => Err(LuaError::external(format!(
-                        "Unknown built-in theme and failed to read file '{}': {e}",
-                        resolved.display()
-                    ))),
-                }
-            }
-        })?,
-    )?;
-
-    let status_state = state.clone();
-    mud.set(
-        "status",
-        lua.create_function(move |_, text: String| {
-            status_state.lock().unwrap().status_text = text;
-            Ok(())
-        })?,
-    )?;
-
-    // mud.msdp_report(vars) — request MSDP REPORT for a list of variable names
-    let msdp_state = state.clone();
-    mud.set(
-        "msdp_report",
-        lua.create_function(move |_, vars: LuaTable| {
-            let mut var_list = Vec::new();
-            vars.for_each(|_k: LuaValue, v: LuaValue| {
-                if let LuaValue::String(s) = v {
-                    var_list.push(s.to_string_lossy().to_string());
-                }
-                Ok(())
-            })?;
-            msdp_state.lock().unwrap().outgoing_msdp_report.push(var_list);
-            Ok(())
-        })?,
-    )?;
-
-    // mud.msdp_send(vars) — one-time request for current values of MSDP variables
-    let msdp_send_state = state.clone();
-    mud.set(
-        "msdp_send",
-        lua.create_function(move |_, vars: LuaTable| {
-            let mut var_list = Vec::new();
-            vars.for_each(|_k: LuaValue, v: LuaValue| {
-                if let LuaValue::String(s) = v {
-                    var_list.push(s.to_string_lossy().to_string());
-                }
-                Ok(())
-            })?;
-            msdp_send_state.lock().unwrap().outgoing_msdp_send.push(var_list);
-            Ok(())
-        })?,
-    )?;
-
-    // mud.trigger(pattern, callback)
-    mud.set(
-        "trigger",
-        lua.create_function(|lua, (pattern, callback): (String, LuaFunction)| {
-            let globals = lua.globals();
-            let triggers: LuaTable = globals
-                .get("_triggers")
-                .unwrap_or_else(|_| lua.create_table().unwrap());
-            let entry = lua.create_table()?;
-            entry.set("pattern", pattern)?;
-            entry.set("callback", callback)?;
-            let len = triggers.len()? + 1;
-            triggers.set(len, entry)?;
-            globals.set("_triggers", triggers)?;
-            Ok(())
-        })?,
-    )?;
-
-    // mud.alias(pattern, callback)
-    mud.set(
-        "alias",
-        lua.create_function(|lua, (pattern, callback): (String, LuaFunction)| {
-            let globals = lua.globals();
-            let aliases: LuaTable = globals
-                .get("_aliases")
-                .unwrap_or_else(|_| lua.create_table().unwrap());
-            let entry = lua.create_table()?;
-            entry.set("pattern", pattern)?;
-            entry.set("callback", callback)?;
-            let len = aliases.len()? + 1;
-            aliases.set(len, entry)?;
-            globals.set("_aliases", aliases)?;
-            Ok(())
-        })?,
-    )?;
-
-    // mud.timer(interval, callback) — oneshot timer (fires once)
-    mud.set(
-        "timer",
-        lua.create_function(|lua, (interval, callback): (f64, LuaFunction)| {
-            let globals = lua.globals();
-            let timers: LuaTable = globals
-                .get("_timers")
-                .unwrap_or_else(|_| lua.create_table().unwrap());
-            let entry = lua.create_table()?;
-            entry.set("interval", interval)?;
-            entry.set("callback", callback)?;
-            entry.set("oneshot", true)?;
-            let len = timers.len()? + 1;
-            timers.set(len, entry)?;
-            globals.set("_timers", timers)?;
-            Ok(())
-        })?,
-    )?;
-
-    // mud.interval(interval, callback) — repeating timer
-    mud.set(
-        "interval",
-        lua.create_function(|lua, (interval, callback): (f64, LuaFunction)| {
-            let globals = lua.globals();
-            let timers: LuaTable = globals
-                .get("_timers")
-                .unwrap_or_else(|_| lua.create_table().unwrap());
-            let entry = lua.create_table()?;
-            entry.set("interval", interval)?;
-            entry.set("callback", callback)?;
-            entry.set("oneshot", false)?;
-            let len = timers.len()? + 1;
-            timers.set(len, entry)?;
-            globals.set("_timers", timers)?;
-            Ok(())
-        })?,
-    )?;
-
-    // Pane methods registered as global functions that take a pane table
-    // pane:print(text), pane:cprint(text), pane:clear()
-    let print_state = state.clone();
-    lua.globals().set(
-        "_pane_print",
-        lua.create_function(move |_, (pane_table, text): (LuaTable, String)| {
-            let name: String = pane_table.get("_name")?;
-            let mut st = print_state.lock().unwrap();
-            let palette = st.ansi_palette;
-            let lines = parse_ansi(&text, palette.as_ref());
-            let buf = st.panes.entry(name).or_insert_with(|| TextBuffer::new(10000));
-            buf.append_lines(lines);
-            Ok(())
-        })?,
-    )?;
-
-    let clear_state = state.clone();
-    lua.globals().set(
-        "_pane_clear",
-        lua.create_function(move |_, pane_table: LuaTable| {
-            let name: String = pane_table.get("_name")?;
-            let mut st = clear_state.lock().unwrap();
-            if let Some(buf) = st.panes.get_mut(&name) {
-                buf.clear();
-            }
-            Ok(())
-        })?,
-    )?;
-
-    lua.globals().set("mud", mud)?;
-
-    // Set up metatable for pane handles so pane:print() works
-    lua.load(
-        r#"
-        _pane_mt = {
-            __index = {
-                print = function(self, text) _pane_print(self, text) end,
-                cprint = function(self, text) _pane_print(self, text) end,
-                clear = function(self) _pane_clear(self) end,
             }
         }
-        local orig_pane = mud.pane
-        mud.pane = function(name)
-            local p = orig_pane(name)
-            setmetatable(p, _pane_mt)
-            return p
-        end
-        _triggers = {}
-        _aliases = {}
-        _timers = {}
-        "#,
-    )
-    .exec()?;
+        s.lock().unwrap().layout = Layout { direction, entries: layout_entries };
+    });
 
-    Ok(())
+    reg!("option", s => move |name: String, value: SteelVal| {
+        let mut st = s.lock().unwrap();
+        match name.as_str() {
+            "keep_input" => st.keep_input = matches!(value, SteelVal::BoolV(true)),
+            "font" => if let SteelVal::StringV(v) = &value {
+                st.font_name = Some(v.to_string());
+                st.theme_dirty = true;
+            },
+            "font_size" => {
+                st.font_size = steel_to_f32(&value).unwrap_or(st.font_size);
+                st.theme_dirty = true;
+            }
+            "bg_color" => { st.bg_color = parse_color(&value); st.theme_dirty = true; }
+            "fg_color" => { st.fg_color = parse_color(&value); st.theme_dirty = true; }
+            "scroll_lines" => {
+                st.scroll_lines = steel_to_f32(&value).unwrap_or(st.scroll_lines);
+            }
+            _ => {}
+        }
+    });
+
+    reg!("load-theme", s => move |name_or_path: String| -> Result<(), String> {
+        let mut st = s.lock().unwrap();
+        if let Some(content) = crate::themes::get_builtin_theme(&name_or_path) {
+            parse_kitty_theme(content, &mut st);
+            st.theme_dirty = true;
+            Ok(())
+        } else {
+            let resolved = if std::path::Path::new(&name_or_path).is_absolute() {
+                std::path::PathBuf::from(&name_or_path)
+            } else {
+                st.profile_dir.as_ref()
+                    .map(|d| d.join(&name_or_path))
+                    .unwrap_or_else(|| std::path::PathBuf::from(&name_or_path))
+            };
+            match std::fs::read_to_string(&resolved) {
+                Ok(content) => {
+                    parse_kitty_theme(&content, &mut st);
+                    st.theme_dirty = true;
+                    Ok(())
+                }
+                Err(e) => Err(format!(
+                    "Unknown theme and failed to read '{}': {e}", resolved.display()
+                )),
+            }
+        }
+    });
+
+    reg!("send-gmcp", s => move |package: String, data: SteelVal| {
+        s.lock().unwrap().outgoing_gmcp.push((package, steel_to_json(&data)));
+    });
+
+    reg!("msdp-report", s => move |vars: SteelVal| {
+        s.lock().unwrap().outgoing_msdp_report.push(steel_to_string_list(&vars));
+    });
+
+    reg!("msdp-send", s => move |vars: SteelVal| {
+        s.lock().unwrap().outgoing_msdp_send.push(steel_to_string_list(&vars));
+    });
+
+    reg!("msdp-list", s => move |what: String| {
+        s.lock().unwrap().outgoing_msdp_list.push(what);
+    });
+
+    engine.run(PRELUDE).expect("failed to load scripting prelude");
 }
 
-fn parse_lua_color(value: &LuaValue) -> Option<[u8; 3]> {
+const PRELUDE: &str = r#"
+(define *triggers* '())
+(define *aliases* '())
+(define *timers* '())
+
+(define (trigger pattern callback)
+  (set! *triggers* (cons (cons pattern callback) *triggers*)))
+
+(define (alias pattern callback)
+  (set! *aliases* (cons (cons pattern callback) *aliases*)))
+
+(define (timer interval callback)
+  (set! *timers* (cons (list interval #t callback) *timers*)))
+
+(define (interval secs callback)
+  (set! *timers* (cons (list secs #f callback) *timers*)))
+
+(define (on-line line) #t)
+(define (on-connect) void)
+(define (on-disconnect) void)
+(define (on-gmcp package data) void)
+(define (on-msdp data) void)
+(define (on-input cmd) void)
+
+(define (hash-get h key . default)
+  (if (hash-contains? h key)
+      (hash-ref h key)
+      (if (null? default) (void) (car default))))
+"#;
+
+fn parse_gauge_opts(opts: &SteelVal) -> (Option<f64>, Option<f64>, Option<String>) {
+    match opts {
+        SteelVal::HashMapV(hm) => {
+            let get_f64 = |key: &str| hm.get(&SteelVal::SymbolV(key.into()))
+                .or_else(|| hm.get(&SteelVal::StringV(key.into())))
+                .and_then(|v| steel_to_f64(v));
+            let color = hm.get(&SteelVal::SymbolV("color".into()))
+                .or_else(|| hm.get(&SteelVal::StringV("color".into())))
+                .and_then(|v| match v { SteelVal::StringV(s) => Some(s.to_string()), _ => None });
+            (get_f64("current"), get_f64("max"), color)
+        }
+        _ => (None, None, None),
+    }
+}
+
+fn steel_to_f64(val: &SteelVal) -> Option<f64> {
+    match val {
+        SteelVal::NumV(n) => Some(*n),
+        SteelVal::IntV(n) => Some(*n as f64),
+        _ => None,
+    }
+}
+
+fn steel_to_f32(val: &SteelVal) -> Option<f32> {
+    steel_to_f64(val).map(|n| n as f32)
+}
+
+fn steel_to_string_list(val: &SteelVal) -> Vec<String> {
+    match val {
+        SteelVal::ListV(list) => list.iter().filter_map(|v| match v {
+            SteelVal::StringV(s) => Some(s.to_string()),
+            _ => None,
+        }).collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn parse_color(value: &SteelVal) -> Option<[u8; 3]> {
     match value {
-        LuaValue::String(s) => parse_hex_color(&s.to_string_lossy()),
-        LuaValue::Table(t) => {
-            let r: u8 = t.get(1).unwrap_or(0);
-            let g: u8 = t.get(2).unwrap_or(0);
-            let b: u8 = t.get(3).unwrap_or(0);
-            Some([r, g, b])
+        SteelVal::StringV(s) => parse_hex_color(s.as_str()),
+        SteelVal::ListV(list) => {
+            let items: Vec<_> = list.iter().collect();
+            if items.len() >= 3 {
+                Some([
+                    steel_to_f64(&items[0])? as u8,
+                    steel_to_f64(&items[1])? as u8,
+                    steel_to_f64(&items[2])? as u8,
+                ])
+            } else { None }
         }
         _ => None,
     }
@@ -396,28 +247,24 @@ fn parse_lua_color(value: &LuaValue) -> Option<[u8; 3]> {
 
 fn parse_hex_color(s: &str) -> Option<[u8; 3]> {
     let s = s.strip_prefix('#').unwrap_or(s);
-    if s.len() != 6 {
-        None
-    } else {
-        let r = u8::from_str_radix(&s[0..2], 16).ok()?;
-        let g = u8::from_str_radix(&s[2..4], 16).ok()?;
-        let b = u8::from_str_radix(&s[4..6], 16).ok()?;
-        Some([r, g, b])
+    if s.len() != 6 { None } else {
+        Some([
+            u8::from_str_radix(&s[0..2], 16).ok()?,
+            u8::from_str_radix(&s[2..4], 16).ok()?,
+            u8::from_str_radix(&s[4..6], 16).ok()?,
+        ])
     }
 }
 
 fn parse_key_combo(s: &str) -> crate::scripting::KeyCombo {
-    let mut alt = false;
-    let mut ctrl = false;
-    let mut shift = false;
+    let (mut alt, mut ctrl, mut shift) = (false, false, false);
     let mut key = String::new();
     for part in s.split('+') {
-        let p = part.trim().to_lowercase();
-        match p.as_str() {
+        match part.trim().to_lowercase().as_str() {
             "alt" => alt = true,
             "ctrl" => ctrl = true,
             "shift" => shift = true,
-            _ => key = p,
+            k => key = k.to_string(),
         }
     }
     crate::scripting::KeyCombo { alt, ctrl, shift, key }
@@ -427,12 +274,9 @@ fn parse_kitty_theme(content: &str, state: &mut ScriptState) {
     let mut palette = state.ansi_palette.unwrap_or(DEFAULT_PALETTE);
     for line in content.lines() {
         let line = line.trim();
-        if line.is_empty() || line.starts_with('#') {
-            continue;
-        }
+        if line.is_empty() || line.starts_with('#') { continue; }
         let mut parts = line.splitn(2, char::is_whitespace);
-        let Some(key) = parts.next() else { continue };
-        let Some(value) = parts.next().map(|s| s.trim()) else { continue };
+        let (Some(key), Some(value)) = (parts.next(), parts.next().map(|s| s.trim())) else { continue };
         match key {
             "background" => { state.bg_color = parse_hex_color(value); }
             "foreground" => { state.fg_color = parse_hex_color(value); }
@@ -451,44 +295,27 @@ fn parse_kitty_theme(content: &str, state: &mut ScriptState) {
     state.ansi_palette = Some(palette);
 }
 
-fn lua_to_json(val: &LuaValue) -> serde_json::Value {
+fn steel_to_json(val: &SteelVal) -> serde_json::Value {
     match val {
-        LuaValue::Nil => serde_json::Value::Null,
-        LuaValue::Boolean(b) => serde_json::Value::Bool(*b),
-        LuaValue::Integer(n) => serde_json::json!(n),
-        LuaValue::Number(n) => serde_json::json!(n),
-        LuaValue::String(s) => serde_json::Value::String(s.to_string_lossy().to_string()),
-        LuaValue::Table(t) => {
-            let mut is_array = true;
-            let mut max_key = 0i64;
-            t.for_each(|k: LuaValue, _v: LuaValue| {
-                match k {
-                    LuaValue::Integer(i) if i > 0 => max_key = max_key.max(i),
-                    _ => is_array = false,
-                }
-                Ok(())
-            })
-            .unwrap_or(());
-
-            if is_array && max_key > 0 {
-                let arr: Vec<serde_json::Value> = (1..=max_key)
-                    .filter_map(|i| t.get::<LuaValue>(i).ok().map(|v| lua_to_json(&v)))
-                    .collect();
-                serde_json::Value::Array(arr)
-            } else {
-                let mut map = serde_json::Map::new();
-                t.for_each(|k: LuaValue, v: LuaValue| {
-                    let key = match &k {
-                        LuaValue::String(s) => s.to_string_lossy().to_string(),
-                        LuaValue::Integer(n) => n.to_string(),
-                        _ => return Ok(()),
-                    };
-                    map.insert(key, lua_to_json(&v));
-                    Ok(())
-                })
-                .unwrap_or(());
-                serde_json::Value::Object(map)
+        SteelVal::Void => serde_json::Value::Null,
+        SteelVal::BoolV(b) => serde_json::Value::Bool(*b),
+        SteelVal::IntV(n) => serde_json::json!(n),
+        SteelVal::NumV(n) => serde_json::json!(n),
+        SteelVal::StringV(s) => serde_json::Value::String(s.to_string()),
+        SteelVal::ListV(list) =>
+            serde_json::Value::Array(list.iter().map(steel_to_json).collect()),
+        SteelVal::HashMapV(hm) => {
+            let mut map = serde_json::Map::new();
+            for (k, v) in hm.iter() {
+                let key = match k {
+                    SteelVal::StringV(s) => s.to_string(),
+                    SteelVal::SymbolV(s) => s.to_string(),
+                    SteelVal::IntV(n) => n.to_string(),
+                    _ => continue,
+                };
+                map.insert(key, steel_to_json(v));
             }
+            serde_json::Value::Object(map)
         }
         _ => serde_json::Value::Null,
     }

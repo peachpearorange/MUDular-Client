@@ -2,8 +2,12 @@ pub mod api;
 
 use std::sync::{Arc, Mutex};
 
-use log::{debug, info, warn};
-use mlua::prelude::*;
+use log::{info, warn};
+use steel::steel_vm::engine::Engine;
+use steel::rvals::SteelVal;
+use steel::gc::Gc;
+use steel::HashMap;
+
 use eframe::egui::Color32;
 
 use crate::buffer::{StyledLine, TextBuffer};
@@ -17,21 +21,21 @@ pub struct Gauge {
     pub color: String,
 }
 
-pub struct Trigger {
-    pub pattern: String,
-    pub callback_key: LuaRegistryKey,
+struct Trigger {
+    pattern: String,
+    callback: SteelVal,
 }
 
-pub struct Alias {
-    pub pattern: String,
-    pub callback_key: LuaRegistryKey,
+struct Alias {
+    pattern: String,
+    callback: SteelVal,
 }
 
-pub struct Timer {
-    pub interval_secs: f64,
-    pub callback_key: LuaRegistryKey,
-    pub last_fired: std::time::Instant,
-    pub oneshot: bool,
+struct Timer {
+    interval_secs: f64,
+    callback: SteelVal,
+    last_fired: std::time::Instant,
+    oneshot: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -74,6 +78,7 @@ pub struct ScriptState {
     pub outgoing_gmcp: Vec<(String, serde_json::Value)>,
     pub outgoing_msdp_report: Vec<Vec<String>>,
     pub outgoing_msdp_send: Vec<Vec<String>>,
+    pub outgoing_msdp_list: Vec<String>,
     pub keymaps: Vec<Keymap>,
     pub keep_input: bool,
     pub font_name: Option<String>,
@@ -103,6 +108,7 @@ impl ScriptState {
             outgoing_gmcp: Vec::new(),
             outgoing_msdp_report: Vec::new(),
             outgoing_msdp_send: Vec::new(),
+            outgoing_msdp_list: Vec::new(),
             keymaps: Vec::new(),
             keep_input: false,
             font_name: None,
@@ -119,42 +125,26 @@ impl ScriptState {
 }
 
 pub struct ScriptEngine {
-    lua: Lua,
+    engine: Engine,
     pub state: Arc<Mutex<ScriptState>>,
     triggers: Vec<Trigger>,
     aliases: Vec<Alias>,
     timers: Vec<Timer>,
-    synced_trigger_count: usize,
-    synced_alias_count: usize,
-    synced_timer_count: usize,
 }
 
 impl ScriptEngine {
-    pub fn new() -> LuaResult<Self> {
-        let lua = Lua::new();
+    pub fn new() -> Result<Self, String> {
         let state = Arc::new(Mutex::new(ScriptState::new()));
+        let mut engine = Engine::new();
+        api::register_api(&mut engine, state.clone());
 
-        api::register_api(&lua, state.clone())?;
-
-        Ok(Self {
-            lua,
-            state,
-            triggers: Vec::new(),
-            aliases: Vec::new(),
-            timers: Vec::new(),
-            synced_trigger_count: 0,
-            synced_alias_count: 0,
-            synced_timer_count: 0,
-        })
+        Ok(Self { engine, state, triggers: Vec::new(), aliases: Vec::new(), timers: Vec::new() })
     }
 
-    pub fn load_script(&mut self, code: &str) -> LuaResult<()> {
+    pub fn load_script(&mut self, code: &str) -> Result<(), String> {
         self.triggers.clear();
         self.aliases.clear();
         self.timers.clear();
-        self.synced_trigger_count = 0;
-        self.synced_alias_count = 0;
-        self.synced_timer_count = 0;
 
         {
             let mut st = self.state.lock().unwrap();
@@ -166,9 +156,11 @@ impl ScriptEngine {
             st.panes = panes;
             st.gauges = gauges;
         }
-        api::register_api(&self.lua, self.state.clone())?;
 
-        self.lua.load(code).exec()?;
+        self.engine = Engine::new();
+        api::register_api(&mut self.engine, self.state.clone());
+
+        self.engine.run(code.to_string()).map_err(|e| format!("{e}"))?;
         self.sync_registrations();
         info!("Script loaded: {} triggers, {} aliases, {} timers",
             self.triggers.len(), self.aliases.len(), self.timers.len());
@@ -180,91 +172,70 @@ impl ScriptEngine {
     }
 
     fn sync_registrations(&mut self) {
-        let globals = self.lua.globals();
-
-        if let Ok(triggers) = globals.get::<LuaTable>("_triggers") {
-            let count = triggers.len().unwrap_or(0) as usize;
-            if count > self.synced_trigger_count {
-                debug!("Syncing {} new triggers", count - self.synced_trigger_count);
-            }
-            for i in (self.synced_trigger_count + 1)..=count {
-                if let Ok(v) = triggers.get::<LuaTable>(i as i64) {
-                    if let (Ok(pattern), Ok(callback)) = (v.get::<String>("pattern"), v.get::<LuaFunction>("callback")) {
-                        if let Ok(key) = self.lua.create_registry_value(callback) {
-                            self.triggers.push(Trigger { pattern, callback_key: key });
-                        }
+        self.triggers.clear();
+        self.aliases.clear();
+        self.timers.clear();
+        if let Ok(val) = self.engine.extract_value("*triggers*") {
+            for item in steel_list_iter(&val) {
+                if let (Some(pattern), Some(callback)) = (steel_car(&item), steel_cdr(&item)) {
+                    if let SteelVal::StringV(s) = pattern {
+                        self.triggers.push(Trigger { pattern: s.to_string(), callback });
                     }
                 }
             }
-            self.synced_trigger_count = count;
         }
-
-        if let Ok(aliases) = globals.get::<LuaTable>("_aliases") {
-            let count = aliases.len().unwrap_or(0) as usize;
-            if count > self.synced_alias_count {
-                debug!("Syncing {} new aliases", count - self.synced_alias_count);
-            }
-            for i in (self.synced_alias_count + 1)..=count {
-                if let Ok(v) = aliases.get::<LuaTable>(i as i64) {
-                    if let (Ok(pattern), Ok(callback)) = (v.get::<String>("pattern"), v.get::<LuaFunction>("callback")) {
-                        if let Ok(key) = self.lua.create_registry_value(callback) {
-                            self.aliases.push(Alias { pattern, callback_key: key });
-                        }
+        if let Ok(val) = self.engine.extract_value("*aliases*") {
+            for item in steel_list_iter(&val) {
+                if let (Some(pattern), Some(callback)) = (steel_car(&item), steel_cdr(&item)) {
+                    if let SteelVal::StringV(s) = pattern {
+                        self.aliases.push(Alias { pattern: s.to_string(), callback });
                     }
                 }
             }
-            self.synced_alias_count = count;
         }
-
-        if let Ok(timers) = globals.get::<LuaTable>("_timers") {
-            let count = timers.len().unwrap_or(0) as usize;
-            if count > self.synced_timer_count {
-                debug!("Syncing {} new timers", count - self.synced_timer_count);
-            }
-            for i in (self.synced_timer_count + 1)..=count {
-                if let Ok(v) = timers.get::<LuaTable>(i as i64) {
-                    let interval: f64 = v.get("interval").unwrap_or(1.0);
-                    let oneshot: bool = v.get("oneshot").unwrap_or(false);
-                    if let Ok(callback) = v.get::<LuaFunction>("callback") {
-                        if let Ok(key) = self.lua.create_registry_value(callback) {
-                            self.timers.push(Timer {
-                                interval_secs: interval,
-                                callback_key: key,
-                                last_fired: std::time::Instant::now(),
-                                oneshot,
-                            });
-                        }
+        if let Ok(val) = self.engine.extract_value("*timers*") {
+            for item in steel_list_iter(&val) {
+                if let Some(fields) = steel_list_to_vec(&item) {
+                    if fields.len() >= 3 {
+                        let interval = steel_to_f64(&fields[0]).unwrap_or(1.0);
+                        let oneshot = matches!(&fields[1], SteelVal::BoolV(true));
+                        let callback = fields[2].clone();
+                        self.timers.push(Timer {
+                            interval_secs: interval,
+                            callback,
+                            last_fired: std::time::Instant::now(),
+                            oneshot,
+                        });
                     }
                 }
             }
-            self.synced_timer_count = count;
         }
     }
 
     pub fn handle_line(&mut self, line: &str) -> bool {
-        let globals = self.lua.globals();
-
-        if let Ok(on_line) = globals.get::<LuaFunction>("on_line") {
-            match on_line.call::<LuaValue>(line.to_string()) {
-                Ok(LuaValue::Boolean(false)) => return false,
-                Ok(_) => {}
-                Err(e) => self.append_system_message(&format!("[on_line error: {e}]")),
+        if let Ok(on_line) = self.engine.extract_value("on-line") {
+            if !matches!(on_line, SteelVal::Void) {
+                match self.engine.call_function_with_args(
+                    on_line,
+                    vec![SteelVal::StringV(line.to_string().into())],
+                ) {
+                    Ok(SteelVal::BoolV(false)) => return false,
+                    Err(e) => self.append_system_message(&format!("[on-line error: {e}]")),
+                    _ => {}
+                }
             }
         }
 
-        for trigger in &self.triggers {
-            if let Ok(re) = regex::Regex::new(&trigger.pattern) {
+        for i in 0..self.triggers.len() {
+            if let Ok(re) = regex::Regex::new(&self.triggers[i].pattern) {
                 if let Some(captures) = re.captures(line) {
-                    let callback: LuaFunction = self.lua.registry_value(&trigger.callback_key).unwrap();
-                    let args: Vec<String> = captures
+                    let args: Vec<SteelVal> = captures
                         .iter()
                         .skip(1)
-                        .filter_map(|m| m.map(|m| m.as_str().to_string()))
+                        .filter_map(|m| m.map(|m| SteelVal::StringV(m.as_str().to_string().into())))
                         .collect();
-                    let lua_args = self.lua.create_sequence_from(args).unwrap();
-                    if let Err(e) = callback.call::<()>(LuaMultiValue::from_vec(
-                        lua_args.sequence_values::<LuaValue>().filter_map(|v| v.ok()).collect(),
-                    )) {
+                    let callback = self.triggers[i].callback.clone();
+                    if let Err(e) = self.engine.call_function_with_args(callback, args) {
                         self.append_system_message(&format!("[trigger error: {e}]"));
                     }
                 }
@@ -275,19 +246,16 @@ impl ScriptEngine {
     }
 
     pub fn handle_input(&mut self, input: &str) -> bool {
-        for alias in &self.aliases {
-            if let Ok(re) = regex::Regex::new(&alias.pattern) {
+        for i in 0..self.aliases.len() {
+            if let Ok(re) = regex::Regex::new(&self.aliases[i].pattern) {
                 if let Some(captures) = re.captures(input) {
-                    let callback: LuaFunction = self.lua.registry_value(&alias.callback_key).unwrap();
-                    let args: Vec<String> = captures
+                    let args: Vec<SteelVal> = captures
                         .iter()
                         .skip(1)
-                        .filter_map(|m| m.map(|m| m.as_str().to_string()))
+                        .filter_map(|m| m.map(|m| SteelVal::StringV(m.as_str().to_string().into())))
                         .collect();
-                    let lua_args = self.lua.create_sequence_from(args).unwrap();
-                    if let Err(e) = callback.call::<()>(LuaMultiValue::from_vec(
-                        lua_args.sequence_values::<LuaValue>().filter_map(|v| v.ok()).collect(),
-                    )) {
+                    let callback = self.aliases[i].callback.clone();
+                    if let Err(e) = self.engine.call_function_with_args(callback, args) {
                         self.append_system_message(&format!("[alias error: {e}]"));
                     }
                     return false;
@@ -297,65 +265,51 @@ impl ScriptEngine {
         true
     }
 
-    pub fn handle_gmcp(&mut self, package: &str, data: &serde_json::Value) {
-        let globals = self.lua.globals();
-        if let Ok(on_gmcp) = globals.get::<LuaFunction>("on_gmcp") {
-            let lua_data = self.lua.to_value(data).unwrap_or(LuaValue::Nil);
-            if let Err(e) = on_gmcp.call::<()>((package.to_string(), lua_data)) {
-                self.append_system_message(&format!("[on_gmcp error: {e}]"));
+    fn call_hook(&mut self, name: &str, args: Vec<SteelVal>) {
+        if let Ok(func) = self.engine.extract_value(name) {
+            if !matches!(func, SteelVal::Void) {
+                if let Err(e) = self.engine.call_function_with_args(func, args) {
+                    self.append_system_message(&format!("[{name} error: {e}]"));
+                }
             }
         }
+    }
+
+    pub fn handle_gmcp(&mut self, package: &str, data: &serde_json::Value) {
+        let steel_data = json_to_steel(data);
+        self.call_hook("on-gmcp", vec![
+            SteelVal::StringV(package.to_string().into()),
+            steel_data,
+        ]);
     }
 
     pub fn handle_msdp(&mut self, data: &serde_json::Value) {
-        let globals = self.lua.globals();
-        if let Ok(on_msdp) = globals.get::<LuaFunction>("on_msdp") {
-            let lua_data = self.lua.to_value(data).unwrap_or(LuaValue::Nil);
-            if let Err(e) = on_msdp.call::<()>(lua_data) {
-                self.append_system_message(&format!("[on_msdp error: {e}]"));
-            }
-        }
+        self.call_hook("on-msdp", vec![json_to_steel(data)]);
     }
 
     pub fn handle_input_hook(&mut self, input: &str) {
-        let globals = self.lua.globals();
-        if let Ok(on_input) = globals.get::<LuaFunction>("on_input") {
-            if let Err(e) = on_input.call::<()>(input.to_string()) {
-                self.append_system_message(&format!("[on_input error: {e}]"));
-            }
-        }
+        self.call_hook("on-input", vec![SteelVal::StringV(input.to_string().into())]);
     }
 
     pub fn handle_connect(&mut self) {
-        let globals = self.lua.globals();
-        if let Ok(f) = globals.get::<LuaFunction>("on_connect") {
-            if let Err(e) = f.call::<()>(()) {
-                self.append_system_message(&format!("[on_connect error: {e}]"));
-            }
-        }
+        self.call_hook("on-connect", vec![]);
         self.sync_registrations();
     }
 
     pub fn handle_disconnect(&mut self) {
-        let globals = self.lua.globals();
-        if let Ok(f) = globals.get::<LuaFunction>("on_disconnect") {
-            if let Err(e) = f.call::<()>(()) {
-                self.append_system_message(&format!("[on_disconnect error: {e}]"));
-            }
-        }
+        self.call_hook("on-disconnect", vec![]);
         self.sync_registrations();
     }
 
     pub fn tick_timers(&mut self) {
-        self.sync_registrations();
         let now = std::time::Instant::now();
         let mut to_remove = Vec::new();
         let mut errors = Vec::new();
         for (i, timer) in self.timers.iter_mut().enumerate() {
             if now.duration_since(timer.last_fired).as_secs_f64() >= timer.interval_secs {
                 timer.last_fired = now;
-                let callback: LuaFunction = self.lua.registry_value(&timer.callback_key).unwrap();
-                if let Err(e) = callback.call::<()>(()) {
+                let callback = timer.callback.clone();
+                if let Err(e) = self.engine.call_function_with_args(callback, vec![]) {
                     errors.push(format!("[timer error: {e}]"));
                 }
                 if timer.oneshot {
@@ -369,7 +323,6 @@ impl ScriptEngine {
         for msg in errors {
             self.append_system_message(&msg);
         }
-        self.sync_registrations();
     }
 
     pub fn trigger_count(&self) -> usize { self.triggers.len() }
@@ -392,6 +345,10 @@ impl ScriptEngine {
         std::mem::take(&mut self.state.lock().unwrap().outgoing_msdp_send)
     }
 
+    pub fn drain_msdp_lists(&self) -> Vec<String> {
+        std::mem::take(&mut self.state.lock().unwrap().outgoing_msdp_list)
+    }
+
     pub fn append_to_main(&self, line: &str) {
         let mut st = self.state.lock().unwrap();
         let palette = st.ansi_palette;
@@ -406,5 +363,72 @@ impl ScriptEngine {
         let mut st = self.state.lock().unwrap();
         let main_buf = st.panes.entry("main".into()).or_insert_with(|| TextBuffer::new(10000));
         main_buf.append_line(line);
+    }
+}
+
+fn steel_list_iter(val: &SteelVal) -> Vec<SteelVal> {
+    match val {
+        SteelVal::ListV(list) => list.iter().cloned().collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn steel_car(val: &SteelVal) -> Option<SteelVal> {
+    match val {
+        SteelVal::Pair(p) => Some(p.car().clone()),
+        SteelVal::ListV(list) => list.first().cloned(),
+        _ => None,
+    }
+}
+
+fn steel_cdr(val: &SteelVal) -> Option<SteelVal> {
+    match val {
+        SteelVal::Pair(p) => Some(p.cdr().clone()),
+        SteelVal::ListV(list) => list.get(1).cloned(),
+        _ => None,
+    }
+}
+
+fn steel_list_to_vec(val: &SteelVal) -> Option<Vec<SteelVal>> {
+    match val {
+        SteelVal::ListV(list) => Some(list.iter().cloned().collect()),
+        _ => None,
+    }
+}
+
+fn steel_to_f64(val: &SteelVal) -> Option<f64> {
+    match val {
+        SteelVal::NumV(n) => Some(*n),
+        SteelVal::IntV(n) => Some(*n as f64),
+        _ => None,
+    }
+}
+
+pub fn json_to_steel(val: &serde_json::Value) -> SteelVal {
+    match val {
+        serde_json::Value::Null => SteelVal::Void,
+        serde_json::Value::Bool(b) => SteelVal::BoolV(*b),
+        serde_json::Value::Number(n) => n.as_f64()
+            .map(|f| {
+                if f.fract() == 0.0 && f.abs() < isize::MAX as f64 {
+                    SteelVal::IntV(f as isize)
+                } else {
+                    SteelVal::NumV(f)
+                }
+            })
+            .unwrap_or(SteelVal::Void),
+        serde_json::Value::String(s) => SteelVal::StringV(s.clone().into()),
+        serde_json::Value::Array(arr) =>
+            SteelVal::ListV(arr.iter().map(json_to_steel).collect()),
+        serde_json::Value::Object(map) => {
+            let mut hm = HashMap::new();
+            for (k, v) in map {
+                hm = hm.update(
+                    SteelVal::StringV(k.clone().into()),
+                    json_to_steel(v),
+                );
+            }
+            SteelVal::HashMapV(Gc::new(hm).into())
+        }
     }
 }

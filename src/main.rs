@@ -1,7 +1,9 @@
 mod ansi;
 mod app;
 mod buffer;
+#[cfg(not(target_arch = "wasm32"))]
 mod connection;
+#[cfg(not(target_arch = "wasm32"))]
 mod probe;
 mod profile;
 mod protocol;
@@ -10,11 +12,13 @@ mod telnet;
 mod themes;
 mod ui;
 
+#[cfg(not(target_arch = "wasm32"))]
 struct DualWriter {
     stderr: std::io::Stderr,
     file: std::sync::Mutex<std::fs::File>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl std::io::Write for DualWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let _ = self.stderr.write(buf);
@@ -28,6 +32,7 @@ impl std::io::Write for DualWriter {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
     let log_path = "/tmp/mudular.log";
     let log_file = std::fs::File::create(log_path).expect("Failed to create log file");
@@ -54,13 +59,27 @@ fn main() -> eframe::Result<()> {
     )
 }
 
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    let web_options = eframe::WebOptions::default();
+    wasm_bindgen_futures::spawn_local(async {
+        let _ = eframe::WebRunner::new()
+            .start(
+                "the_canvas_id",
+                web_options,
+                Box::new(|cc| Ok(Box::new(app::MudApp::new(cc)))),
+            )
+            .await;
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use crate::scripting::ScriptEngine;
 
     #[test]
     fn test_nukefire_profile_loads() {
-        let code = include_str!("../profiles/nukefire/init.lua");
+        let code = include_str!("../profiles/nukefire/init.scm");
         let mut engine = ScriptEngine::new().expect("engine creation failed");
         engine.load_script(code).expect("nukefire script failed to load");
         
@@ -72,7 +91,7 @@ mod tests {
     
     #[test]
     fn test_nukefire_on_line() {
-        let code = include_str!("../profiles/nukefire/init.lua");
+        let code = include_str!("../profiles/nukefire/init.scm");
         let mut engine = ScriptEngine::new().expect("engine creation failed");
         engine.load_script(code).expect("script load failed");
         
@@ -91,7 +110,7 @@ mod tests {
         let templates = crate::profile::Profile::templates();
         for template in &templates {
             let mut engine = ScriptEngine::new().expect("engine creation failed");
-            engine.load_script(&template.lua_code)
+            engine.load_script(&template.script_code)
                 .unwrap_or_else(|e| panic!("template '{}' failed to load: {e}", template.name));
             let st = engine.state.lock().unwrap();
             assert!(st.panes.contains_key("main"), "template '{}' missing main pane", template.name);
@@ -101,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_nukefire_keymaps() {
-        let code = include_str!("../profiles/nukefire/init.lua");
+        let code = include_str!("../profiles/nukefire/init.scm");
         let mut engine = ScriptEngine::new().expect("engine creation failed");
         engine.load_script(code).expect("script load failed");
 

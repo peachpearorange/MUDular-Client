@@ -1,6 +1,7 @@
 use eframe::egui;
 use log::{info, trace, warn};
 
+#[cfg(not(target_arch = "wasm32"))]
 use crate::connection::{ConnEvent, Connection};
 use crate::profile::Profile;
 use crate::scripting::ScriptEngine;
@@ -19,19 +20,26 @@ struct Appearance {
 }
 
 impl Appearance {
+    #[cfg(not(target_arch = "wasm32"))]
     fn path() -> Option<std::path::PathBuf> {
-        directories::ProjectDirs::from("com", "mudular", "MUDular Client")
+        directories::ProjectDirs::from("com", "mudular", "mudular-client")
             .map(|dirs| dirs.config_dir().join("appearance.json"))
     }
 
     fn load() -> Self {
-        Self::path()
-            .and_then(|p| std::fs::read_to_string(p).ok())
-            .and_then(|s| serde_json::from_str(&s).ok())
-            .unwrap_or(Self { font_size: 14.0, ..Default::default() })
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            Self::path()
+                .and_then(|p| std::fs::read_to_string(p).ok())
+                .and_then(|s| serde_json::from_str(&s).ok())
+                .unwrap_or(Self { font_size: 14.0, ..Default::default() })
+        }
+        #[cfg(target_arch = "wasm32")]
+        Self { font_size: 14.0, ..Default::default() }
     }
 
     fn save(&self) {
+        #[cfg(not(target_arch = "wasm32"))]
         if let Some(path) = Self::path() {
             if let Some(dir) = path.parent() {
                 let _ = std::fs::create_dir_all(dir);
@@ -41,6 +49,7 @@ impl Appearance {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn find_system_font(name: &str) -> Option<std::path::PathBuf> {
     let normalized = name.replace(' ', "");
     let candidates = [
@@ -66,6 +75,7 @@ fn find_system_font(name: &str) -> Option<std::path::PathBuf> {
     None
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn find_file_recursive(dir: &std::path::Path, filename: &str) -> Option<std::path::PathBuf> {
     let entries = std::fs::read_dir(dir).ok()?;
     for entry in entries.flatten() {
@@ -110,6 +120,7 @@ fn key_name_to_egui(name: &str) -> Option<egui::Key> {
 }
 
 fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
+    #[cfg(not(target_arch = "wasm32"))]
     if let Some(name) = &appearance.font_name {
         if let Some(path) = find_system_font(name) {
             if let Ok(data) = std::fs::read(&path) {
@@ -166,12 +177,14 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) {
 struct Session {
     profile_idx: usize,
     name: String,
+    #[cfg(not(target_arch = "wasm32"))]
     connection: Option<Connection>,
     script_engine: ScriptEngine,
     input: InputLine,
 }
 
 impl Session {
+    #[cfg(not(target_arch = "wasm32"))]
     fn process_events(&mut self) -> bool {
         let Some(conn) = &self.connection else { return false };
         let events = conn.poll_events();
@@ -202,6 +215,16 @@ impl Session {
                 }
                 ConnEvent::MsdpReceived(data) => {
                     info!("MSDP: {data}");
+                    if let Some(vars) = data.get("REPORTABLE_VARIABLES") {
+                        if let Some(arr) = vars.as_array() {
+                            let names: Vec<&str> = arr.iter()
+                                .filter_map(|v| v.as_str())
+                                .collect();
+                            self.script_engine.append_system_message(
+                                &format!("[MSDP reportable variables: {}]", names.join(", "))
+                            );
+                        }
+                    }
                     self.script_engine.handle_msdp(&data);
                 }
                 ConnEvent::Disconnected(reason) => {
@@ -220,6 +243,7 @@ impl Session {
         disconnected
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn process_outgoing(&mut self) {
         let Some(conn) = &self.connection else { return };
         for cmd in self.script_engine.drain_commands() {
@@ -238,6 +262,10 @@ impl Session {
             info!("Sending MSDP send for: {vars:?}");
             conn.send_msdp_send(vars);
         }
+        for what in self.script_engine.drain_msdp_lists() {
+            info!("Sending MSDP list: {what}");
+            conn.send_msdp_list(what);
+        }
     }
 }
 
@@ -249,6 +277,7 @@ pub struct MudApp {
     last_active_tab: usize,
     editor: ScriptEditor,
     editor_profile_idx: Option<usize>,
+    #[cfg(not(target_arch = "wasm32"))]
     runtime: tokio::runtime::Runtime,
     new_profile_name: String,
     new_profile_host: String,
@@ -259,16 +288,22 @@ pub struct MudApp {
     rename_name: String,
     loaded_font_name: Option<String>,
     delete_confirm_idx: Option<usize>,
+    #[cfg(not(target_arch = "wasm32"))]
     mssp_info: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
+    #[cfg(not(target_arch = "wasm32"))]
     mssp_rx: std::sync::mpsc::Receiver<(String, std::collections::HashMap<String, String>)>,
+    #[cfg(not(target_arch = "wasm32"))]
     mssp_tx: std::sync::mpsc::Sender<(String, std::collections::HashMap<String, String>)>,
+    #[cfg(not(target_arch = "wasm32"))]
     mssp_probed: std::collections::HashSet<String>,
 }
 
 impl MudApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        #[cfg(not(target_arch = "wasm32"))]
         let runtime = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
 
+        #[cfg(not(target_arch = "wasm32"))]
         let (mssp_tx, mssp_rx) = std::sync::mpsc::channel();
 
         let appearance = Appearance::load();
@@ -282,6 +317,7 @@ impl MudApp {
             last_active_tab: 0,
             editor: ScriptEditor::new(),
             editor_profile_idx: None,
+            #[cfg(not(target_arch = "wasm32"))]
             runtime,
             new_profile_name: String::new(),
             new_profile_host: String::new(),
@@ -292,13 +328,18 @@ impl MudApp {
             rename_name: String::new(),
             loaded_font_name: None,
             delete_confirm_idx: None,
+            #[cfg(not(target_arch = "wasm32"))]
             mssp_info: std::collections::HashMap::new(),
+            #[cfg(not(target_arch = "wasm32"))]
             mssp_rx,
+            #[cfg(not(target_arch = "wasm32"))]
             mssp_tx,
+            #[cfg(not(target_arch = "wasm32"))]
             mssp_probed: std::collections::HashSet::new(),
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn connect_to_profile(&mut self, idx: usize) {
         let profile = &self.profiles[idx];
         info!("Connecting to profile '{}' at {}:{}", profile.name, profile.host, profile.port);
@@ -309,11 +350,11 @@ impl MudApp {
             &self.runtime,
         );
 
-        let mut engine = ScriptEngine::new().expect("Failed to create Lua engine");
+        let mut engine = ScriptEngine::new().expect("Failed to create script engine");
         engine.state.lock().unwrap().profile_dir = profile.path.as_ref()
             .and_then(|p| p.parent())
             .map(|p| p.to_path_buf());
-        if let Err(e) = engine.load_script(&profile.lua_code) {
+        if let Err(e) = engine.load_script(&profile.script_code) {
             engine.append_system_message(&format!("[Script error: {e}]"));
         }
         info!("Script loaded: {} triggers, {} aliases, {} timers",
@@ -329,6 +370,7 @@ impl MudApp {
         self.active_tab = self.sessions.len();
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn disconnect_session(&mut self, session_idx: usize) {
         if let Some(conn) = &self.sessions[session_idx].connection {
             conn.disconnect();
@@ -393,6 +435,7 @@ impl MudApp {
                     }
                 }
                 _ => {
+                    #[cfg(not(target_arch = "wasm32"))]
                     if let Some(conn) = &session.connection {
                         conn.send(&command);
                     }
@@ -468,7 +511,11 @@ impl MudApp {
         render_gauges(ui, &gauges);
 
         let keep_input = session.script_engine.state.lock().unwrap().keep_input;
-        session.input.render(ui, session.connection.is_some(), keep_input, editor_visible);
+        #[cfg(not(target_arch = "wasm32"))]
+        let connected = session.connection.is_some();
+        #[cfg(target_arch = "wasm32")]
+        let connected = false;
+        session.input.render(ui, connected, keep_input, editor_visible);
     }
 }
 
@@ -486,42 +533,45 @@ impl eframe::App for MudApp {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.request_repaint_after(std::time::Duration::from_millis(50));
 
-        while let Ok((key, info)) = self.mssp_rx.try_recv() {
-            self.mssp_info.insert(key, info);
-        }
-        if self.active_tab == 0 {
-            let to_probe: Vec<(String, u16)> = self.profiles.iter()
-                .filter(|p| !self.mssp_probed.contains(&format!("{}:{}", p.host, p.port)))
-                .map(|p| (p.host.clone(), p.port))
-                .collect();
-            for (host, port) in to_probe {
-                let key = format!("{host}:{port}");
-                self.mssp_probed.insert(key);
-                let tx = self.mssp_tx.clone();
-                self.runtime.spawn(async move {
-                    if let Some(info) = crate::probe::probe_mssp(&host, port).await {
-                        let _ = tx.send((format!("{host}:{port}"), info));
-                    }
-                });
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            while let Ok((key, info)) = self.mssp_rx.try_recv() {
+                self.mssp_info.insert(key, info);
             }
-        }
+            if self.active_tab == 0 {
+                let to_probe: Vec<(String, u16)> = self.profiles.iter()
+                    .filter(|p| !self.mssp_probed.contains(&format!("{}:{}", p.host, p.port)))
+                    .map(|p| (p.host.clone(), p.port))
+                    .collect();
+                for (host, port) in to_probe {
+                    let key = format!("{host}:{port}");
+                    self.mssp_probed.insert(key);
+                    let tx = self.mssp_tx.clone();
+                    self.runtime.spawn(async move {
+                        if let Some(info) = crate::probe::probe_mssp(&host, port).await {
+                            let _ = tx.send((format!("{host}:{port}"), info));
+                        }
+                    });
+                }
+            }
 
-        let mut disconnected = Vec::new();
-        for (i, session) in self.sessions.iter_mut().enumerate() {
-            if session.process_events() {
-                disconnected.push(i);
+            let mut disconnected = Vec::new();
+            for (i, session) in self.sessions.iter_mut().enumerate() {
+                if session.process_events() {
+                    disconnected.push(i);
+                }
+                session.script_engine.tick_timers();
+                session.process_outgoing();
             }
-            session.script_engine.tick_timers();
-            session.process_outgoing();
-        }
-        for i in disconnected.into_iter().rev() {
-            self.sessions.remove(i);
-            if self.active_tab > 0 {
-                let active_si = self.active_tab - 1;
-                if active_si == i {
-                    self.active_tab = 0;
-                } else if active_si > i {
-                    self.active_tab -= 1;
+            for i in disconnected.into_iter().rev() {
+                self.sessions.remove(i);
+                if self.active_tab > 0 {
+                    let active_si = self.active_tab - 1;
+                    if active_si == i {
+                        self.active_tab = 0;
+                    } else if active_si > i {
+                        self.active_tab -= 1;
+                    }
                 }
             }
         }
@@ -549,6 +599,7 @@ impl eframe::App for MudApp {
         }
         self.apply_theme(ctx);
 
+        #[cfg(not(target_arch = "wasm32"))]
         if let Some(si) = self.active_tab.checked_sub(1) {
             if let Some(session) = self.sessions.get_mut(si) {
                 if let Some(cmd) = session.input.take_submitted() {
@@ -570,7 +621,7 @@ impl eframe::App for MudApp {
         match editor_action {
             EditorAction::SaveAndReload(code) => {
                 if let Some(profile_idx) = self.editor_profile_idx {
-                    self.profiles[profile_idx].lua_code = code.clone();
+                    self.profiles[profile_idx].script_code = code.clone();
                     let _ = self.profiles[profile_idx].save();
                     for session in &mut self.sessions {
                         if session.profile_idx == profile_idx {
@@ -621,12 +672,19 @@ impl eframe::App for MudApp {
         ui.separator();
 
         if self.active_tab == 0 {
-            let action = profile_list::render_profile_list(ui, &self.profiles, &self.mssp_info);
+            #[cfg(not(target_arch = "wasm32"))]
+            let mssp = &self.mssp_info;
+            #[cfg(target_arch = "wasm32")]
+            let mssp = &std::collections::HashMap::new();
+            let action = profile_list::render_profile_list(ui, &self.profiles, mssp);
             match action {
+                #[cfg(not(target_arch = "wasm32"))]
                 ProfileAction::Connect(idx) => self.connect_to_profile(idx),
+                #[cfg(target_arch = "wasm32")]
+                ProfileAction::Connect(_) => {},
                 ProfileAction::EditScript(idx) => {
                     self.editor_profile_idx = Some(idx);
-                    self.editor.open(&self.profiles[idx].lua_code);
+                    self.editor.open(&self.profiles[idx].script_code);
                 }
                 ProfileAction::ShowTemplatePicker => {
                     self.show_template_picker = true;
@@ -678,9 +736,10 @@ impl eframe::App for MudApp {
             if si < self.sessions.len() {
                 let profile_idx = self.sessions[si].profile_idx;
                 self.editor_profile_idx = Some(profile_idx);
-                self.editor.open(&self.profiles[profile_idx].lua_code);
+                self.editor.open(&self.profiles[profile_idx].script_code);
             }
         }
+        #[cfg(not(target_arch = "wasm32"))]
         if want_disconnect && self.active_tab > 0 {
             let si = self.active_tab - 1;
             if si < self.sessions.len() {
@@ -694,9 +753,9 @@ impl MudApp {
     fn create_from_template(&mut self, template_idx: usize) {
         let template = &self.templates[template_idx];
         let name = Profile::unique_name(&template.name, &self.profiles);
-        let lua_code = template.lua_code.replacen(
-            &format!("name = \"{}\"", template.name),
-            &format!("name = \"{name}\""),
+        let script_code = template.script_code.replacen(
+            &format!("(define name \"{}\")", template.name),
+            &format!("(define name \"{name}\")"),
             1,
         );
         let mut profile = Profile {
@@ -704,7 +763,7 @@ impl MudApp {
             host: template.host.clone(),
             port: template.port,
             tls: template.tls,
-            lua_code,
+            script_code,
             path: None,
             is_preset: false,
         };
@@ -735,28 +794,24 @@ impl MudApp {
                 if crate::ui::term_button(ui, "Create").clicked() && !self.new_profile_name.is_empty() {
                     let port = self.new_profile_port.parse().unwrap_or(23);
                     let code = format!(
-                        r#"name = "{name}"
-host = "{host}"
-port = {port}
+                        r#"(define name "{name}")
+(define host "{host}")
+(define port {port})
 
-mud.load_theme("Onenord")
+(load-theme "Onenord")
 
-mud.keymap("PageUp", "scroll_up")
-mud.keymap("PageDown", "scroll_down")
+(keymap "PageUp" "scroll_up 20")
+(keymap "PageDown" "scroll_down 20")
 
-local main = mud.pane("main")
+(pane "main")
 
-function on_connect()
-    main:print("[Connected to {name}]")
-end
+(define (on-connect)
+  (pane-print "main" "[Connected to {name}]"))
 
-function on_disconnect()
-    main:print("[Disconnected from {name}]")
-end
+(define (on-disconnect)
+  (pane-print "main" "[Disconnected from {name}]"))
 
-function on_line(line)
-    return true
-end
+(define (on-line line) #t)
 "#,
                         name = self.new_profile_name,
                         host = self.new_profile_host,
@@ -767,7 +822,7 @@ end
                         host: self.new_profile_host.clone(),
                         port,
                         tls: false,
-                        lua_code: code,
+                        script_code: code,
                         path: None,
                         is_preset: false,
                     };
@@ -832,6 +887,7 @@ end
                 let _ = self.profiles[idx].delete();
                 self.profiles.remove(idx);
                 self.delete_confirm_idx = None;
+                #[cfg(not(target_arch = "wasm32"))]
                 self.mssp_probed.clear();
             } else if cancel || !open {
                 self.delete_confirm_idx = None;

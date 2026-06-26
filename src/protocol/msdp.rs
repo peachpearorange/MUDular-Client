@@ -132,7 +132,6 @@ fn read_string(data: &[u8], start: usize) -> (String, usize) {
     (s, i)
 }
 
-#[allow(dead_code)]
 pub fn encode_msdp_var(name: &str, value: &str) -> Vec<u8> {
     let mut buf = Vec::new();
     buf.push(MSDP_VAR);
