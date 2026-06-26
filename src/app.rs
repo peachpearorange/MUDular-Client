@@ -167,6 +167,7 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<Stri
   }
 
   let mut style = (*ctx.global_style()).clone();
+  style.visuals = egui::Visuals::dark();
   let font = egui::FontId::monospace(appearance.font_size);
   style.text_styles.insert(egui::TextStyle::Monospace, font.clone());
   style.text_styles.insert(egui::TextStyle::Body, font.clone());
