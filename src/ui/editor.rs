@@ -96,32 +96,37 @@ impl ScriptEditor {
             .get(&egui::TextStyle::Monospace)
             .map(|f| f.size)
             .unwrap_or(13.0);
+          let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+          let desired_rows = (ui.available_height() / row_height) as usize;
 
           let output = egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
             theme.modify_style(ui, fontsize);
-            egui::ScrollArea::horizontal().show(ui, |ui| {
-              egui::TextEdit::multiline(&mut self.code)
-                .id_source("script editor")
-                .lock_focus(true)
-                .desired_rows(30)
-                .desired_width(f32::INFINITY)
-                .layouter(&mut |ui: &egui::Ui,
-                                 text: &dyn egui::TextBuffer,
-                                 _wrap_width: f32| {
-                  ui.fonts_mut(|f| {
-                    f.layout_job(layout_with_rainbow_parens(
-                      text.as_str(),
-                      syntax,
-                      &theme,
-                      fontsize
-                    ))
+            egui::ScrollArea::horizontal()
+              .auto_shrink([true, false])
+              .show(ui, |ui| {
+                egui::TextEdit::multiline(&mut self.code)
+                  .id_source("script editor")
+                  .lock_focus(true)
+                  .desired_rows(desired_rows.max(3))
+                  .desired_width(f32::INFINITY)
+                  .layouter(&mut |ui: &egui::Ui,
+                                   text: &dyn egui::TextBuffer,
+                                   _wrap_width: f32| {
+                    ui.fonts_mut(|f| {
+                      f.layout_job(layout_with_rainbow_parens(
+                        text.as_str(),
+                        syntax,
+                        &theme,
+                        fontsize
+                      ))
+                    })
                   })
-                })
-                .show(ui)
-            }).inner
+                  .show(ui)
+              }).inner
           }).inner;
 
-          self.show_completion_popup(ctx, &output, fontsize);
+          let max_popup_height = ui.max_rect().bottom() - output.response.rect.bottom();
+          self.show_completion_popup(ctx, &output, fontsize, max_popup_height);
         });
       self.visible = visible;
     }
@@ -133,7 +138,8 @@ impl ScriptEditor {
     &mut self,
     ctx: &egui::Context,
     output: &egui::text_edit::TextEditOutput,
-    fontsize: f32
+    fontsize: f32,
+    max_popup_height: f32
   ) {
     if !output.response.has_focus() {
       return;
@@ -213,7 +219,8 @@ impl ScriptEditor {
     .show(|ui| {
       ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
       egui::ScrollArea::vertical()
-        .auto_shrink([true, true])
+        .auto_shrink([true, false])
+        .max_height(max_popup_height.max(50.0))
         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
         .show(ui, |ui| {
           for (i, completion) in completions.iter().enumerate() {
@@ -239,6 +246,9 @@ impl ScriptEditor {
                   egui::Color32::TRANSPARENT
                 })
             );
+            if selected {
+              ui.scroll_to_rect(button.rect, None);
+            }
             if button.clicked() {
               let suffix = &completion[prefix.len()..];
               ctx.input_mut(|input| input.events.push(egui::Event::Paste(suffix.to_string())));
