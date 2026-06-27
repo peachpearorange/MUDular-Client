@@ -76,6 +76,7 @@ pub struct ScriptState {
   pub outgoing_msdp_report: Vec<Vec<String>>,
   pub outgoing_msdp_send: Vec<Vec<String>>,
   pub outgoing_msdp_list: Vec<String>,
+  pub outgoing_reconnect: bool,
   pub keymaps: Vec<Keymap>,
   pub keep_input: bool,
   pub font_name: Option<String>,
@@ -113,6 +114,7 @@ impl ScriptState {
       outgoing_msdp_report: Vec::new(),
       outgoing_msdp_send: Vec::new(),
       outgoing_msdp_list: Vec::new(),
+      outgoing_reconnect: false,
       keymaps: Vec::new(),
       keep_input: false,
       font_name: None,
@@ -290,7 +292,7 @@ impl ScriptEngine {
       Ok(results) => {
         if let Some(val) = results.last() {
           let display = format!("{val}");
-          if display != "Void" && !display.is_empty() {
+          if !display.is_empty() {
             self.append_system_message(&format!("=> {display}"));
           }
         }
@@ -402,6 +404,10 @@ impl ScriptEngine {
 
   pub fn drain_msdp_lists(&self) -> Vec<String> {
     std::mem::take(&mut self.state.lock().unwrap().outgoing_msdp_list)
+  }
+
+  pub fn drain_reconnect(&self) -> bool {
+    std::mem::take(&mut self.state.lock().unwrap().outgoing_reconnect)
   }
 
   pub fn append_to_main(&self, line: &str) {

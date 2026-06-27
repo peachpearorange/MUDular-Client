@@ -59,6 +59,10 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       s.lock().unwrap().outgoing_commands.push(text);
   });
 
+  reg!("mud/reconnect", s => move || {
+      s.lock().unwrap().outgoing_reconnect = true;
+  });
+
   engine.register_fn("mud/strip-ansi", |text: String| -> String { strip_ansi(&text) });
 
   engine.register_fn("mud/regexp-match?", |pattern: String, text: String| -> bool {

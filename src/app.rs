@@ -261,6 +261,31 @@ impl Session {
   }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn connection_for_profile(
+  profile: &Profile,
+  runtime: &tokio::runtime::Runtime
+) -> Option<Connection> {
+  match profile.connection_mode {
+    ConnectionMode::Tcp => {
+      Some(Connection::connect(profile.host.clone(), profile.port, profile.tls, runtime))
+    }
+    ConnectionMode::WebSocket => None
+  }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn connection_for_profile(profile: &Profile) -> Result<Option<Connection>, String> {
+  match profile.connection_mode {
+    ConnectionMode::WebSocket => profile
+      .websocket_url
+      .as_deref()
+      .map(|url| Connection::connect(url, profile.websocket_protocol.as_deref()))
+      .transpose(),
+    ConnectionMode::Tcp => Ok(None)
+  }
+}
+
 pub struct MudApp {
   profiles: Vec<Profile>,
   templates: Vec<Profile>,
@@ -354,19 +379,13 @@ impl MudApp {
     if let Err(e) = engine.load_script(&profile.script_code) {
       engine.append_system_message(&format!("[Script error: {e}]"));
     }
-    let connection = match profile.connection_mode {
-      ConnectionMode::Tcp => Some(Connection::connect(
-        profile.host.clone(),
-        profile.port,
-        profile.tls,
-        &self.runtime
-      )),
-      ConnectionMode::WebSocket => {
-        engine.append_system_message(
+    let connection = if profile.connection_mode == ConnectionMode::WebSocket {
+      engine.append_system_message(
           "[This profile uses WebSocket connections, which are only supported in the web build]"
         );
-        None
-      }
+      None
+    } else {
+      connection_for_profile(profile, &self.runtime)
     };
     info!(
       "Script loaded: {} triggers, {} aliases, {} timers",
@@ -393,23 +412,15 @@ impl MudApp {
       engine.append_system_message(&format!("[Script error: {e}]"));
     }
 
-    let connection = match profile.connection_mode {
-      ConnectionMode::WebSocket => profile
-        .websocket_url
-        .as_deref()
-        .map(|url| Connection::connect(url, profile.websocket_protocol.as_deref()))
-        .transpose()
-        .unwrap_or_else(|e| {
-          engine.append_system_message(&format!("[WebSocket error: {e}]"));
-          None
-        }),
-      ConnectionMode::Tcp => {
-        engine.append_system_message(
-          "[This profile uses TCP connections, which browsers cannot open directly]"
-        );
-        None
-      }
-    };
+    let connection = connection_for_profile(profile).unwrap_or_else(|e| {
+      engine.append_system_message(&format!("[WebSocket error: {e}]"));
+      None
+    });
+    if profile.connection_mode == ConnectionMode::Tcp {
+      engine.append_system_message(
+        "[This profile uses TCP connections, which browsers cannot open directly]"
+      );
+    }
     if profile.connection_mode == ConnectionMode::WebSocket
       && profile.websocket_url.is_none()
     {
@@ -426,6 +437,47 @@ impl MudApp {
       input: InputLine::new()
     });
     self.active_tab = self.sessions.len();
+  }
+
+  #[cfg(not(target_arch = "wasm32"))]
+  fn reconnect_session(&mut self, session_idx: usize) {
+    if let Some(session) = self.sessions.get_mut(session_idx) {
+      let profile = &self.profiles[session.profile_idx];
+      if profile.connection_mode == ConnectionMode::WebSocket {
+        session.script_engine.append_system_message(
+          "[This profile uses WebSocket connections, which are only supported in the web build]"
+        );
+      } else {
+        session.script_engine.append_system_message("[Reconnecting]");
+        session.connection = connection_for_profile(profile, &self.runtime);
+      }
+    }
+  }
+
+  #[cfg(target_arch = "wasm32")]
+  fn reconnect_session(&mut self, session_idx: usize) {
+    if let Some(session) = self.sessions.get_mut(session_idx) {
+      let profile = &self.profiles[session.profile_idx];
+      match connection_for_profile(profile) {
+        Ok(Some(connection)) => {
+          session.script_engine.append_system_message("[Reconnecting]");
+          session.connection = Some(connection);
+        }
+        Ok(None) if profile.connection_mode == ConnectionMode::Tcp => {
+          session.script_engine.append_system_message(
+            "[This profile uses TCP connections, which browsers cannot open directly]"
+          );
+        }
+        Ok(None) => {
+          session.script_engine.append_system_message(
+            "[This WebSocket profile does not define a WebSocket URL]"
+          );
+        }
+        Err(e) => {
+          session.script_engine.append_system_message(&format!("[WebSocket error: {e}]"));
+        }
+      }
+    }
   }
 
   fn disconnect_session(&mut self, session_idx: usize) {
@@ -590,8 +642,7 @@ impl MudApp {
     render_gauges(ui, &gauges);
 
     let keep_input = session.script_engine.state.lock().unwrap().keep_input;
-    let connected = session.connection.is_some();
-    session.input.render(ui, connected, keep_input, editor_visible);
+    session.input.render(ui, true, keep_input, editor_visible);
   }
 }
 
@@ -636,10 +687,17 @@ impl eframe::App for MudApp {
       }
     }
 
-    for session in self.sessions.iter_mut() {
+    let mut reconnect_sessions = Vec::new();
+    for (idx, session) in self.sessions.iter_mut().enumerate() {
       session.process_events();
       session.script_engine.tick_timers();
       session.process_outgoing();
+      if session.script_engine.drain_reconnect() {
+        reconnect_sessions.push(idx);
+      }
+    }
+    for idx in reconnect_sessions {
+      self.reconnect_session(idx);
     }
 
     let scroll_line_height = self
@@ -684,6 +742,9 @@ impl eframe::App for MudApp {
             }
           }
           session.process_outgoing();
+          if session.script_engine.drain_reconnect() {
+            self.reconnect_session(si);
+          }
         }
       }
     }

@@ -618,6 +618,11 @@ fn generate_scheme(t: &GameTemplate) -> String {
   'port {port}
   'tls {tls}{websocket}{websocket_protocol})
 
+;; Enter your character and password here to log in automatically on connect.
+;; Leave empty to log in manually.
+(define character \"\")
+(define password \"\")
+
 ;; Use /(mud/themes) to see available color schemes.
 (mud/load-theme \"Onenord\")
 ;; Use /(mud/fonts) to see available fonts.
@@ -634,7 +639,10 @@ fn generate_scheme(t: &GameTemplate) -> String {
 {map}
 {gauges}
 (mud/on \"connect\" (lambda ()
-  (mud/pane-print \"main\" \"[Connected to {name}]\")))
+  (mud/pane-print \"main\" \"[Connected to {name}]\")
+  (when (not (equal? character \"\"))
+    (timer 0.5 (lambda () (mud/send character)))
+    (timer 1.0 (lambda () (mud/send password))))))
 
 (mud/on \"disconnect\" (lambda ()
   (mud/pane-print \"main\" \"[Disconnected from {name}]\")))
