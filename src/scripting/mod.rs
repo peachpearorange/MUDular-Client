@@ -7,7 +7,7 @@ use {log::{info, warn},
 
 use eframe::egui::Color32;
 
-use crate::{ansi::parse_ansi,
+use crate::{ansi::{DEFAULT_PALETTE, parse_ansi},
             buffer::{StyledLine, TextBuffer}};
 
 #[derive(Clone, Debug)]
@@ -285,6 +285,7 @@ impl ScriptEngine {
   }
 
   pub fn eval_input(&mut self, code: &str) {
+    self.append_system_message(&format!("> {code}"));
     match self.engine.run(code.to_string()) {
       Ok(results) => {
         if let Some(val) = results.last() {
@@ -333,10 +334,8 @@ impl ScriptEngine {
 
   pub fn handle_gmcp(&mut self, package: &str, data: &serde_json::Value) {
     let steel_data = json_to_steel(data);
-    self.call_hook("gmcp", vec![
-      SteelVal::StringV(package.to_string().into()),
-      steel_data,
-    ]);
+    self
+      .call_hook("gmcp", vec![SteelVal::StringV(package.to_string().into()), steel_data]);
   }
 
   pub fn handle_msdp(&mut self, data: &serde_json::Value) {
@@ -425,8 +424,9 @@ impl ScriptEngine {
 
   pub fn append_system_message(&self, msg: &str) {
     warn!("{msg}");
-    let line = StyledLine::plain(msg);
     let mut st = self.state.lock().unwrap();
+    let color = st.ansi_palette.unwrap_or(DEFAULT_PALETTE)[3];
+    let line = StyledLine::foreground(msg, color);
     let main_buf =
       st.panes.entry("main".into()).or_insert_with(|| TextBuffer::new(10000));
     main_buf.append_line(line);

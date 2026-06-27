@@ -3,6 +3,7 @@ mod app;
 mod buffer;
 #[cfg(not(target_arch = "wasm32"))]
 mod connection;
+mod fonts;
 #[cfg(not(target_arch = "wasm32"))]
 mod probe;
 mod profile;

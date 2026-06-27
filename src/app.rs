@@ -51,49 +51,6 @@ impl Appearance {
   }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-fn find_system_font(name: &str) -> Option<std::path::PathBuf> {
-  let normalized = name.replace(' ', "");
-  let candidates = [
-    format!("{normalized}-Regular.ttf"),
-    format!("{normalized}-Regular.otf"),
-    format!("{normalized}.ttf"),
-    format!("{normalized}.otf")
-  ];
-  let mut search_dirs = vec![
-    std::path::PathBuf::from("/usr/share/fonts"),
-    std::path::PathBuf::from("/usr/local/share/fonts"),
-  ];
-  if let Ok(home) = std::env::var("HOME") {
-    search_dirs.push(std::path::PathBuf::from(format!("{home}/.local/share/fonts")));
-  }
-  search_dirs
-    .iter()
-    .flat_map(|dir| candidates.iter().map(move |c| (dir, c)))
-    .find_map(|(dir, candidate)| find_file_recursive(dir, candidate))
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn find_file_recursive(
-  dir: &std::path::Path,
-  filename: &str
-) -> Option<std::path::PathBuf> {
-  std::fs::read_dir(dir).ok()?.flatten().find_map(|entry| {
-    let path = entry.path();
-    if path.is_file()
-      && path
-        .file_name()
-        .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case(filename))
-    {
-      Some(path)
-    } else if path.is_dir() {
-      find_file_recursive(&path, filename)
-    } else {
-      None
-    }
-  })
-}
-
 fn key_name_to_egui(name: &str) -> Option<egui::Key> {
   egui::Key::from_name(name).or_else(|| match name {
     "0" | "num0" => Some(egui::Key::Num0),
@@ -126,28 +83,22 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<Stri
 
   #[cfg(not(target_arch = "wasm32"))]
   if let Some(name) = &appearance.font_name {
-    if let Some(path) = find_system_font(name) {
-      if let Ok(data) = std::fs::read(&path) {
-        let mut fonts = egui::FontDefinitions::default();
-        fonts
-          .font_data
-          .insert("custom_mono".into(), egui::FontData::from_owned(data).into());
-        fonts
-          .families
-          .entry(egui::FontFamily::Monospace)
-          .or_default()
-          .insert(0, "custom_mono".into());
-        fonts
-          .families
-          .entry(egui::FontFamily::Proportional)
-          .or_default()
-          .insert(0, "custom_mono".into());
-        ctx.set_fonts(fonts);
-      } else {
-        warning = Some(format!(
-          "[Font '{name}' was found but could not be loaded; using the default font]"
-        ));
-      }
+    if let Some(data) = crate::fonts::load_system_font(name) {
+      let mut fonts = egui::FontDefinitions::default();
+      fonts
+        .font_data
+        .insert("custom_mono".into(), egui::FontData::from_owned(data).into());
+      fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .insert(0, "custom_mono".into());
+      fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "custom_mono".into());
+      ctx.set_fonts(fonts);
     } else {
       warning = Some(format!("[Font '{name}' is not available; using the default font]"));
     }
@@ -257,7 +208,9 @@ impl Session {
           }
           ConnEvent::Disconnected(reason) => {
             warn!("Disconnected: {reason}");
-            self.script_engine.append_system_message(&format!("[Disconnected: {reason}]"));
+            self
+              .script_engine
+              .append_system_message(&format!("[Disconnected: {reason}]"));
             self.script_engine.handle_disconnect();
             self.connection = None;
           }
@@ -492,82 +445,82 @@ impl MudApp {
   }
 
   fn process_keymaps(&mut self, ctx: &egui::Context) {
-    if let Some(si) = self.active_tab.checked_sub(1).filter(|&i| i < self.sessions.len()) {
-    let session = &mut self.sessions[si];
-    let keymaps = session.script_engine.state.lock().unwrap().keymaps.clone();
-    let mut matched = false;
-    let mut commands = Vec::new();
-    ctx.input_mut(|i| {
-      for km in &keymaps {
-        if let Some(key) = key_name_to_egui(&km.combo.key) {
-          if i.key_pressed(key)
-            && i.modifiers.alt == km.combo.alt
-            && i.modifiers.ctrl == km.combo.ctrl
-            && i.modifiers.shift == km.combo.shift
+    if let Some(si) = self.active_tab.checked_sub(1).filter(|&i| i < self.sessions.len())
+    {
+      let session = &mut self.sessions[si];
+      let keymaps = session.script_engine.state.lock().unwrap().keymaps.clone();
+      let mut matched = false;
+      let mut commands = Vec::new();
+      ctx.input_mut(|i| {
+        for km in &keymaps {
+          if let Some(key) = key_name_to_egui(&km.combo.key) {
+            if i.key_pressed(key)
+              && i.modifiers.alt == km.combo.alt
+              && i.modifiers.ctrl == km.combo.ctrl
+              && i.modifiers.shift == km.combo.shift
+            {
+              commands.push(km.command.clone());
+              i.consume_key(
+                egui::Modifiers {
+                  alt: km.combo.alt,
+                  ctrl: km.combo.ctrl,
+                  shift: km.combo.shift,
+                  ..Default::default()
+                },
+                key
+              );
+              matched = true;
+            }
+          }
+        }
+      });
+      for command in commands {
+        let parts: Vec<&str> = command.splitn(2, ' ').collect();
+        match parts[0] {
+          "scroll_up" => {
+            let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
+            let mut st = session.script_engine.state.lock().unwrap();
+            if let Some(buf) = st.panes.get_mut("main") {
+              buf.scroll_delta_lines += lines;
+              buf.auto_scroll = false;
+            }
+          }
+          "scroll_down" => {
+            let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
+            let mut st = session.script_engine.state.lock().unwrap();
+            if let Some(buf) = st.panes.get_mut("main") {
+              buf.scroll_delta_lines -= lines;
+            }
+          }
+          _ =>
           {
-            commands.push(km.command.clone());
-            i.consume_key(
-              egui::Modifiers {
-                alt: km.combo.alt,
-                ctrl: km.combo.ctrl,
-                shift: km.combo.shift,
-                ..Default::default()
-              },
-              key
-            );
-            matched = true;
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(conn) = &session.connection {
+              conn.send(&command);
+            }
           }
         }
       }
-    });
-    for command in commands {
-      let parts: Vec<&str> = command.splitn(2, ' ').collect();
-      match parts[0] {
-        "scroll_up" => {
-          let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
-          let mut st = session.script_engine.state.lock().unwrap();
-          if let Some(buf) = st.panes.get_mut("main") {
-            buf.scroll_delta_lines += lines;
-            buf.auto_scroll = false;
-          }
-        }
-        "scroll_down" => {
-          let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
-          let mut st = session.script_engine.state.lock().unwrap();
-          if let Some(buf) = st.panes.get_mut("main") {
-            buf.scroll_delta_lines -= lines;
-          }
-        }
-        _ =>
-        {
-          #[cfg(not(target_arch = "wasm32"))]
-          if let Some(conn) = &session.connection {
-            conn.send(&command);
-          }
-        }
-      }
-    }
-    session.input.keymap_matched = matched;
+      session.input.keymap_matched = matched;
     }
   }
 
   fn apply_theme(&mut self, ctx: &egui::Context) {
-    let appearance = self
-      .active_tab
-      .checked_sub(1)
-      .and_then(|si| self.sessions.get(si))
-      .and_then(|session| {
-        let mut st = session.script_engine.state.lock().unwrap();
-        st.theme_dirty.then(|| {
-          st.theme_dirty = false;
-          Appearance {
-            font_name: st.font_name.clone(),
-            font_size: st.font_size,
-            bg_color: st.bg_color,
-            fg_color: st.fg_color
-          }
-        })
-      });
+    let appearance =
+      self.active_tab.checked_sub(1).and_then(|si| self.sessions.get(si)).and_then(
+        |session| {
+          let mut st = session.script_engine.state.lock().unwrap();
+          st.theme_dirty.then(|| {
+            st.theme_dirty = false;
+            Appearance {
+              font_name: st.font_name.clone(),
+              font_size: st.font_size,
+              bg_color: st.bg_color,
+              fg_color: st.fg_color
+            }
+          })
+        }
+      );
     if let Some(appearance) = appearance {
       if appearance.font_name != self.loaded_font_name {
         self.loaded_font_name = appearance.font_name.clone();
@@ -934,7 +887,10 @@ impl MudApp {
   'port {port}
   'tls #f)
 
+;; Use /(mud/themes) to see available color schemes.
 (mud/load-theme "Onenord")
+;; Use /(mud/fonts) to see available fonts.
+;; (mud/option "font" "JetBrains Mono")
 
 (mud/keymap "PageUp" "scroll_up 20")
 (mud/keymap "PageDown" "scroll_down 20")
@@ -978,26 +934,27 @@ impl MudApp {
 
   fn render_rename_dialog(&mut self, ctx: &egui::Context) {
     if let Some(idx) = self.rename_idx {
-    let mut open = true;
-    egui::Window::new("Rename Profile")
-      .collapsible(false)
-      .resizable(false)
-      .open(&mut open)
-      .show(ctx, |ui| {
-        ui.horizontal(|ui| {
-          ui.label("Name:");
-          ui.text_edit_singleline(&mut self.rename_name);
+      let mut open = true;
+      egui::Window::new("Rename Profile")
+        .collapsible(false)
+        .resizable(false)
+        .open(&mut open)
+        .show(ctx, |ui| {
+          ui.horizontal(|ui| {
+            ui.label("Name:");
+            ui.text_edit_singleline(&mut self.rename_name);
+          });
+          ui.add_space(8.0);
+          if crate::ui::term_button(ui, "Rename").clicked()
+            && !self.rename_name.is_empty()
+          {
+            let _ = self.profiles[idx].rename(&self.rename_name);
+            self.rename_idx = None;
+          }
         });
-        ui.add_space(8.0);
-        if crate::ui::term_button(ui, "Rename").clicked() && !self.rename_name.is_empty()
-        {
-          let _ = self.profiles[idx].rename(&self.rename_name);
-          self.rename_idx = None;
-        }
-      });
-    if !open {
-      self.rename_idx = None;
-    }
+      if !open {
+        self.rename_idx = None;
+      }
     }
   }
 

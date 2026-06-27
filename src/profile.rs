@@ -574,7 +574,9 @@ fn generate_scheme(t: &GameTemplate) -> String {
     ""
   };
 
-  let gauges: String = t.gauges.iter()
+  let gauges: String = t
+    .gauges
+    .iter()
     .map(|g| format!("(mud/gauge \"{}\" (hash 'color \"{}\"))\n", g.name, g.color))
     .collect();
 
@@ -605,7 +607,8 @@ fn generate_scheme(t: &GameTemplate) -> String {
     format!("\n{}", t.extra_scheme)
   };
 
-  format!("\
+  format!(
+    "\
 ;; Steel implementation of R5RS Scheme
 
 (mud/profile
@@ -615,8 +618,9 @@ fn generate_scheme(t: &GameTemplate) -> String {
   'port {port}
   'tls {tls}{websocket}{websocket_protocol})
 
-;; You can use any of 550+ built-in themes from https://iterm2colorschemes.com
+;; Use /(mud/themes) to see available color schemes.
 (mud/load-theme \"Onenord\")
+;; Use /(mud/fonts) to see available fonts.
 ;; (mud/option \"font\" \"JetBrains Mono\")
 (mud/option \"font_size\" 14)
 (mud/option \"scroll_lines\" 6)
@@ -677,20 +681,29 @@ const SCRIPTED_TEMPLATES: &[ScriptedTemplate] = &[
 ];
 
 fn scripted_templates() -> impl Iterator<Item = Profile> {
-  SCRIPTED_TEMPLATES.iter().map(|&ScriptedTemplate {
-    name, connection_mode, host, port, tls, websocket_url, websocket_protocol, script
-  }| Profile {
-    name: name.into(),
-    connection_mode,
-    host: host.into(),
-    port,
-    tls,
-    websocket_url: websocket_url.map(str::to_string),
-    websocket_protocol: websocket_protocol.map(str::to_string),
-    script_code: script.into(),
-    path: None,
-    is_preset: true
-  })
+  SCRIPTED_TEMPLATES.iter().map(
+    |&ScriptedTemplate {
+       name,
+       connection_mode,
+       host,
+       port,
+       tls,
+       websocket_url,
+       websocket_protocol,
+       script
+     }| Profile {
+      name: name.into(),
+      connection_mode,
+      host: host.into(),
+      port,
+      tls,
+      websocket_url: websocket_url.map(str::to_string),
+      websocket_protocol: websocket_protocol.map(str::to_string),
+      script_code: script.into(),
+      path: None,
+      is_preset: true
+    }
+  )
 }
 
 impl Profile {
@@ -752,7 +765,8 @@ impl Profile {
       .filter(|e| e.path().is_dir())
       .filter_map(|e| {
         let scm_path = e.path().join("init.scm");
-        let (path, code) = std::fs::read_to_string(&scm_path).ok().map(|c| (scm_path, c))?;
+        let (path, code) =
+          std::fs::read_to_string(&scm_path).ok().map(|c| (scm_path, c))?;
         let fallback_name = e.file_name().to_string_lossy().to_string();
         let metadata = parse_profile_metadata(&code);
         Some(Profile {
@@ -822,7 +836,8 @@ fn parse_profile_metadata(code: &str) -> ProfileMetadata {
   for line in code.lines().map(str::trim) {
     if let Some(val) = line.strip_prefix("'name \"").and_then(|s| s.strip_suffix('"')) {
       meta.name = Some(val.to_string());
-    } else if let Some(val) = line.strip_prefix("'host \"").and_then(|s| s.strip_suffix('"'))
+    } else if let Some(val) =
+      line.strip_prefix("'host \"").and_then(|s| s.strip_suffix('"'))
     {
       meta.host = Some(val.to_string());
     } else if let Some(val) = line.strip_prefix("'port ") {

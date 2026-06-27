@@ -29,7 +29,8 @@ impl ScriptEditor {
           ui.horizontal(|ui| {
             if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
               crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
-              self.status_message = Some(("Copied!".into(), ui.input(|input| input.time)));
+              self.status_message =
+                Some(("Copied!".into(), ui.input(|input| input.time)));
             }
             if crate::ui::term_button(ui, "Save & Reload").clicked() {
               action = EditorAction::SaveAndReload(self.code.clone());

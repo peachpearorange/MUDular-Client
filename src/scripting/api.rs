@@ -65,6 +65,21 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
     regex::Regex::new(&pattern).map(|re| re.is_match(&text)).unwrap_or(false)
   });
 
+  engine.register_fn("mud/fonts", || -> SteelVal {
+    SteelVal::ListV(
+      crate::fonts::available_fonts()
+        .into_iter()
+        .map(|font| SteelVal::StringV(font.into()))
+        .collect()
+    )
+  });
+
+  engine.register_fn("mud/themes", || -> SteelVal {
+    SteelVal::ListV(
+      crate::themes::theme_names().map(|theme| SteelVal::StringV(theme.into())).collect()
+    )
+  });
+
   reg!("mud/keymap", s => move |combo_str: String, command: String| {
       s.lock().unwrap().keymaps.push(
           crate::scripting::Keymap { combo: parse_key_combo(&combo_str), command },

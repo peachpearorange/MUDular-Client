@@ -13,11 +13,12 @@
 
 ;; Options
 (mud/option "keep_input" #t)
+;; Use /(mud/fonts) to see available fonts.
 ;; (mud/option "font" "JetBrains Mono")
 (mud/option "font_size" 14)
 (mud/option "scroll_lines" 6)
 
-;; 550+ built-in themes from https://iterm2colorschemes.com
+;; Use /(mud/themes) to see available color schemes.
 (mud/load-theme "Gruvbox Dark")
 
 ;; Movement: Alt+WASD + Alt+Q/E

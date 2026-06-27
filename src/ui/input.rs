@@ -61,6 +61,8 @@ impl InputLine {
 
       if self.keymap_matched && self.text != text_before {
         self.text = text_before;
+      } else if !self.keymap_matched {
+        self.complete_open_paren(ui.ctx(), response.id, &text_before);
       }
       if self.keymap_matched && keep_input {
         self.select_all_next_frame = true;
@@ -96,7 +98,11 @@ impl InputLine {
           ui.input(|i| {
             for e in &i.events {
               if let egui::Event::Text(t) = e {
-                self.text.push_str(t);
+                if t == "(" {
+                  self.text.push_str("()");
+                } else {
+                  self.text.push_str(t);
+                }
               }
             }
           });
@@ -111,6 +117,29 @@ impl InputLine {
   }
 
   pub fn take_submitted(&mut self) -> Option<String> { self.submitted.take() }
+
+  fn complete_open_paren(
+    &mut self,
+    ctx: &egui::Context,
+    response_id: egui::Id,
+    text_before: &str
+  ) {
+    if self.text.chars().count() == text_before.chars().count() + 1
+      && let Some(mut state) = egui::TextEdit::load_state(ctx, response_id)
+      && let Some(range) = state.cursor.char_range()
+    {
+      let cursor = range.primary.index;
+      if cursor > 0 && self.text.chars().nth(cursor - 1) == Some('(') {
+        let byte_idx = char_to_byte_idx(&self.text, cursor);
+        self.text.insert(byte_idx, ')');
+        state.cursor.set_char_range(Some(egui::text::CCursorRange::two(
+          egui::text::CCursor::new(cursor),
+          egui::text::CCursor::new(cursor)
+        )));
+        state.store(ctx, response_id);
+      }
+    }
+  }
 
   fn submit(&mut self, keep_input: bool) {
     let cmd = self.text.trim().to_string();
@@ -130,7 +159,8 @@ impl InputLine {
     if !self.history.is_empty() {
       let newest = self.history.len() - 1;
       let pos = self.history_pos.map(|p| p.saturating_sub(1)).unwrap_or_else(|| {
-        if self.history.get(newest).is_some_and(|cmd| cmd == self.text.trim()) && newest > 0
+        if self.history.get(newest).is_some_and(|cmd| cmd == self.text.trim())
+          && newest > 0
         {
           newest - 1
         } else {
@@ -155,4 +185,8 @@ impl InputLine {
       self.select_all_next_frame = true;
     }
   }
+}
+
+fn char_to_byte_idx(text: &str, char_idx: usize) -> usize {
+  text.char_indices().map(|(idx, _)| idx).nth(char_idx).unwrap_or(text.len())
 }

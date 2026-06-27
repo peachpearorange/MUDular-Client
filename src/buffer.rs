@@ -22,8 +22,13 @@ pub struct StyledLine {
 }
 
 impl StyledLine {
-  pub fn plain(text: &str) -> Self {
-    Self { spans: vec![StyledSpan { text: text.to_string(), style: Style::default() }] }
+  pub fn foreground(text: &str, fg: egui::Color32) -> Self {
+    Self {
+      spans: vec![StyledSpan {
+        text: text.to_string(),
+        style: Style { fg: Some(fg), ..Default::default() }
+      }]
+    }
   }
 
   pub fn is_empty(&self) -> bool { self.spans.iter().all(|span| span.text.is_empty()) }
