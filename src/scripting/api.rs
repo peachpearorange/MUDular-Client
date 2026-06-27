@@ -179,6 +179,20 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       }
   });
 
+  reg!("mud/increase-font-size", s => move || -> f64 {
+      let mut st = s.lock().unwrap();
+      st.font_size = (st.font_size + 1.0).min(72.0);
+      st.theme_dirty = true;
+      st.font_size as f64
+  });
+
+  reg!("mud/decrease-font-size", s => move || -> f64 {
+      let mut st = s.lock().unwrap();
+      st.font_size = (st.font_size - 1.0).max(8.0);
+      st.theme_dirty = true;
+      st.font_size as f64
+  });
+
   reg!("mud/load-theme", s => move |name: String| -> Result<(), String> {
       let mut st = s.lock().unwrap();
       if let Some(content) = crate::themes::get_builtin_theme(&name) {

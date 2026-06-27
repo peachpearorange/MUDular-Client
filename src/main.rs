@@ -104,7 +104,6 @@ mod tests {
     let st = engine.state.lock().unwrap();
     assert!(st.panes.contains_key("main"));
     assert!(st.panes.contains_key("map"));
-    assert_eq!(st.profile_name.as_deref(), Some("NukeFire"));
     assert_eq!(st.profile_host.as_deref(), Some("tdome.nukefire.org"));
     assert_eq!(st.profile_port, Some(4000));
     assert_eq!(st.profile_tls, Some(false));
@@ -239,6 +238,49 @@ mod tests {
     assert!(w_map.combo.alt);
     engine.invoke_keymap(w_map.callback.clone());
     assert!(engine.state.lock().unwrap().outgoing_commands.contains(&"n".to_string()));
+  }
+
+  #[test]
+  fn test_font_size_keymaps() {
+    let code = nukefire_template_code();
+    let mut engine = ScriptEngine::new().expect("engine creation failed");
+    engine.load_script(&code).expect("script load failed");
+
+    let initial = engine.state.lock().unwrap().font_size;
+    let plus_cb = engine
+      .keymaps()
+      .iter()
+      .find(|km| km.combo.key == "plus")
+      .unwrap()
+      .callback
+      .clone();
+    engine.invoke_keymap(plus_cb);
+    assert_eq!(engine.state.lock().unwrap().font_size, initial + 1.0);
+
+    let minus_cb = engine
+      .keymaps()
+      .iter()
+      .find(|km| km.combo.key == "minus")
+      .unwrap()
+      .callback
+      .clone();
+    engine.invoke_keymap(minus_cb.clone());
+    engine.invoke_keymap(minus_cb);
+    assert_eq!(engine.state.lock().unwrap().font_size, initial - 1.0);
+
+    // The keymap should have printed the new font size to the main pane.
+    let text: String = engine
+      .state
+      .lock()
+      .unwrap()
+      .panes
+      .get("main")
+      .unwrap()
+      .lines
+      .iter()
+      .flat_map(|l| l.spans.iter().map(|s| s.text.as_str()))
+      .collect();
+    assert!(text.contains("[Font size:"));
   }
 
   #[test]

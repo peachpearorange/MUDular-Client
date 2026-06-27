@@ -83,8 +83,8 @@ impl GameTemplate {
     self
   }
 
-  /// Override the default theme. Appends after OPTIONS_BLOCK so the last
-  /// `(mud/set-theme ...)` call wins.
+  /// Set the theme. Concats a `(mud/set-theme ...)` call; OPTIONS_BLOCK emits no
+  /// theme, so this is the single theme load.
   fn theme(self, name: &str) -> Self {
     self.concat(format!("(mud/set-theme {name})\n"))
   }
@@ -239,9 +239,8 @@ impl GameTemplate {
       .map(|protocol| format!("\n  'websocket-protocol \"{protocol}\""))
       .unwrap_or_default();
     format!(
-      "(mud/profile\n  'name \"{name}\"\n  'connection-mode '{mode}\n  \
+      "(mud/profile\n  'connection-mode '{mode}\n  \
        'host \"{host}\"\n  'port {port}\n  'tls {tls}{websocket}{websocket_protocol})\n\n",
-      name = self.name,
       mode = self.connection_mode.as_scheme_symbol(),
       host = self.host,
       port = self.port
@@ -303,7 +302,6 @@ fn nukefire_custom_block() -> &'static str {
 
 const OPTIONS_BLOCK: &str = "\
 ;; Use /(mud/themes) to see available color schemes.\n\
-(mud/set-theme theme/onenord)\n\
 ;; Use /(mud/fonts) to see available fonts.\n\
 ;; (mud/set-font \"JetBrains Mono\")\n\
 (mud/set-font-size 14)\n\
@@ -313,6 +311,10 @@ const DEFAULT_KEYBINDS: &str = "\
 ;; Scrolling\n\
 (mud/keymap \"PageUp\" (lambda () (mud/scroll-up 20)))\n\
 (mud/keymap \"PageDown\" (lambda () (mud/scroll-down 20)))\n\
+\n\
+;; Font size\n\
+(mud/keymap \"alt+plus\" (lambda () (mud/pane-print \"main\" (to-string \"[Font size: \" (mud/increase-font-size) \"]\"))))\n\
+(mud/keymap \"alt+minus\" (lambda () (mud/pane-print \"main\" (to-string \"[Font size: \" (mud/decrease-font-size) \"]\"))))\n\
 \n\
 ;; Reconnect\n\
 (mud/keymap \"alt+r\" (lambda () (mud/reconnect)))\n\
@@ -362,6 +364,7 @@ fn game_templates() -> Vec<Profile> {
 
   vec![
   GameTemplate::new("Achaea", ConnectionMode::Tcp, "achaea.com", 23, false)
+    .theme("theme/onenord")
     .map_panes()
     .gauges(&[
       gauge("health", "red", "hp", "maxhp"),
@@ -402,6 +405,7 @@ fn game_templates() -> Vec<Profile> {
     )
     .build(),
   GameTemplate::new("Aardwolf", ConnectionMode::Tcp, "aardmud.org", 23, false)
+    .theme("theme/onenord")
     .gauges(&[
       gauge("health", "red", "hp", "maxhp"),
       gauge("mana", "blue", "mana", "maxmana"),
@@ -420,6 +424,7 @@ fn game_templates() -> Vec<Profile> {
     )
     .build(),
   GameTemplate::new("BatMUD", ConnectionMode::Tcp, "batmud.bat.org", 23, false)
+    .theme("theme/onenord")
     .gauges(&[
       gauge("health", "red", "hp", "maxhp"),
       gauge("sp", "blue", "sp", "maxsp"),
@@ -434,6 +439,7 @@ fn game_templates() -> Vec<Profile> {
     ])
     .build(),
   GameTemplate::new("Discworld", ConnectionMode::Tcp, "discworld.atuin.net", 4242, false)
+    .theme("theme/onenord")
     .map_panes()
     .gauges(&[
       gauge("hp", "red", "hp", "maxhp"),
@@ -469,8 +475,10 @@ fn game_templates() -> Vec<Profile> {
     )
     .build(),
   GameTemplate::new("GemStone IV", ConnectionMode::Tcp, "gemstone.net", 7777, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("DragonRealms", ConnectionMode::Tcp, "prime.dr.game.play.net", 4901, false)
+    .theme("theme/onenord")
     .connect()
     .on_line(
       "(lambda (line)\n  (when (not launch-key-note-shown)\n    (set! launch-key-note-shown #t)\n    (mud/pane-print \"main\" \"[DragonRealms may need a launch key from the official Simutronics launcher.]\"))\n  #t)"
@@ -495,20 +503,28 @@ fn game_templates() -> Vec<Profile> {
   .concat(";; Uses the same endpoint and tty WebSocket protocol as the browser client.\n")
   .build(),
   GameTemplate::new("Threshold RPG", ConnectionMode::Tcp, "thresholdrpg.com", 3333, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("AwakeMUD CE", ConnectionMode::Tcp, "play.awakemud.com", 4000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Realms of Despair", ConnectionMode::Tcp, "realmsofdespair.com", 4000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Legends of the Jedi", ConnectionMode::Tcp, "legendsofthejedi.com", 5656, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Miriani", ConnectionMode::Tcp, "toastsoft.net", 1234, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Alter Aeon", ConnectionMode::Tcp, "alteraeon.com", 3000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Genesis", ConnectionMode::Tcp, "mud.genesismud.org", 3011, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Genesis WebSocket (experimental)", ConnectionMode::WebSocket, "mud.genesismud.org", 3011, false)
+    .theme("theme/onenord")
     .websocket("wss://www.genesismud.org/websocket", None)
     .connect()
     .default_hooks()
@@ -516,20 +532,28 @@ fn game_templates() -> Vec<Profile> {
     .concat(";; Genesis documents this WebSocket endpoint for its official web client.\n")
     .build(),
   GameTemplate::new("The Eternal City", ConnectionMode::Tcp, "game.eternalcitygame.com", 6730, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Materia Magica", ConnectionMode::Tcp, "materiamagica.com", 23, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Avatar MUD", ConnectionMode::Tcp, "avatar.outland.org", 3000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Star Trek: Phoenix Rising", ConnectionMode::Tcp, "game.phxrising.org", 1701, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("CLOK", ConnectionMode::Tcp, "clok.contrarium.net", 4000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("CoffeeMud", ConnectionMode::Tcp, "coffeemud.net", 23, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("MUME", ConnectionMode::Tcp, "mume.org", 4242, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("MUME WebSocket (experimental)", ConnectionMode::WebSocket, "mume.org", 4242, false)
+    .theme("theme/onenord")
     .websocket("wss://mume.org/ws-play/", None)
     .connect()
     .default_hooks()
@@ -537,18 +561,25 @@ fn game_templates() -> Vec<Profile> {
     .concat(";; Experimental: MUME documents an official WebSocket proxy at this path.\n")
     .build(),
   GameTemplate::new("Icesus MUD", ConnectionMode::Tcp, "icesus.org", 4000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Dune", ConnectionMode::Tcp, "dunemud.net", 6789, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Merentha", ConnectionMode::Tcp, "merentha.com", 10000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Lost Souls", ConnectionMode::Tcp, "lostsouls.org", 23, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("RetroMUD", ConnectionMode::Tcp, "retromud.org", 3000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Mirkwood", ConnectionMode::Tcp, "mirkwoodmud.org", 4000, false)
+    .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Enrym TCP", ConnectionMode::Tcp, "play.enrym.com", 4001, true)
+    .theme("theme/onenord")
     .connect()
     .default_hooks()
     .on_gmcp(
@@ -557,6 +588,7 @@ fn game_templates() -> Vec<Profile> {
     .concat(";; Log GMCP messages\n")
     .build(),
   GameTemplate::new("Enrym WebSocket", ConnectionMode::WebSocket, "play.enrym.com", 4001, true)
+    .theme("theme/onenord")
     .websocket("wss://play.enrym.com", None)
     .connect()
     .default_hooks()
@@ -566,6 +598,7 @@ fn game_templates() -> Vec<Profile> {
     .concat(";; Log GMCP messages\n")
     .build(),
   GameTemplate::new("Generic", ConnectionMode::Tcp, "localhost", 4000, false)
+    .theme("theme/onenord")
     .connect()
     .default_hooks()
     .on_gmcp(
@@ -625,7 +658,7 @@ impl Profile {
         let fallback_name = e.file_name().to_string_lossy().to_string();
         let metadata = parse_profile_metadata(&code);
         Some(Profile {
-          name: metadata.name.unwrap_or_else(|| fallback_name.clone()),
+          name: fallback_name,
           connection_mode: metadata.connection_mode.unwrap_or(ConnectionMode::Tcp),
           host: metadata.host.unwrap_or_else(|| "localhost".into()),
           port: metadata.port.unwrap_or(4000),
@@ -664,20 +697,14 @@ impl Profile {
     if old_dir.exists() {
       std::fs::rename(&old_dir, &new_dir).map_err(|e| e.to_string())?;
     }
-    let old_name_line = format!("  'name \"{}\"", self.name);
-    let new_name_line = format!("  'name \"{}\"", new_name);
-    self.script_code = self.script_code.replacen(&old_name_line, &new_name_line, 1);
     self.name = new_name.to_string();
-    let scm_path = new_dir.join("init.scm");
-    std::fs::write(&scm_path, &self.script_code).map_err(|e| e.to_string())?;
-    self.path = Some(scm_path);
+    self.path = Some(new_dir.join("init.scm"));
     Ok(())
   }
 }
 
 #[derive(Default)]
 struct ProfileMetadata {
-  name: Option<String>,
   connection_mode: Option<ConnectionMode>,
   host: Option<String>,
   port: Option<u16>,
@@ -689,9 +716,7 @@ struct ProfileMetadata {
 fn parse_profile_metadata(code: &str) -> ProfileMetadata {
   let mut meta = ProfileMetadata::default();
   for line in code.lines().map(str::trim) {
-    if let Some(val) = line.strip_prefix("'name \"").and_then(|s| s.strip_suffix('"')) {
-      meta.name = Some(val.to_string());
-    } else if let Some(val) =
+    if let Some(val) =
       line.strip_prefix("'host \"").and_then(|s| s.strip_suffix('"'))
     {
       meta.host = Some(val.to_string());

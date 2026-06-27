@@ -89,8 +89,8 @@ impl ScriptEditor {
               self.status_message =
                 Some(("Copied!".into(), ui.input(|input| input.time)));
             }
-            if crate::ui::term_button(ui, "Save & Reload").clicked() {
-              action = EditorAction::SaveAndReload(self.code.clone());
+            if crate::ui::term_button(ui, "Save").clicked() {
+              action = EditorAction::Save(self.code.clone());
             }
             if let Some((ref msg, when)) = self.status_message {
               if ui.input(|input| input.time) - when < 3.0 {
@@ -123,6 +123,26 @@ impl ScriptEditor {
             egui::Layout::top_down(egui::Align::LEFT),
             |ui| {
               theme.modify_style(ui, fontsize);
+              // Suppress the focus/hover outline and background-tint egui draws
+              // around/behind the TextEdit, so the editor looks the same whether
+              // idle, hovered, or focused for typing.
+              let bg = theme.bg();
+              let widgets = &mut ui.style_mut().visuals.widgets;
+              widgets.noninteractive.bg_stroke = egui::Stroke::NONE;
+              widgets.inactive.bg_stroke = egui::Stroke::NONE;
+              widgets.hovered.bg_stroke = egui::Stroke::NONE;
+              widgets.active.bg_stroke = egui::Stroke::NONE;
+              widgets.open.bg_stroke = egui::Stroke::NONE;
+              widgets.noninteractive.weak_bg_fill = bg;
+              widgets.inactive.weak_bg_fill = bg;
+              widgets.hovered.weak_bg_fill = bg;
+              widgets.active.weak_bg_fill = bg;
+              widgets.open.weak_bg_fill = bg;
+              widgets.noninteractive.bg_fill = bg;
+              widgets.inactive.bg_fill = bg;
+              widgets.hovered.bg_fill = bg;
+              widgets.active.bg_fill = bg;
+              widgets.open.bg_fill = bg;
               egui::ScrollArea::vertical()
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
@@ -254,7 +274,9 @@ impl ScriptEditor {
       self.completion_ignore_cursor = None;
     }
 
-    if !output.response.has_focus() {
+    if !output.response.has_focus()
+      && !ctx.input(|i| i.pointer.any_down() || i.pointer.any_released())
+    {
       self.completion_active = false;
       self.completion_candidates.clear();
       return;
@@ -407,7 +429,7 @@ impl ScriptEditor {
 
 pub enum EditorAction {
   None,
-  SaveAndReload(String)
+  Save(String)
 }
 
 #[derive(Clone, Copy)]

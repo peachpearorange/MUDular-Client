@@ -75,6 +75,8 @@ fn key_name_to_egui(name: &str) -> Option<egui::Key> {
     "space" => Some(egui::Key::Space),
     "enter" | "return" => Some(egui::Key::Enter),
     "backspace" => Some(egui::Key::Backspace),
+    "plus" => Some(egui::Key::Plus),
+    "minus" => Some(egui::Key::Minus),
     _ => None
   })
 }
@@ -798,7 +800,7 @@ impl eframe::App for MudApp {
 
     let editor_action = self.editor.render(ctx);
     match editor_action {
-      EditorAction::SaveAndReload(code) => {
+      EditorAction::Save(code) => {
         if let Some(profile_idx) = self.editor_profile_idx {
           self.profiles[profile_idx].script_code = code.clone();
           let _ = self.profiles[profile_idx].save();
@@ -940,11 +942,6 @@ impl MudApp {
   fn create_from_template(&mut self, template_idx: usize) {
     let template = &self.templates[template_idx];
     let name = Profile::unique_name(&template.name, &self.profiles);
-    let script_code = template.script_code.replacen(
-      &format!("  'name \"{}\"", template.name),
-      &format!("  'name \"{name}\""),
-      1
-    );
     let mut profile = Profile {
       name,
       connection_mode: template.connection_mode,
@@ -953,7 +950,7 @@ impl MudApp {
       tls: template.tls,
       websocket_url: template.websocket_url.clone(),
       websocket_protocol: template.websocket_protocol.clone(),
-      script_code,
+      script_code: template.script_code.clone(),
       path: None,
       is_preset: false
     };
@@ -989,7 +986,6 @@ impl MudApp {
             r#";; Steel implementation of R5RS Scheme
 
 (mud/profile
-  'name "{name}"
   'connection-mode 'tcp
   'host "{host}"
   'port {port}
