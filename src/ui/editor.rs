@@ -101,7 +101,7 @@ fn color_theme_from_palette(
   fg: egui::Color32
 ) -> ColorTheme {
   let leak = |c: egui::Color32| -> &'static str {
-    Box::leak(format!("#{:02x}{:02x}{:02x}", c.r(), c.g(), c.b()).into_boxed_str())
+    Box::leak(format!("{:02x}{:02x}{:02x}", c.r(), c.g(), c.b()).into_boxed_str())
   };
   let is_dark = |c: egui::Color32| {
     let [r, g, b, _] = c.to_array();
