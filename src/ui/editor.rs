@@ -74,6 +74,7 @@ impl ScriptEditor {
       let mut visible = self.visible;
       egui::Window::new("Script Editor")
         .default_size([600.0, 500.0])
+        .min_size([200.0, 100.0])
         .resizable(true)
         .collapsible(true)
         .open(&mut visible)
@@ -133,8 +134,7 @@ impl ScriptEditor {
               .show(ui)
           }).inner;
 
-          let window_bottom = ui.max_rect().bottom();
-          self.show_completion_popup(ctx, &output, fontsize, window_bottom);
+          self.show_completion_popup(ctx, &output, fontsize);
         });
       self.visible = visible;
     }
@@ -203,8 +203,7 @@ impl ScriptEditor {
     &mut self,
     ctx: &egui::Context,
     output: &egui::text_edit::TextEditOutput,
-    fontsize: f32,
-    window_bottom: f32
+    fontsize: f32
   ) {
     if self.completion_ignore_cursor.is_some() {
       self.completion_ignore_cursor = None;
@@ -260,20 +259,18 @@ impl ScriptEditor {
     self.completion_selected = self.completion_selected.min(completions.len().saturating_sub(1));
 
     let cursor_pos = output.galley.pos_from_cursor(egui::text::CCursor::new(cursor));
-    let cursor_rect = cursor_pos.translate(output.response.rect.left_top().to_vec2());
-    let max_popup_height = (window_bottom - cursor_rect.bottom()).max(50.0);
+    let cursor_screen = cursor_pos.translate(output.response.rect.left_top().to_vec2());
+    let screen_bottom = ctx.viewport_rect().bottom();
+    let max_popup_height = (screen_bottom - cursor_screen.bottom() - 20.0).max(100.0);
 
-    egui::Popup::new(
-      egui::Id::new("script_editor_completer"),
-      ctx.clone(),
-      cursor_rect,
-      output.response.layer_id
-    )
-    .kind(egui::PopupKind::Tooltip)
-    .frame(egui::Frame::popup(&ctx.global_style()).fill(self.theme.bg()))
-    .sense(egui::Sense::empty())
-    .show(|ui| {
+    egui::Area::new(egui::Id::new("script_editor_completer"))
+      .kind(egui::UiKind::Popup)
+      .order(egui::Order::Foreground)
+      .fixed_pos(cursor_screen.left_bottom())
+      .show(ctx, |ui| {
       ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+      ui.set_max_width(cursor_screen.width().max(200.0));
+      egui::Frame::popup(ui.style()).fill(self.theme.bg()).show(ui, |ui| {
       egui::ScrollArea::vertical()
         .auto_shrink([true, true])
         .max_height(max_popup_height)
@@ -323,6 +320,7 @@ impl ScriptEditor {
             }
           }
         });
+      });
     });
   }
 }
