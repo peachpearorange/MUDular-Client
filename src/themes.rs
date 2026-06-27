@@ -10,6 +10,22 @@ pub fn theme_names() -> impl Iterator<Item = &'static str> {
   THEMES.iter().map(|(name, _)| *name)
 }
 
+pub fn theme_symbol(name: &str) -> String {
+  let mut slug: String = name
+    .to_lowercase()
+    .chars()
+    .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' || c == '+' { c } else { '-' })
+    .collect();
+  while slug.contains("--") {
+    slug = slug.replace("--", "-");
+  }
+  slug = slug.trim_matches('-').to_string();
+  if slug.is_empty() || slug.starts_with(|c: char| c.is_ascii_digit()) {
+    slug = format!("n-{slug}");
+  }
+  format!("theme/{slug}")
+}
+
 const THEMES: [(&str, &str); 551] = [
   (
     "0x96f",

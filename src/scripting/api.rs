@@ -208,7 +208,12 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       s.lock().unwrap().outgoing_msdp_list.push(what);
   });
 
-  engine.run(PRELUDE).expect("failed to load scripting prelude");
+  let mut prelude = PRELUDE.to_string();
+  for name in crate::themes::theme_names() {
+      let sym = crate::themes::theme_symbol(name);
+      prelude.push_str(&format!("(define {} {:?})\n", sym, name));
+  }
+  engine.run(prelude).expect("failed to load scripting prelude");
 }
 
 const PRELUDE: &str = r#"

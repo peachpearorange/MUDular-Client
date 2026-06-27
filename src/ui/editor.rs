@@ -16,7 +16,7 @@ pub struct ScriptEditor {
 
 impl ScriptEditor {
   pub fn new() -> Self {
-    let syntax = scheme_syntax();
+    let syntax = scheme_syntax_with_themes();
     Self {
       visible: false,
       code: String::new(),
@@ -205,7 +205,7 @@ fn layout_with_rainbow_parens(
   job
 }
 
-fn scheme_syntax() -> Syntax {
+fn scheme_syntax_with_themes() -> Syntax {
   let mut keywords = BTreeSet::from([
     "define",
     "lambda",
@@ -332,7 +332,7 @@ fn scheme_syntax() -> Syntax {
     keywords.insert(word);
   }
 
-  Syntax {
+  let mut syntax = Syntax {
     language: "Scheme",
     case_sensitive: true,
     comment: ";",
@@ -344,5 +344,12 @@ fn scheme_syntax() -> Syntax {
     types: BTreeSet::from(["hash", "list", "vector", "string", "number", "integer", "float"]),
     special: BTreeSet::from(["#t", "#f", "true", "false", "nil", "'()"]),
     patch: Default::default()
+  };
+
+  for name in crate::themes::theme_names() {
+    let sym = Box::leak(crate::themes::theme_symbol(name).into_boxed_str());
+    syntax.keywords.insert(sym);
   }
+
+  syntax
 }
