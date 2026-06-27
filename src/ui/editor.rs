@@ -117,6 +117,7 @@ impl ScriptEditor {
           let desired_width = ui.available_width().max(1.0);
           let editor_size = egui::vec2(desired_width, (desired_rows as f32) * row_height);
 
+          let code_before = self.code.clone();
           let output = ui.allocate_ui_with_layout(
             editor_size,
             egui::Layout::top_down(egui::Align::LEFT),
@@ -148,6 +149,7 @@ impl ScriptEditor {
             }
           ).inner;
 
+          self.complete_open_paren(ctx, &output, &code_before);
           self.show_completion_popup(ctx, &output, row_height, fontsize);
         });
       self.visible = visible;
@@ -210,6 +212,34 @@ impl ScriptEditor {
         self.completion_active = false;
         self.completion_candidates.clear();
       }
+    }
+  }
+
+  /// Auto-close `(` with `)` and leave the cursor between them, mirroring the
+  /// input box. Fires only when the text just grew by a single `(` at the cursor.
+  fn complete_open_paren(
+    &mut self,
+    ctx: &egui::Context,
+    output: &egui::text_edit::TextEditOutput,
+    code_before: &str
+  ) {
+    if self.completion_active
+      || self.code.chars().count() != code_before.chars().count() + 1
+    {
+      return;
+    }
+    let Some(mut state) = egui::TextEdit::load_state(ctx, output.response.id) else { return };
+    let Some(range) = state.cursor.char_range() else { return };
+    let char_index = range.primary.index;
+    let cursor: usize = char_index.into();
+    if cursor > 0 && self.code.chars().nth(cursor - 1) == Some('(') {
+      let byte_idx = char_to_byte_idx(&self.code, cursor);
+      self.code.insert(byte_idx, ')');
+      state.cursor.set_char_range(Some(egui::text::CCursorRange::two(
+        egui::text::CCursor::new(char_index),
+        egui::text::CCursor::new(char_index)
+      )));
+      state.store(ctx, output.response.id);
     }
   }
 
@@ -391,6 +421,10 @@ enum CompletionAction {
 fn default_bg() -> egui::Color32 { egui::Color32::from_rgb(30, 30, 30) }
 
 fn default_fg() -> egui::Color32 { egui::Color32::from_rgb(220, 220, 220) }
+
+fn char_to_byte_idx(text: &str, char_idx: usize) -> usize {
+  text.char_indices().map(|(idx, _)| idx).nth(char_idx).unwrap_or(text.len())
+}
 
 fn is_dark(c: egui::Color32) -> bool {
   let [r, g, b, _] = c.to_array();
@@ -613,6 +647,23 @@ fn scheme_syntax() -> Syntax {
     "mud/on",
     "mud/option",
     "mud/load-theme",
+    "mud/set-theme",
+    "mud/set-font",
+    "mud/set-font-size",
+    "mud/set-scroll-lines",
+    "mud/set-keep-input",
+    "mud/set-bg-color",
+    "mud/set-fg-color",
+    "mud/on-connect",
+    "mud/on-disconnect",
+    "mud/on-line",
+    "mud/on-gmcp",
+    "mud/on-msdp",
+    "mud/on-input",
+    "mud/trigger",
+    "mud/alias",
+    "mud/timer",
+    "mud/interval",
     "mud/themes",
     "mud/fonts",
     "mud/strip-ansi",

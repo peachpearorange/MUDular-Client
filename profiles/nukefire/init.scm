@@ -12,14 +12,14 @@
 (define password "")
 
 ;; Options
-(mud/option "keep_input" #t)
+(mud/set-keep-input #t)
 ;; Use /(mud/fonts) to see available fonts.
-;; (mud/option "font" "JetBrains Mono")
-(mud/option "font_size" 14)
-(mud/option "scroll_lines" 6)
+;; (mud/set-font "JetBrains Mono")
+(mud/set-font-size 14)
+(mud/set-scroll-lines 6)
 
 ;; Use /(mud/themes) to see available color schemes.
-(mud/load-theme "Gruvbox Dark")
+(mud/set-theme "Gruvbox Dark")
 
 ;; Movement: Alt+WASD + Alt+Q/E
 (mud/keymap "alt+w" (lambda () (mud/send "n")))
@@ -72,7 +72,7 @@
         (exits (hash-get nf 'exits "?")))
     (mud/status (to-string room "   " area "   Lv:" (to-string level) " TNL:" (to-string tnl) "   [" exits "]"))))
 
-(mud/on "msdp" (lambda (data)
+(mud/on-msdp (lambda (data)
   (when (hash? data)
     (define changed #f)
     (when (hash-contains? data "ROOM_NAME") (set! nf (hash-insert nf 'room (hash-ref data "ROOM_NAME"))) (set! changed #t))
@@ -140,7 +140,7 @@
   (for-each (lambda (raw) (mud/pane-print "main" raw)) pending-blanks)
   (set! pending-blanks '()))
 
-(mud/on "line" (lambda (line)
+(mud/on-line (lambda (line)
   (let ((text (mud/strip-ansi line)))
     (cond
       ((mud/regexp-match? "^> ?[a-zA-Z]{1,2}$" text) #f)
@@ -202,23 +202,23 @@
         (process-line line text))))
     (else #t)))
 
-(mud/on "input" (lambda (cmd)
+(mud/on-input (lambda (cmd)
   (let ((trimmed (trim cmd)))
     (when (not (equal? trimmed ""))
       (mud/pane-print "main" (to-string "\u{1b}[32m> " trimmed "\u{1b}[0m"))))))
 
-(mud/on "connect" (lambda ()
+(mud/on-connect (lambda ()
   (mud/pane-print "main" "[Connected to NukeFire]")
   (let ((msdp-vars (list
           "ROOM_NAME" "ROOM_VNUM" "AREA_NAME" "ROOM_EXITS"
           "HEALTH" "HEALTH_MAX" "MANA" "MANA_MAX"
           "MOVEMENT" "MOVEMENT_MAX" "LEVEL" "EXPERIENCE_TNL")))
-    (timer 0.5 (lambda ()
+    (mud/timer 0.5 (lambda ()
       (mud/msdp-report msdp-vars)
       (mud/msdp-send msdp-vars))))
   (when (not (equal? character ""))
-    (timer 0.5 (lambda () (mud/send character)))
-    (timer 1.0 (lambda () (mud/send password))))))
+    (mud/timer 0.5 (lambda () (mud/send character)))
+    (mud/timer 1.0 (lambda () (mud/send password))))))
 
-(mud/on "disconnect" (lambda ()
+(mud/on-disconnect (lambda ()
   (mud/pane-print "main" "[Disconnected from NukeFire]")))

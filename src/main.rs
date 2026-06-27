@@ -206,6 +206,20 @@ mod tests {
   }
 
   #[test]
+  fn test_default_hooks_dont_error() {
+    let templates = crate::profile::Profile::templates();
+    let dune = templates.iter().find(|p| p.name == "Dune").expect("Dune template");
+    let mut engine = ScriptEngine::new().expect("engine creation failed");
+    engine.load_script(&dune.script_code).expect("script load failed");
+    // The on-input no-op default used to call (void) which is not a function.
+    // Invoking the hook must not error.
+    engine.handle_input_hook("hello");
+    engine.handle_gmcp("Core.Hello", &serde_json::Value::Null);
+    engine.handle_msdp(&serde_json::Value::Null);
+    engine.handle_line("a line");
+  }
+
+  #[test]
   fn test_nukefire_keymaps() {
     let code = include_str!("../profiles/nukefire/init.scm");
     let mut engine = ScriptEngine::new().expect("engine creation failed");

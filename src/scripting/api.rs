@@ -244,10 +244,32 @@ const PRELUDE: &str = r#"
 (define (mud/keymap combo callback)
   (set! *keymaps* (hash-insert *keymaps* combo callback)))
 
+;; mud/-prefixed aliases for the registration forms above.
+(define (mud/trigger pattern callback) (trigger pattern callback))
+(define (mud/alias pattern callback) (alias pattern callback))
+(define (mud/timer interval callback) (timer interval callback))
+(define (mud/interval secs callback) (interval secs callback))
+
+;; Ergonomic first-class wrappers around mud/option, mud/on, and mud/load-theme.
+;; The old generic forms remain as aliases.
+(define (mud/set-theme name) (mud/load-theme name))
+(define (mud/set-font name) (mud/option "font" name))
+(define (mud/set-font-size n) (mud/option "font_size" n))
+(define (mud/set-scroll-lines n) (mud/option "scroll_lines" n))
+(define (mud/set-keep-input b) (mud/option "keep_input" b))
+(define (mud/set-bg-color c) (mud/option "bg_color" c))
+(define (mud/set-fg-color c) (mud/option "fg_color" c))
+(define (mud/on-connect cb) (mud/on "connect" cb))
+(define (mud/on-disconnect cb) (mud/on "disconnect" cb))
+(define (mud/on-line cb) (mud/on "line" cb))
+(define (mud/on-gmcp cb) (mud/on "gmcp" cb))
+(define (mud/on-msdp cb) (mud/on "msdp" cb))
+(define (mud/on-input cb) (mud/on "input" cb))
+
 (define (hash-get h key . default)
   (if (hash-contains? h key)
       (hash-ref h key)
-      (if (null? default) (void) (car default))))
+      (if (null? default) void (car default))))
 "#;
 
 fn parse_gauge_opts(opts: &SteelVal) -> (Option<f64>, Option<f64>, Option<String>) {

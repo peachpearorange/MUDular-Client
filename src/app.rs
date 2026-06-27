@@ -747,8 +747,18 @@ impl eframe::App for MudApp {
       if let Some(session) = self.sessions.get_mut(si) {
         if let Some(cmd) = session.input.take_submitted() {
           info!("Input submitted: {cmd:?}");
-          if let Some(code) = cmd.strip_prefix("/(") {
-            session.script_engine.eval_input(&format!("({code}"));
+          if let Some(code) = cmd.strip_prefix('/') {
+            if code.is_empty() {
+              session.script_engine.handle_input_hook(&cmd);
+              let should_send = session.script_engine.handle_input(&cmd);
+              if should_send {
+                if let Some(conn) = &session.connection {
+                  conn.send(&cmd);
+                }
+              }
+            } else {
+              session.script_engine.eval_input(code);
+            }
           } else {
             session.script_engine.handle_input_hook(&cmd);
             let should_send = session.script_engine.handle_input(&cmd);
@@ -967,9 +977,9 @@ impl MudApp {
   'tls #f)
 
 ;; Use /(mud/themes) to see available color schemes.
-(mud/load-theme theme/onenord)
+(mud/set-theme theme/onenord)
 ;; Use /(mud/fonts) to see available fonts.
-;; (mud/option "font" "JetBrains Mono")
+;; (mud/set-font "JetBrains Mono")
 
 (mud/keymap "PageUp" (lambda () (mud/scroll-up 20)))
 (mud/keymap "PageDown" (lambda () (mud/scroll-down 20)))
@@ -988,13 +998,28 @@ impl MudApp {
 
 (mud/pane "main")
 
-(mud/on "connect" (lambda ()
+(mud/on-connect (lambda ()
   (mud/pane-print "main" "[Connected to {name}]")))
 
-(mud/on "disconnect" (lambda ()
+(mud/on-disconnect (lambda ()
   (mud/pane-print "main" "[Disconnected from {name}]")))
 
-(mud/on "line" (lambda (line) #t))
+(mud/on-line (lambda (line) #t))
+
+;; Fired for each command you enter (before aliases/triggers).
+(mud/on-input (lambda (cmd)
+  ;; (mud/pane-print "main" (to-string "you typed: " cmd))
+  #t))
+
+;; Fired when the server sends a GMCP message. data is a hash.
+(mud/on-gmcp (lambda (package data)
+  ;; (mud/pane-print "main" (to-string "gmcp " package " " data))
+  #t))
+
+;; Fired when the server sends an MSDP message. data is a hash.
+(mud/on-msdp (lambda (data)
+  ;; (mud/pane-print "main" (to-string "msdp " data))
+  #t))
 "#,
             name = self.new_profile_name,
             host = self.new_profile_host,
