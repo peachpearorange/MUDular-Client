@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use eframe::egui;
-use egui_code_editor::{CodeEditor, ColorTheme, Completer, Syntax};
+use egui_code_editor::{ColorTheme, Completer, Syntax, Token, TokenType, format_token};
 
 use crate::ansi::DEFAULT_PALETTE;
 
@@ -70,15 +70,45 @@ impl ScriptEditor {
           });
           ui.separator();
 
-          CodeEditor::default()
-            .id_source("script editor")
-            .with_rows(30)
-            .with_ui_fontsize(ui)
-            .with_theme(self.theme)
-            .with_numlines(false)
-            .desired_width(f32::INFINITY)
-            .vscroll(true)
-            .show_with_completer(ui, &mut self.code, &self.syntax, &mut self.completer);
+          let theme = self.theme;
+          let syntax = &self.syntax;
+          let fontsize = ui
+            .style()
+            .text_styles
+            .get(&egui::TextStyle::Monospace)
+            .map(|f| f.size)
+            .unwrap_or(13.0);
+
+          egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
+            theme.modify_style(ui, fontsize);
+            egui::ScrollArea::horizontal().show(ui, |ui| {
+              self.completer.show_on_text_widget(
+                ui,
+                syntax,
+                &theme,
+                |ui| {
+                  egui::TextEdit::multiline(&mut self.code)
+                    .id_source("script editor")
+                    .lock_focus(true)
+                    .desired_rows(30)
+                    .desired_width(f32::INFINITY)
+                    .layouter(&mut |ui: &egui::Ui,
+                                     text: &dyn egui::TextBuffer,
+                                     _wrap_width: f32| {
+                      ui.fonts_mut(|f| {
+                        f.layout_job(layout_with_rainbow_parens(
+                          text.as_str(),
+                          syntax,
+                          &theme,
+                          fontsize
+                        ))
+                      })
+                    })
+                    .show(ui)
+                }
+              );
+            });
+          });
         });
     }
 
@@ -125,6 +155,54 @@ fn color_theme_from_palette(
     types: leak(palette[14]),
     special: leak(palette[12])
   }
+}
+
+fn layout_with_rainbow_parens(
+  text: &str,
+  syntax: &Syntax,
+  theme: &ColorTheme,
+  fontsize: f32
+) -> egui::text::LayoutJob {
+  let mut job = egui::text::LayoutJob::default();
+  let mut tokenizer = Token::default();
+  let mut depth = 0isize;
+
+  let rainbow_colors = [
+    theme.type_color(TokenType::Function),
+    theme.type_color(TokenType::Keyword),
+    theme.type_color(TokenType::Type),
+    theme.type_color(TokenType::Str('"')),
+    theme.type_color(TokenType::Numeric(false)),
+    theme.type_color(TokenType::Special)
+  ];
+
+  for token in tokenizer.tokens(syntax, text) {
+    if let TokenType::Punctuation(_) = token.ty() {
+      for c in token.buffer().chars() {
+        let color = match c {
+          '(' => {
+            let color = rainbow_colors[(depth as usize).rem_euclid(rainbow_colors.len())];
+            depth += 1;
+            color
+          }
+          ')' => {
+            depth = (depth - 1).max(0);
+            rainbow_colors[(depth as usize).rem_euclid(rainbow_colors.len())]
+          }
+          _ => theme.type_color(token.ty())
+        };
+        let format = egui::text::TextFormat::simple(
+          egui::FontId::monospace(fontsize),
+          color
+        );
+        job.append(&c.to_string(), 0.0, format);
+      }
+    } else {
+      job.append(token.buffer(), 0.0, format_token(theme, fontsize, token.ty()));
+    }
+  }
+
+  job
 }
 
 fn scheme_syntax() -> Syntax {
