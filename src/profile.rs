@@ -624,7 +624,7 @@ fn generate_scheme(t: &GameTemplate) -> String {
 (define password \"\")
 
 ;; Use /(mud/themes) to see available color schemes.
-(mud/load-theme theme-onenord)
+(mud/load-theme theme/onenord)
 ;; Use /(mud/fonts) to see available fonts.
 ;; (mud/option \"font\" \"JetBrains Mono\")
 (mud/option \"font_size\" 14)

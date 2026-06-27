@@ -23,7 +23,7 @@ pub fn theme_symbol(name: &str) -> String {
   if slug.is_empty() || slug.starts_with(|c: char| c.is_ascii_digit()) {
     slug = format!("n-{slug}");
   }
-  format!("theme-{slug}")
+  format!("theme/{slug}")
 }
 
 const THEMES: [(&str, &str); 551] = [
