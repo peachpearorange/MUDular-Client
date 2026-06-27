@@ -211,11 +211,30 @@ mod tests {
     let mut engine = ScriptEngine::new().expect("engine creation failed");
     engine.load_script(code).expect("script load failed");
 
-    let st = engine.state.lock().unwrap();
-    assert!(st.keymaps.len() >= 6);
-    assert!(st.keep_input);
-    let w_map = st.keymaps.iter().find(|km| km.combo.key == "w").unwrap();
+    assert!(engine.keymaps().len() >= 6);
+    assert!(engine.state.lock().unwrap().keep_input);
+    let w_map = engine.keymaps().iter().find(|km| km.combo.key == "w").unwrap();
     assert!(w_map.combo.alt);
-    assert_eq!(w_map.command, "n");
+    engine.invoke_keymap(w_map.callback.clone());
+    assert!(engine.state.lock().unwrap().outgoing_commands.contains(&"n".to_string()));
+  }
+
+  #[test]
+  fn test_keymap_is_idempotent() {
+    let mut engine = ScriptEngine::new().expect("engine creation failed");
+    engine.eval_input(r#"(mud/keymap "alt+x" (lambda () (mud/send "x")))"#);
+    engine.eval_input(r#"(mud/keymap "alt+x" (lambda () (mud/send "y")))"#);
+
+    let x_maps: Vec<_> = engine
+      .keymaps()
+      .iter()
+      .filter(|km| km.combo.key == "x" && km.combo.alt)
+      .collect();
+    assert_eq!(x_maps.len(), 1);
+
+    engine.invoke_keymap(x_maps[0].callback.clone());
+    let st = engine.state.lock().unwrap();
+    assert!(st.outgoing_commands.contains(&"y".to_string()));
+    assert!(!st.outgoing_commands.contains(&"x".to_string()));
   }
 }

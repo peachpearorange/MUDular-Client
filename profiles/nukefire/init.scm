@@ -22,16 +22,16 @@
 (mud/load-theme "Gruvbox Dark")
 
 ;; Movement: Alt+WASD + Alt+Q/E
-(mud/keymap "alt+w" "n")
-(mud/keymap "alt+s" "s")
-(mud/keymap "alt+a" "w")
-(mud/keymap "alt+d" "e")
-(mud/keymap "alt+q" "d")
-(mud/keymap "alt+e" "u")
+(mud/keymap "alt+w" (lambda () (mud/send "n")))
+(mud/keymap "alt+s" (lambda () (mud/send "s")))
+(mud/keymap "alt+a" (lambda () (mud/send "w")))
+(mud/keymap "alt+d" (lambda () (mud/send "e")))
+(mud/keymap "alt+q" (lambda () (mud/send "d")))
+(mud/keymap "alt+e" (lambda () (mud/send "u")))
 
 ;; Scrolling
-(mud/keymap "PageUp" "scroll_up 20")
-(mud/keymap "PageDown" "scroll_down 20")
+(mud/keymap "PageUp" (lambda () (mud/scroll-up 20)))
+(mud/keymap "PageDown" (lambda () (mud/scroll-down 20)))
 
 ;; ----------------------------------------------------------------
 

@@ -78,6 +78,15 @@ fn key_name_to_egui(name: &str) -> Option<egui::Key> {
   })
 }
 
+fn format_key_combo(key: egui::Key, modifiers: egui::Modifiers) -> String {
+  let mut parts = Vec::new();
+  if modifiers.ctrl { parts.push("ctrl"); }
+  if modifiers.alt { parts.push("alt"); }
+  if modifiers.shift { parts.push("shift"); }
+  parts.push(key.name());
+  parts.join("+").to_lowercase()
+}
+
 fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<String> {
   let mut warning = None;
 
@@ -500,9 +509,33 @@ impl MudApp {
     if let Some(si) = self.active_tab.checked_sub(1).filter(|&i| i < self.sessions.len())
     {
       let session = &mut self.sessions[si];
-      let keymaps = session.script_engine.state.lock().unwrap().keymaps.clone();
+
+      let should_capture = session.script_engine.state.lock().unwrap().capture_next_key;
+      if should_capture {
+        let mut captured = None;
+        ctx.input_mut(|i| {
+          for key in egui::Key::ALL {
+            let mods = i.modifiers;
+            if i.key_pressed(*key) {
+              captured = Some(format_key_combo(*key, mods));
+              i.consume_key(mods, *key);
+              break;
+            }
+          }
+        });
+        if let Some(combo) = captured {
+          session
+            .script_engine
+            .append_system_message(&format!("[captured key combo: {combo}]"));
+          session.script_engine.state.lock().unwrap().capture_next_key = false;
+          session.input.keymap_matched = true;
+          return;
+        }
+      }
+
+      let keymaps: Vec<_> = session.script_engine.keymaps().iter().cloned().collect();
       let mut matched = false;
-      let mut commands = Vec::new();
+      let mut callbacks = Vec::new();
       ctx.input_mut(|i| {
         for km in &keymaps {
           if let Some(key) = key_name_to_egui(&km.combo.key) {
@@ -511,7 +544,7 @@ impl MudApp {
               && i.modifiers.ctrl == km.combo.ctrl
               && i.modifiers.shift == km.combo.shift
             {
-              commands.push(km.command.clone());
+              callbacks.push(km.callback.clone());
               i.consume_key(
                 egui::Modifiers {
                   alt: km.combo.alt,
@@ -526,32 +559,8 @@ impl MudApp {
           }
         }
       });
-      for command in commands {
-        let parts: Vec<&str> = command.splitn(2, ' ').collect();
-        match parts[0] {
-          "scroll_up" => {
-            let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
-            let mut st = session.script_engine.state.lock().unwrap();
-            if let Some(buf) = st.panes.get_mut("main") {
-              buf.scroll_delta_lines += lines;
-              buf.auto_scroll = false;
-            }
-          }
-          "scroll_down" => {
-            let lines = parts.get(1).and_then(|s| s.parse::<f32>().ok()).unwrap_or(10.0);
-            let mut st = session.script_engine.state.lock().unwrap();
-            if let Some(buf) = st.panes.get_mut("main") {
-              buf.scroll_delta_lines -= lines;
-            }
-          }
-          _ =>
-          {
-            #[cfg(not(target_arch = "wasm32"))]
-            if let Some(conn) = &session.connection {
-              conn.send(&command);
-            }
-          }
-        }
+      for callback in callbacks {
+        session.script_engine.invoke_keymap(callback);
       }
       session.input.keymap_matched = matched;
     }
@@ -953,8 +962,20 @@ impl MudApp {
 ;; Use /(mud/fonts) to see available fonts.
 ;; (mud/option "font" "JetBrains Mono")
 
-(mud/keymap "PageUp" "scroll_up 20")
-(mud/keymap "PageDown" "scroll_down 20")
+(mud/keymap "PageUp" (lambda () (mud/scroll-up 20)))
+(mud/keymap "PageDown" (lambda () (mud/scroll-down 20)))
+(mud/keymap "alt+r" (lambda () (mud/reconnect)))
+(mud/keymap "alt+k" (lambda () (mud/capture-key)))
+(mud/keymap "alt+0" (lambda () (mud/send "0")))
+(mud/keymap "alt+1" (lambda () (mud/send "1")))
+(mud/keymap "alt+2" (lambda () (mud/send "2")))
+(mud/keymap "alt+3" (lambda () (mud/send "3")))
+(mud/keymap "alt+4" (lambda () (mud/send "4")))
+(mud/keymap "alt+5" (lambda () (mud/send "5")))
+(mud/keymap "alt+6" (lambda () (mud/send "6")))
+(mud/keymap "alt+7" (lambda () (mud/send "7")))
+(mud/keymap "alt+8" (lambda () (mud/send "8")))
+(mud/keymap "alt+9" (lambda () (mud/send "9")))
 
 (mud/pane "main")
 

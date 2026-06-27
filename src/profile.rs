@@ -631,8 +631,26 @@ fn generate_scheme(t: &GameTemplate) -> String {
 (mud/option \"scroll_lines\" 6)
 
 ;; Scrolling
-(mud/keymap \"PageUp\" \"scroll_up 20\")
-(mud/keymap \"PageDown\" \"scroll_down 20\")
+(mud/keymap \"PageUp\" (lambda () (mud/scroll-up 20)))
+(mud/keymap \"PageDown\" (lambda () (mud/scroll-down 20)))
+
+;; Reconnect
+(mud/keymap \"alt+r\" (lambda () (mud/reconnect)))
+
+;; Key combo capture
+(mud/keymap \"alt+k\" (lambda () (mud/capture-key)))
+
+;; Instant number sending
+(mud/keymap \"alt+0\" (lambda () (mud/send \"0\")))
+(mud/keymap \"alt+1\" (lambda () (mud/send \"1\")))
+(mud/keymap \"alt+2\" (lambda () (mud/send \"2\")))
+(mud/keymap \"alt+3\" (lambda () (mud/send \"3\")))
+(mud/keymap \"alt+4\" (lambda () (mud/send \"4\")))
+(mud/keymap \"alt+5\" (lambda () (mud/send \"5\")))
+(mud/keymap \"alt+6\" (lambda () (mud/send \"6\")))
+(mud/keymap \"alt+7\" (lambda () (mud/send \"7\")))
+(mud/keymap \"alt+8\" (lambda () (mud/send \"8\")))
+(mud/keymap \"alt+9\" (lambda () (mud/send \"9\")))
 
 ;; Panes
 (mud/pane \"main\")

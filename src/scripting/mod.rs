@@ -64,7 +64,21 @@ pub struct KeyCombo {
 #[derive(Clone, Debug)]
 pub struct Keymap {
   pub combo: KeyCombo,
-  pub command: String
+  pub callback: SteelVal
+}
+
+fn parse_key_combo(s: &str) -> KeyCombo {
+  let (mut alt, mut ctrl, mut shift) = (false, false, false);
+  let mut key = String::new();
+  for part in s.split('+') {
+    match part.trim().to_lowercase().as_str() {
+      "alt" => alt = true,
+      "ctrl" => ctrl = true,
+      "shift" => shift = true,
+      k => key = k.to_string()
+    }
+  }
+  KeyCombo { alt, ctrl, shift, key }
 }
 
 pub struct ScriptState {
@@ -77,7 +91,7 @@ pub struct ScriptState {
   pub outgoing_msdp_send: Vec<Vec<String>>,
   pub outgoing_msdp_list: Vec<String>,
   pub outgoing_reconnect: bool,
-  pub keymaps: Vec<Keymap>,
+  pub capture_next_key: bool,
   pub keep_input: bool,
   pub font_name: Option<String>,
   pub font_size: f32,
@@ -115,7 +129,7 @@ impl ScriptState {
       outgoing_msdp_send: Vec::new(),
       outgoing_msdp_list: Vec::new(),
       outgoing_reconnect: false,
-      keymaps: Vec::new(),
+      capture_next_key: false,
       keep_input: false,
       font_name: None,
       font_size: 13.0,
@@ -143,6 +157,7 @@ pub struct ScriptEngine {
   triggers: Vec<Trigger>,
   aliases: Vec<Alias>,
   timers: Vec<Timer>,
+  keymaps: Vec<Keymap>,
   hooks: std::collections::HashMap<String, SteelVal>
 }
 
@@ -158,6 +173,7 @@ impl ScriptEngine {
       triggers: Vec::new(),
       aliases: Vec::new(),
       timers: Vec::new(),
+      keymaps: Vec::new(),
       hooks: std::collections::HashMap::new()
     })
   }
@@ -244,6 +260,15 @@ impl ScriptEngine {
               oneshot
             });
           }
+        }
+      }
+    }
+    self.keymaps.clear();
+    if let Ok(SteelVal::HashMapV(hm)) = self.engine.extract_value("*keymaps*") {
+      for (k, v) in hm.iter() {
+        if let SteelVal::StringV(combo_str) = k {
+          let combo = parse_key_combo(combo_str);
+          self.keymaps.push(Keymap { combo, callback: v.clone() });
         }
       }
     }
@@ -385,6 +410,13 @@ impl ScriptEngine {
   pub fn trigger_count(&self) -> usize { self.triggers.len() }
   pub fn alias_count(&self) -> usize { self.aliases.len() }
   pub fn timer_count(&self) -> usize { self.timers.len() }
+  pub fn keymaps(&self) -> &[Keymap] { &self.keymaps }
+
+  pub fn invoke_keymap(&mut self, callback: SteelVal) {
+    if let Err(e) = self.engine.call_function_with_args(callback, vec![]) {
+      self.append_system_message(&format!("[keymap error: {e}]"));
+    }
+  }
 
   pub fn drain_commands(&self) -> Vec<String> {
     std::mem::take(&mut self.state.lock().unwrap().outgoing_commands)

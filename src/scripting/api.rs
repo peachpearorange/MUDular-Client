@@ -6,7 +6,7 @@ use steel::{rvals::SteelVal,
 use eframe::egui::Color32;
 
 use crate::{ansi::{DEFAULT_PALETTE, parse_ansi, strip_ansi},
-            buffer::TextBuffer,
+            buffer::{StyledLine, TextBuffer},
             scripting::{Gauge, Layout, LayoutDir, LayoutEntry, ScriptState}};
 
 pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
@@ -84,10 +84,29 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
     )
   });
 
-  reg!("mud/keymap", s => move |combo_str: String, command: String| {
-      s.lock().unwrap().keymaps.push(
-          crate::scripting::Keymap { combo: parse_key_combo(&combo_str), command },
-      );
+  reg!("mud/scroll-up", s => move |lines: SteelVal| {
+      let lines = steel_to_f32(&lines).unwrap_or(10.0);
+      let mut st = s.lock().unwrap();
+      if let Some(buf) = st.panes.get_mut("main") {
+          buf.scroll_delta_lines += lines;
+          buf.auto_scroll = false;
+      }
+  });
+
+  reg!("mud/scroll-down", s => move |lines: SteelVal| {
+      let lines = steel_to_f32(&lines).unwrap_or(10.0);
+      let mut st = s.lock().unwrap();
+      if let Some(buf) = st.panes.get_mut("main") {
+          buf.scroll_delta_lines -= lines;
+      }
+  });
+
+  reg!("mud/capture-key", s => move || {
+      let mut st = s.lock().unwrap();
+      st.capture_next_key = true;
+      let color = st.ansi_palette.unwrap_or(DEFAULT_PALETTE)[3];
+      let line = StyledLine::foreground("[Key combo capture active — press a key combo...]", color);
+      st.panes.entry("main".into()).or_insert_with(|| TextBuffer::new(10000)).append_line(line);
   });
 
   reg!("mud/status", s => move |text: String| {
@@ -211,6 +230,7 @@ const PRELUDE: &str = r#"
 (define *aliases* '())
 (define *timers* '())
 (define *hooks* (hash))
+(define *keymaps* (hash))
 
 (define (trigger pattern callback)
   (set! *triggers* (cons (cons pattern callback) *triggers*)))
@@ -229,6 +249,9 @@ const PRELUDE: &str = r#"
 
 (define (mud/on event-name callback)
   (set! *hooks* (hash-insert *hooks* event-name callback)))
+
+(define (mud/keymap combo callback)
+  (set! *keymaps* (hash-insert *keymaps* combo callback)))
 
 (define (hash-get h key . default)
   (if (hash-contains? h key)
@@ -337,20 +360,6 @@ fn parse_hex_color(s: &str) -> Option<[u8; 3]> {
       u8::from_str_radix(&s[4..6], 16).ok()?
     ])
   }
-}
-
-fn parse_key_combo(s: &str) -> crate::scripting::KeyCombo {
-  let (mut alt, mut ctrl, mut shift) = (false, false, false);
-  let mut key = String::new();
-  for part in s.split('+') {
-    match part.trim().to_lowercase().as_str() {
-      "alt" => alt = true,
-      "ctrl" => ctrl = true,
-      "shift" => shift = true,
-      k => key = k.to_string()
-    }
-  }
-  crate::scripting::KeyCombo { alt, ctrl, shift, key }
 }
 
 fn parse_kitty_theme(content: &str, state: &mut ScriptState) {
