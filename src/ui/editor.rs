@@ -18,7 +18,8 @@ pub struct ScriptEditor {
   completion_candidates: Vec<String>,
   completion_cursor: egui::text::CharIndex,
   completion_ignore_cursor: Option<egui::text::CharIndex>,
-  last_cursor: egui::text::CharIndex
+  last_cursor: egui::text::CharIndex,
+  completion_last_selected: usize
 }
 
 impl ScriptEditor {
@@ -38,7 +39,8 @@ impl ScriptEditor {
       completion_candidates: Vec::new(),
       completion_cursor: egui::text::CharIndex(0),
       completion_ignore_cursor: None,
-      last_cursor: egui::text::CharIndex(0)
+      last_cursor: egui::text::CharIndex(0),
+      completion_last_selected: 0
     }
   }
 
@@ -108,33 +110,43 @@ impl ScriptEditor {
             .map(|f| f.size)
             .unwrap_or(13.0);
           let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-          let desired_rows =
-            ((ui.available_height() / row_height).floor() as usize).max(3);
-          let desired_width = ui.available_width();
+          let avail_h = ui.available_height().max(row_height);
+          let desired_rows = ((avail_h / row_height).floor() as usize).max(1);
+          let desired_width = ui.available_width().max(1.0);
+          let editor_size = egui::vec2(desired_width, (desired_rows as f32) * row_height);
 
-          let output = egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
-            theme.modify_style(ui, fontsize);
-            egui::TextEdit::multiline(&mut self.code)
-              .id_source("script editor")
-              .lock_focus(true)
-              .desired_rows(desired_rows)
-              .desired_width(desired_width)
-              .layouter(&mut |ui: &egui::Ui,
-                               text: &dyn egui::TextBuffer,
-                               _wrap_width: f32| {
-                ui.fonts_mut(|f| {
-                  f.layout_job(layout_with_rainbow_parens(
-                    text.as_str(),
-                    syntax,
-                    &theme,
-                    fontsize
-                  ))
-                })
-              })
-              .show(ui)
-          }).inner;
+          let output = ui.allocate_ui_with_layout(
+            editor_size,
+            egui::Layout::top_down(egui::Align::LEFT),
+            |ui| {
+              theme.modify_style(ui, fontsize);
+              egui::ScrollArea::vertical()
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                  egui::TextEdit::multiline(&mut self.code)
+                    .id_source("script editor")
+                    .lock_focus(true)
+                    .desired_rows(desired_rows)
+                    .desired_width(ui.available_width())
+                    .layouter(&mut |ui: &egui::Ui,
+                                     text: &dyn egui::TextBuffer,
+                                     wrap_width: f32| {
+                      ui.fonts_mut(|f| {
+                        f.layout_job(layout_with_rainbow_parens(
+                          text.as_str(),
+                          syntax,
+                          &theme,
+                          fontsize,
+                          wrap_width.max(1.0)
+                        ))
+                      })
+                    })
+                    .show(ui)
+                }).inner
+            }
+          ).inner;
 
-          self.show_completion_popup(ctx, &output, fontsize);
+          self.show_completion_popup(ctx, &output, row_height, fontsize);
         });
       self.visible = visible;
     }
@@ -203,6 +215,7 @@ impl ScriptEditor {
     &mut self,
     ctx: &egui::Context,
     output: &egui::text_edit::TextEditOutput,
+    row_height: f32,
     fontsize: f32
   ) {
     if self.completion_ignore_cursor.is_some() {
@@ -257,71 +270,106 @@ impl ScriptEditor {
     self.completion_candidates = completions.clone();
     self.completion_cursor = cursor;
     self.completion_selected = self.completion_selected.min(completions.len().saturating_sub(1));
+    let max_visible = 15usize;
+    let needs_scroll = completions.len() > max_visible;
+    let selection_changed = self.completion_last_selected != self.completion_selected;
+    self.completion_last_selected = self.completion_selected;
 
-    let cursor_pos = output.galley.pos_from_cursor(egui::text::CCursor::new(cursor));
-    let cursor_screen = cursor_pos.translate(output.response.rect.left_top().to_vec2());
-    let screen_bottom = ctx.viewport_rect().bottom();
-    let max_popup_height = (screen_bottom - cursor_screen.bottom() - 20.0).max(100.0);
+    // Screen-space cursor rect, accounting for the editor's scroll/align offset.
+    let galley_origin =
+      output.galley_pos - egui::vec2(output.galley.rect.left(), 0.0);
+    let cursor_galley_rect = output
+      .galley
+      .pos_from_cursor(egui::text::CCursor::new(cursor.0));
+    let cursor_screen = cursor_galley_rect.translate(galley_origin.to_vec2());
+
+    let win = ctx.viewport_rect();
+    let popup_width = output.response.rect.width().max(200.0);
+    let visible = completions.len().min(max_visible);
+    let popup_height = ((visible as f32) * row_height + 8.0)
+      .min((win.bottom() - cursor_screen.bottom() - 4.0).max(row_height));
+    let room_below = win.bottom() - cursor_screen.bottom() - popup_height;
+    let popup_top = if room_below >= 0.0 {
+      cursor_screen.bottom()
+    } else {
+      (cursor_screen.top() - popup_height).max(win.top())
+    };
+    let popup_pos = egui::pos2(
+      cursor_screen.left().clamp(win.left(), win.right() - popup_width),
+      popup_top,
+    );
 
     egui::Area::new(egui::Id::new("script_editor_completer"))
       .kind(egui::UiKind::Popup)
       .order(egui::Order::Foreground)
-      .fixed_pos(cursor_screen.left_bottom())
+      .fixed_pos(popup_pos)
+      .interactable(true)
       .show(ctx, |ui| {
-      ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-      ui.set_max_width(cursor_screen.width().max(200.0));
-      egui::Frame::popup(ui.style()).fill(self.theme.bg()).show(ui, |ui| {
-      egui::ScrollArea::vertical()
-        .auto_shrink([true, true])
-        .max_height(max_popup_height)
-        .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
-        .show(ui, |ui| {
-          for (i, completion) in completions.iter().enumerate() {
-            let token_type = if self.syntax.is_keyword(completion) {
-              TokenType::Keyword
-            } else if self.syntax.is_special(completion) {
-              TokenType::Special
-            } else if self.syntax.is_type(completion) {
-              TokenType::Type
-            } else {
-              TokenType::Literal
-            };
-            let fmt = format_token(&self.theme, fontsize, token_type);
-            let job = egui::text::LayoutJob::single_section(completion.clone(), fmt);
-            let selected = i == self.completion_selected;
-            let button = ui.add(
-              egui::Button::new(job)
-                .sense(egui::Sense::click())
-                .frame(true)
-                .fill(if selected {
-                  self.theme.type_color(TokenType::Function).gamma_multiply(0.3)
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+        ui.set_width(popup_width);
+        ui.set_height(popup_height);
+        egui::Frame::popup(ui.style())
+          .fill(self.theme.bg())
+          .show(ui, |ui| {
+            let mut render = |ui: &mut egui::Ui| {
+              for (i, completion) in completions.iter().enumerate() {
+                let token_type = if self.syntax.is_keyword(completion) {
+                  TokenType::Keyword
+                } else if self.syntax.is_special(completion) {
+                  TokenType::Special
+                } else if self.syntax.is_type(completion) {
+                  TokenType::Type
                 } else {
-                  egui::Color32::TRANSPARENT
-                })
-            );
-            if selected {
-              ui.scroll_to_rect(button.rect, None);
+                  TokenType::Literal
+                };
+                let fmt = format_token(&self.theme, fontsize, token_type);
+                let job =
+                  egui::text::LayoutJob::single_section(completion.clone(), fmt);
+                let selected = i == self.completion_selected;
+                let button = ui.add(
+                  egui::Button::new(job)
+                    .sense(egui::Sense::click())
+                    .frame(true)
+                    .min_size(egui::vec2(ui.available_width(), row_height))
+                    .fill(if selected {
+                      self.theme
+                        .type_color(TokenType::Function)
+                        .gamma_multiply(0.3)
+                    } else {
+                      egui::Color32::TRANSPARENT
+                    }),
+                );
+                if selected && needs_scroll && selection_changed {
+                  ui.scroll_to_rect(button.rect, Some(egui::Align::Center));
+                }
+                if button.clicked() {
+                  let prefix_len = prefix.chars().count();
+                  let suffix = &completion[prefix_len..];
+                  let before: String = self.code.chars().take(cursor.0).collect();
+                  let after: String = self.code.chars().skip(cursor.0).collect();
+                  let new_cursor = cursor.0 + suffix.chars().count();
+                  self.code = format!("{before}{suffix}{after}");
+                  let mut state = output.state.clone();
+                  state.cursor.set_char_range(Some(
+                    egui::text::CCursorRange::one(egui::text::CCursor::new(new_cursor)),
+                  ));
+                  state.store(ctx, output.response.id);
+                  self.completion_ignore_cursor =
+                    Some(egui::text::CharIndex(new_cursor));
+                  self.completion_active = false;
+                  self.completion_candidates.clear();
+                }
+              }
+            };
+            if needs_scroll {
+              egui::ScrollArea::vertical()
+                .auto_shrink([false, false])
+                .show(ui, render);
+            } else {
+              render(ui);
             }
-            if button.clicked() {
-              let prefix_len = prefix.chars().count();
-              let suffix = &completion[prefix_len..];
-              let before: String = self.code.chars().take(cursor.0).collect();
-              let after: String = self.code.chars().skip(cursor.0).collect();
-              let new_cursor = cursor.0 + suffix.chars().count();
-              self.code = format!("{before}{suffix}{after}");
-              let mut state = output.state.clone();
-              state.cursor.set_char_range(Some(egui::text::CCursorRange::one(
-                egui::text::CCursor::new(new_cursor)
-              )));
-              state.store(ctx, output.response.id);
-              self.completion_ignore_cursor = Some(egui::text::CharIndex(new_cursor));
-              self.completion_active = false;
-              self.completion_candidates.clear();
-            }
-          }
-        });
+          });
       });
-    });
   }
 }
 
@@ -395,9 +443,11 @@ fn layout_with_rainbow_parens(
   text: &str,
   syntax: &Syntax,
   theme: &ColorTheme,
-  fontsize: f32
+  fontsize: f32,
+  wrap_width: f32
 ) -> egui::text::LayoutJob {
   let mut job = egui::text::LayoutJob::default();
+  job.wrap.max_width = wrap_width;
   let mut tokenizer = Token::default();
   let mut depth = 0isize;
 
