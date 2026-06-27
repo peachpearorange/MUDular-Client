@@ -18,7 +18,8 @@ struct Appearance {
   font_name: Option<String>,
   font_size: f32,
   bg_color: Option<[u8; 3]>,
-  fg_color: Option<[u8; 3]>
+  fg_color: Option<[u8; 3]>,
+  ansi_palette: Option<[[u8; 3]; 16]>
 }
 
 impl Appearance {
@@ -345,13 +346,24 @@ impl MudApp {
       .cloned()
       .collect();
 
+    let mut editor = ScriptEditor::new();
+    if let Some(pal) = appearance.ansi_palette {
+      let palette: [egui::Color32; 16] = std::array::from_fn(|i| {
+        let [r, g, b] = pal[i];
+        egui::Color32::from_rgb(r, g, b)
+      });
+      let bg = appearance.bg_color.map(|[r, g, b]| egui::Color32::from_rgb(r, g, b));
+      let fg = appearance.fg_color.map(|[r, g, b]| egui::Color32::from_rgb(r, g, b));
+      editor.set_theme(&palette, bg, fg);
+    }
+
     Self {
       profiles,
       templates,
       sessions: Vec::new(),
       active_tab: 0,
       last_active_tab: 0,
-      editor: ScriptEditor::new(),
+      editor,
       editor_profile_idx: None,
       #[cfg(not(target_arch = "wasm32"))]
       runtime,
@@ -581,7 +593,14 @@ impl MudApp {
               font_name: st.font_name.clone(),
               font_size: st.font_size,
               bg_color: st.bg_color,
-              fg_color: st.fg_color
+              fg_color: st.fg_color,
+              ansi_palette: st.ansi_palette.map(|p| {
+                let mut out = [[0u8; 3]; 16];
+                for (i, c) in p.iter().enumerate() {
+                  out[i] = [c.r(), c.g(), c.b()];
+                }
+                out
+              })
             }
           )
         })
