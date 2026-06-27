@@ -682,7 +682,7 @@ fn scheme_syntax() -> Syntax {
     case_sensitive: true,
     comment: ";",
     comment_multiline: ["#|", "|#"],
-    quotes: BTreeSet::from(['\'', '"', '`']),
+    quotes: BTreeSet::from(['"']),
     word_start: BTreeSet::from(['?', '!', '-', '+', '*', '/', '<', '>', '=']),
     hyperlinks: BTreeSet::new(),
     keywords,
