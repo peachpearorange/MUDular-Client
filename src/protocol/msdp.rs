@@ -14,39 +14,39 @@ pub fn parse_msdp(data: &[u8]) -> Value {
 
 fn parse_value(data: &[u8], start: usize) -> (Value, usize) {
   if start >= data.len() {
-    return (Value::Null, start);
-  }
+    (Value::Null, start)
+  } else {
+    let mut vars = serde_json::Map::new();
+    let mut i = start;
 
-  let mut vars = serde_json::Map::new();
-  let mut i = start;
-
-  while i < data.len() {
-    if data[i] == MSDP_VAR {
-      i += 1;
-      let (name, next) = read_string(data, i);
-      i = next;
-      if i < data.len() && data[i] == MSDP_VAL {
+    while i < data.len() {
+      if data[i] == MSDP_VAR {
         i += 1;
-        if i < data.len() && data[i] == MSDP_TABLE_OPEN {
-          let (table, next) = parse_table(data, i + 1);
-          vars.insert(name, table);
-          i = next;
-        } else if i < data.len() && data[i] == MSDP_ARRAY_OPEN {
-          let (arr, next) = parse_array(data, i + 1);
-          vars.insert(name, arr);
-          i = next;
-        } else {
-          let (val, next) = read_string(data, i);
-          vars.insert(name, Value::String(val));
-          i = next;
+        let (name, next) = read_string(data, i);
+        i = next;
+        if i < data.len() && data[i] == MSDP_VAL {
+          i += 1;
+          if i < data.len() && data[i] == MSDP_TABLE_OPEN {
+            let (table, next) = parse_table(data, i + 1);
+            vars.insert(name, table);
+            i = next;
+          } else if i < data.len() && data[i] == MSDP_ARRAY_OPEN {
+            let (arr, next) = parse_array(data, i + 1);
+            vars.insert(name, arr);
+            i = next;
+          } else {
+            let (val, next) = read_string(data, i);
+            vars.insert(name, Value::String(val));
+            i = next;
+          }
         }
+      } else {
+        i += 1;
       }
-    } else {
-      i += 1;
     }
-  }
 
-  (Value::Object(vars), i)
+    (Value::Object(vars), i)
+  }
 }
 
 fn parse_table(data: &[u8], start: usize) -> (Value, usize) {

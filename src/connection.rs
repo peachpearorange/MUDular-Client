@@ -85,44 +85,40 @@ async fn connection_task(
   cmd_rx: mpsc::Receiver<ConnCommand>
 ) {
   info!("Connecting to {host}:{port} (tls={tls})");
-  let tcp_stream = match TcpStream::connect(format!("{host}:{port}")).await {
-    Ok(s) => s,
+  match TcpStream::connect(format!("{host}:{port}")).await {
     Err(e) => {
       warn!("Connection failed: {e}");
       let _ = event_tx.send(ConnEvent::Error(format!("Connection failed: {e}")));
-      return;
     }
-  };
-
-  info!("TCP connected to {host}:{port}");
-
-  if tls {
-    let root_store =
-      rustls::RootCertStore::from_iter(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
-    let config = rustls::ClientConfig::builder()
-      .with_root_certificates(root_store)
-      .with_no_client_auth();
-    let connector = tokio_rustls::TlsConnector::from(std::sync::Arc::new(config));
-    let server_name = match rustls::pki_types::ServerName::try_from(host.as_str()) {
-      Ok(name) => name.to_owned(),
-      Err(e) => {
-        let _ = event_tx.send(ConnEvent::Error(format!("Invalid TLS hostname: {e}")));
-        return;
-      }
-    };
-    match connector.connect(server_name, tcp_stream).await {
-      Ok(tls_stream) => {
-        info!("TLS handshake complete");
-        let _ = event_tx.send(ConnEvent::Connected);
-        run_connection(tls_stream, event_tx, cmd_rx).await;
-      }
-      Err(e) => {
-        let _ = event_tx.send(ConnEvent::Error(format!("TLS handshake failed: {e}")));
+    Ok(tcp_stream) if tls => {
+      info!("TCP connected to {host}:{port}");
+      let root_store =
+        rustls::RootCertStore::from_iter(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+      let config = rustls::ClientConfig::builder()
+        .with_root_certificates(root_store)
+        .with_no_client_auth();
+      let connector = tokio_rustls::TlsConnector::from(std::sync::Arc::new(config));
+      match rustls::pki_types::ServerName::try_from(host.as_str()) {
+        Err(e) => {
+          let _ = event_tx.send(ConnEvent::Error(format!("Invalid TLS hostname: {e}")));
+        }
+        Ok(name) => match connector.connect(name.to_owned(), tcp_stream).await {
+          Ok(tls_stream) => {
+            info!("TLS handshake complete");
+            let _ = event_tx.send(ConnEvent::Connected);
+            run_connection(tls_stream, event_tx, cmd_rx).await;
+          }
+          Err(e) => {
+            let _ = event_tx.send(ConnEvent::Error(format!("TLS handshake failed: {e}")));
+          }
+        }
       }
     }
-  } else {
-    let _ = event_tx.send(ConnEvent::Connected);
-    run_connection(tcp_stream, event_tx, cmd_rx).await;
+    Ok(tcp_stream) => {
+      info!("TCP connected to {host}:{port}");
+      let _ = event_tx.send(ConnEvent::Connected);
+      run_connection(tcp_stream, event_tx, cmd_rx).await;
+    }
   }
 }
 

@@ -3,16 +3,14 @@ use eframe::{egui, egui::Color32};
 use crate::scripting::Gauge;
 
 pub fn render_gauges(ui: &mut egui::Ui, gauges: &[Gauge]) {
-  if gauges.is_empty() {
-    return;
+  if !gauges.is_empty() {
+    ui.horizontal(|ui| {
+      for gauge in gauges {
+        render_single_gauge(ui, gauge);
+        ui.add_space(4.0);
+      }
+    });
   }
-
-  ui.horizontal(|ui| {
-    for gauge in gauges {
-      render_single_gauge(ui, gauge);
-      ui.add_space(4.0);
-    }
-  });
 }
 
 fn render_single_gauge(ui: &mut egui::Ui, gauge: &Gauge) {

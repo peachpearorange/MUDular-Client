@@ -126,60 +126,59 @@ pub fn parse_ansi(input: &str, palette: Option<&[Color32; 16]>) -> Vec<StyledLin
 fn apply_sgr(params: &str, style: &mut Style, palette: &[Color32; 16]) {
   if params.is_empty() {
     *style = Style::default();
-    return;
-  }
+  } else {
+    let mut codes = params.split(';').filter_map(|s| s.parse::<u8>().ok()).peekable();
 
-  let mut codes = params.split(';').filter_map(|s| s.parse::<u8>().ok()).peekable();
-
-  while let Some(code) = codes.next() {
-    match code {
-      0 => *style = Style::default(),
-      1 => style.bold = true,
-      3 => style.italic = true,
-      4 => style.underline = true,
-      9 => style.strikethrough = true,
-      22 => style.bold = false,
-      23 => style.italic = false,
-      24 => style.underline = false,
-      29 => style.strikethrough = false,
-      30..=37 => {
-        let idx = (code - 30) as usize;
-        style.fg = Some(if style.bold { palette[idx + 8] } else { palette[idx] });
+    while let Some(code) = codes.next() {
+      match code {
+        0 => *style = Style::default(),
+        1 => style.bold = true,
+        3 => style.italic = true,
+        4 => style.underline = true,
+        9 => style.strikethrough = true,
+        22 => style.bold = false,
+        23 => style.italic = false,
+        24 => style.underline = false,
+        29 => style.strikethrough = false,
+        30..=37 => {
+          let idx = (code - 30) as usize;
+          style.fg = Some(if style.bold { palette[idx + 8] } else { palette[idx] });
+        }
+        38 => match codes.next() {
+          Some(5) => {
+            if let Some(n) = codes.next() {
+              style.fg = Some(color_256(n, palette));
+            }
+          }
+          Some(2) => {
+            let r = codes.next().unwrap_or(0);
+            let g = codes.next().unwrap_or(0);
+            let b = codes.next().unwrap_or(0);
+            style.fg = Some(Color32::from_rgb(r, g, b));
+          }
+          _ => {}
+        },
+        39 => style.fg = None,
+        40..=47 => style.bg = Some(palette[(code - 40) as usize]),
+        48 => match codes.next() {
+          Some(5) => {
+            if let Some(n) = codes.next() {
+              style.bg = Some(color_256(n, palette));
+            }
+          }
+          Some(2) => {
+            let r = codes.next().unwrap_or(0);
+            let g = codes.next().unwrap_or(0);
+            let b = codes.next().unwrap_or(0);
+            style.bg = Some(Color32::from_rgb(r, g, b));
+          }
+          _ => {}
+        },
+        49 => style.bg = None,
+        90..=97 => style.fg = Some(palette[(code - 90 + 8) as usize]),
+        100..=107 => style.bg = Some(palette[(code - 100 + 8) as usize]),
+        _ => {}
       }
-      38 => match codes.next() {
-        Some(5) => {
-          if let Some(n) = codes.next() {
-            style.fg = Some(color_256(n, palette));
-          }
-        }
-        Some(2) => {
-          let r = codes.next().unwrap_or(0);
-          let g = codes.next().unwrap_or(0);
-          let b = codes.next().unwrap_or(0);
-          style.fg = Some(Color32::from_rgb(r, g, b));
-        }
-        _ => {}
-      },
-      39 => style.fg = None,
-      40..=47 => style.bg = Some(palette[(code - 40) as usize]),
-      48 => match codes.next() {
-        Some(5) => {
-          if let Some(n) = codes.next() {
-            style.bg = Some(color_256(n, palette));
-          }
-        }
-        Some(2) => {
-          let r = codes.next().unwrap_or(0);
-          let g = codes.next().unwrap_or(0);
-          let b = codes.next().unwrap_or(0);
-          style.bg = Some(Color32::from_rgb(r, g, b));
-        }
-        _ => {}
-      },
-      49 => style.bg = None,
-      90..=97 => style.fg = Some(palette[(code - 90 + 8) as usize]),
-      100..=107 => style.bg = Some(palette[(code - 100 + 8) as usize]),
-      _ => {}
     }
   }
 }

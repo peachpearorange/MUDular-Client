@@ -67,14 +67,10 @@ fn find_system_font(name: &str) -> Option<std::path::PathBuf> {
   if let Ok(home) = std::env::var("HOME") {
     search_dirs.push(std::path::PathBuf::from(format!("{home}/.local/share/fonts")));
   }
-  for dir in &search_dirs {
-    for candidate in &candidates {
-      if let Some(path) = find_file_recursive(dir, candidate) {
-        return Some(path);
-      }
-    }
-  }
-  None
+  search_dirs
+    .iter()
+    .flat_map(|dir| candidates.iter().map(move |c| (dir, c)))
+    .find_map(|(dir, candidate)| find_file_recursive(dir, candidate))
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -82,23 +78,20 @@ fn find_file_recursive(
   dir: &std::path::Path,
   filename: &str
 ) -> Option<std::path::PathBuf> {
-  let entries = std::fs::read_dir(dir).ok()?;
-  for entry in entries.flatten() {
+  std::fs::read_dir(dir).ok()?.flatten().find_map(|entry| {
     let path = entry.path();
     if path.is_file()
       && path
         .file_name()
         .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case(filename))
     {
-      return Some(path);
+      Some(path)
+    } else if path.is_dir() {
+      find_file_recursive(&path, filename)
+    } else {
+      None
     }
-    if path.is_dir() {
-      if let Some(found) = find_file_recursive(&path, filename) {
-        return Some(found);
-      }
-    }
-  }
-  None
+  })
 }
 
 fn key_name_to_egui(name: &str) -> Option<egui::Key> {
@@ -278,39 +271,40 @@ impl Session {
   }
 
   fn process_outgoing(&mut self) {
-    let Some(conn) = &self.connection else { return };
-    for cmd in self.script_engine.drain_commands() {
-      info!("Sending command ({} chars)", cmd.len());
-      conn.send(&cmd);
+    if let Some(conn) = &self.connection {
+      for cmd in self.script_engine.drain_commands() {
+        info!("Sending command ({} chars)", cmd.len());
+        conn.send(&cmd);
+      }
+      #[cfg(not(target_arch = "wasm32"))]
+      for (package, data) in self.script_engine.drain_gmcp() {
+        info!("Sending GMCP: {package}");
+        conn.send_gmcp(&package, &data);
+      }
+      #[cfg(target_arch = "wasm32")]
+      let _ = self.script_engine.drain_gmcp();
+      #[cfg(not(target_arch = "wasm32"))]
+      for vars in self.script_engine.drain_msdp_reports() {
+        info!("Sending MSDP report for: {vars:?}");
+        conn.send_msdp_report(vars);
+      }
+      #[cfg(target_arch = "wasm32")]
+      let _ = self.script_engine.drain_msdp_reports();
+      #[cfg(not(target_arch = "wasm32"))]
+      for vars in self.script_engine.drain_msdp_sends() {
+        info!("Sending MSDP send for: {vars:?}");
+        conn.send_msdp_send(vars);
+      }
+      #[cfg(target_arch = "wasm32")]
+      let _ = self.script_engine.drain_msdp_sends();
+      #[cfg(not(target_arch = "wasm32"))]
+      for what in self.script_engine.drain_msdp_lists() {
+        info!("Sending MSDP list: {what}");
+        conn.send_msdp_list(what);
+      }
+      #[cfg(target_arch = "wasm32")]
+      let _ = self.script_engine.drain_msdp_lists();
     }
-    #[cfg(not(target_arch = "wasm32"))]
-    for (package, data) in self.script_engine.drain_gmcp() {
-      info!("Sending GMCP: {package}");
-      conn.send_gmcp(&package, &data);
-    }
-    #[cfg(target_arch = "wasm32")]
-    let _ = self.script_engine.drain_gmcp();
-    #[cfg(not(target_arch = "wasm32"))]
-    for vars in self.script_engine.drain_msdp_reports() {
-      info!("Sending MSDP report for: {vars:?}");
-      conn.send_msdp_report(vars);
-    }
-    #[cfg(target_arch = "wasm32")]
-    let _ = self.script_engine.drain_msdp_reports();
-    #[cfg(not(target_arch = "wasm32"))]
-    for vars in self.script_engine.drain_msdp_sends() {
-      info!("Sending MSDP send for: {vars:?}");
-      conn.send_msdp_send(vars);
-    }
-    #[cfg(target_arch = "wasm32")]
-    let _ = self.script_engine.drain_msdp_sends();
-    #[cfg(not(target_arch = "wasm32"))]
-    for what in self.script_engine.drain_msdp_lists() {
-      info!("Sending MSDP list: {what}");
-      conn.send_msdp_list(what);
-    }
-    #[cfg(target_arch = "wasm32")]
-    let _ = self.script_engine.drain_msdp_lists();
   }
 }
 
@@ -450,7 +444,7 @@ impl MudApp {
       ConnectionMode::WebSocket => profile
         .websocket_url
         .as_deref()
-        .map(Connection::connect)
+        .map(|url| Connection::connect(url, profile.websocket_protocol.as_deref()))
         .transpose()
         .unwrap_or_else(|e| {
           engine.append_system_message(&format!("[WebSocket error: {e}]"));
@@ -498,10 +492,7 @@ impl MudApp {
   }
 
   fn process_keymaps(&mut self, ctx: &egui::Context) {
-    let si = match self.active_tab.checked_sub(1) {
-      Some(i) if i < self.sessions.len() => i,
-      _ => return
-    };
+    if let Some(si) = self.active_tab.checked_sub(1).filter(|&i| i < self.sessions.len()) {
     let session = &mut self.sessions[si];
     let keymaps = session.script_engine.state.lock().unwrap().keymaps.clone();
     let mut matched = false;
@@ -557,42 +548,38 @@ impl MudApp {
       }
     }
     session.input.keymap_matched = matched;
+    }
   }
 
   fn apply_theme(&mut self, ctx: &egui::Context) {
-    let appearance = {
-      let si = match self.active_tab.checked_sub(1) {
-        Some(i) => i,
-        None => return
-      };
-      let session = match self.sessions.get(si) {
-        Some(s) => s,
-        None => return
-      };
-      let mut st = session.script_engine.state.lock().unwrap();
-      if !st.theme_dirty {
-        return;
+    let appearance = self
+      .active_tab
+      .checked_sub(1)
+      .and_then(|si| self.sessions.get(si))
+      .and_then(|session| {
+        let mut st = session.script_engine.state.lock().unwrap();
+        st.theme_dirty.then(|| {
+          st.theme_dirty = false;
+          Appearance {
+            font_name: st.font_name.clone(),
+            font_size: st.font_size,
+            bg_color: st.bg_color,
+            fg_color: st.fg_color
+          }
+        })
+      });
+    if let Some(appearance) = appearance {
+      if appearance.font_name != self.loaded_font_name {
+        self.loaded_font_name = appearance.font_name.clone();
       }
-      st.theme_dirty = false;
-      Appearance {
-        font_name: st.font_name.clone(),
-        font_size: st.font_size,
-        bg_color: st.bg_color,
-        fg_color: st.fg_color
+      if let Some(warning) = apply_appearance(ctx, &appearance)
+        && let Some(si) = self.active_tab.checked_sub(1)
+        && let Some(session) = self.sessions.get_mut(si)
+      {
+        session.script_engine.append_system_message(&warning);
       }
-    };
-
-    if appearance.font_name != self.loaded_font_name {
-      self.loaded_font_name = appearance.font_name.clone();
+      appearance.save();
     }
-
-    if let Some(warning) = apply_appearance(ctx, &appearance)
-      && let Some(si) = self.active_tab.checked_sub(1)
-      && let Some(session) = self.sessions.get_mut(si)
-    {
-      session.script_engine.append_system_message(&warning);
-    }
-    appearance.save();
   }
 
   fn render_session_content(&mut self, ui: &mut egui::Ui, session_idx: usize) {
@@ -731,12 +718,16 @@ impl eframe::App for MudApp {
       if let Some(session) = self.sessions.get_mut(si) {
         if let Some(cmd) = session.input.take_submitted() {
           info!("Input submitted: {cmd:?}");
-          session.script_engine.handle_input_hook(&cmd);
-          let should_send = session.script_engine.handle_input(&cmd);
-          info!("Alias check: should_send={should_send}");
-          if should_send {
-            if let Some(conn) = &session.connection {
-              conn.send(&cmd);
+          if let Some(code) = cmd.strip_prefix("/(") {
+            session.script_engine.eval_input(&format!("({code}"));
+          } else {
+            session.script_engine.handle_input_hook(&cmd);
+            let should_send = session.script_engine.handle_input(&cmd);
+            info!("Alias check: should_send={should_send}");
+            if should_send {
+              if let Some(conn) = &session.connection {
+                conn.send(&cmd);
+              }
             }
           }
           session.process_outgoing();
@@ -900,6 +891,7 @@ impl MudApp {
       port: template.port,
       tls: template.tls,
       websocket_url: template.websocket_url.clone(),
+      websocket_protocol: template.websocket_protocol.clone(),
       script_code,
       path: None,
       is_preset: false
@@ -933,27 +925,29 @@ impl MudApp {
         {
           let port = self.new_profile_port.parse().unwrap_or(23);
           let code = format!(
-            r#"(profile
+            r#";; Steel implementation of R5RS Scheme
+
+(mud/profile
   'name "{name}"
   'connection-mode 'tcp
   'host "{host}"
   'port {port}
   'tls #f)
 
-(load-theme "Onenord")
+(mud/load-theme "Onenord")
 
-(keymap "PageUp" "scroll_up 20")
-(keymap "PageDown" "scroll_down 20")
+(mud/keymap "PageUp" "scroll_up 20")
+(mud/keymap "PageDown" "scroll_down 20")
 
-(pane "main")
+(mud/pane "main")
 
-(define (on-connect)
-  (pane-print "main" "[Connected to {name}]"))
+(mud/on "connect" (lambda ()
+  (mud/pane-print "main" "[Connected to {name}]")))
 
-(define (on-disconnect)
-  (pane-print "main" "[Disconnected from {name}]"))
+(mud/on "disconnect" (lambda ()
+  (mud/pane-print "main" "[Disconnected from {name}]")))
 
-(define (on-line line) #t)
+(mud/on "line" (lambda (line) #t))
 "#,
             name = self.new_profile_name,
             host = self.new_profile_host,
@@ -966,6 +960,7 @@ impl MudApp {
             port,
             tls: false,
             websocket_url: None,
+            websocket_protocol: None,
             script_code: code,
             path: None,
             is_preset: false
@@ -982,7 +977,7 @@ impl MudApp {
   }
 
   fn render_rename_dialog(&mut self, ctx: &egui::Context) {
-    let Some(idx) = self.rename_idx else { return };
+    if let Some(idx) = self.rename_idx {
     let mut open = true;
     egui::Window::new("Rename Profile")
       .collapsible(false)
@@ -1002,6 +997,7 @@ impl MudApp {
       });
     if !open {
       self.rename_idx = None;
+    }
     }
   }
 

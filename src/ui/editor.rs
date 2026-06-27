@@ -19,43 +19,41 @@ impl ScriptEditor {
   pub fn render(&mut self, ctx: &egui::Context) -> EditorAction {
     let mut action = EditorAction::None;
 
-    if !self.visible {
-      return action;
-    }
-
-    egui::Window::new("Script Editor")
-      .default_size([600.0, 500.0])
-      .resizable(true)
-      .collapsible(true)
-      .open(&mut self.visible)
-      .show(ctx, |ui| {
-        ui.horizontal(|ui| {
-          if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
-            crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
-            self.status_message = Some(("Copied!".into(), ui.input(|input| input.time)));
-          }
-          if crate::ui::term_button(ui, "Save & Reload").clicked() {
-            action = EditorAction::SaveAndReload(self.code.clone());
-          }
-          if let Some((ref msg, when)) = self.status_message {
-            if ui.input(|input| input.time) - when < 3.0 {
-              ui.label(msg);
-            } else {
-              self.status_message = None;
+    if self.visible {
+      egui::Window::new("Script Editor")
+        .default_size([600.0, 500.0])
+        .resizable(true)
+        .collapsible(true)
+        .open(&mut self.visible)
+        .show(ctx, |ui| {
+          ui.horizontal(|ui| {
+            if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
+              crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
+              self.status_message = Some(("Copied!".into(), ui.input(|input| input.time)));
             }
-          }
-        });
-        ui.separator();
+            if crate::ui::term_button(ui, "Save & Reload").clicked() {
+              action = EditorAction::SaveAndReload(self.code.clone());
+            }
+            if let Some((ref msg, when)) = self.status_message {
+              if ui.input(|input| input.time) - when < 3.0 {
+                ui.label(msg);
+              } else {
+                self.status_message = None;
+              }
+            }
+          });
+          ui.separator();
 
-        egui::ScrollArea::vertical().show(ui, |ui| {
-          ui.add(
-            egui::TextEdit::multiline(&mut self.code)
-              .font(egui::TextStyle::Monospace)
-              .desired_width(f32::INFINITY)
-              .desired_rows(30)
-          );
+          egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.add(
+              egui::TextEdit::multiline(&mut self.code)
+                .font(egui::TextStyle::Monospace)
+                .desired_width(f32::INFINITY)
+                .desired_rows(30)
+            );
+          });
         });
-      });
+    }
 
     action
   }

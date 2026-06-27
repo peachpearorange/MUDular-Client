@@ -20,9 +20,11 @@ pub struct Connection {
 }
 
 impl Connection {
-  pub fn connect(url: &str) -> Result<Self, String> {
-    let ws =
-      WebSocket::new(url).map_err(|_| format!("Could not open WebSocket {url}"))?;
+  pub fn connect(url: &str, protocol: Option<&str>) -> Result<Self, String> {
+    let ws = protocol
+      .map(|protocol| WebSocket::new_with_str(url, protocol))
+      .unwrap_or_else(|| WebSocket::new(url))
+      .map_err(|_| format!("Could not open WebSocket {url}"))?;
     ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
 
     let (event_tx, event_rx) = mpsc::channel();

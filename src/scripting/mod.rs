@@ -92,7 +92,8 @@ pub struct ScriptState {
   pub profile_host: Option<String>,
   pub profile_port: Option<u16>,
   pub profile_tls: Option<bool>,
-  pub profile_websocket_url: Option<String>
+  pub profile_websocket_url: Option<String>,
+  pub profile_websocket_protocol: Option<String>
 }
 
 impl ScriptState {
@@ -128,7 +129,8 @@ impl ScriptState {
       profile_host: None,
       profile_port: None,
       profile_tls: None,
-      profile_websocket_url: None
+      profile_websocket_url: None,
+      profile_websocket_protocol: None
     }
   }
 }
@@ -138,7 +140,8 @@ pub struct ScriptEngine {
   pub state: Arc<Mutex<ScriptState>>,
   triggers: Vec<Trigger>,
   aliases: Vec<Alias>,
-  timers: Vec<Timer>
+  timers: Vec<Timer>,
+  hooks: std::collections::HashMap<String, SteelVal>
 }
 
 impl ScriptEngine {
@@ -152,7 +155,8 @@ impl ScriptEngine {
       state,
       triggers: Vec::new(),
       aliases: Vec::new(),
-      timers: Vec::new()
+      timers: Vec::new(),
+      hooks: std::collections::HashMap::new()
     })
   }
 
@@ -198,6 +202,14 @@ impl ScriptEngine {
     self.triggers.clear();
     self.aliases.clear();
     self.timers.clear();
+    self.hooks.clear();
+    if let Ok(SteelVal::HashMapV(hm)) = self.engine.extract_value("*hooks*") {
+      for (k, v) in hm.iter() {
+        if let SteelVal::StringV(name) = k {
+          self.hooks.insert(name.to_string(), v.clone());
+        }
+      }
+    }
     if let Ok(val) = self.engine.extract_value("*triggers*") {
       for item in steel_list_iter(&val) {
         if let (Some(pattern), Some(callback)) = (steel_car(&item), steel_cdr(&item)) {
@@ -236,21 +248,26 @@ impl ScriptEngine {
   }
 
   pub fn handle_line(&mut self, line: &str) -> bool {
-    if let Ok(on_line) = self.engine.extract_value("on-line") {
-      if !matches!(on_line, SteelVal::Void) {
-        match self.engine.call_function_with_args(on_line, vec![SteelVal::StringV(
-          line.to_string().into()
-        )]) {
-          Ok(SteelVal::BoolV(false)) => return false,
-          Err(e) => self.append_system_message(&format!("[on-line error: {e}]")),
-          _ => {}
+    let should_display = if let Some(on_line) = self.hooks.get("line").cloned() {
+      match self.engine.call_function_with_args(on_line, vec![SteelVal::StringV(
+        line.to_string().into()
+      )]) {
+        Ok(SteelVal::BoolV(false)) => false,
+        Err(e) => {
+          self.append_system_message(&format!("[line hook error: {e}]"));
+          true
         }
+        _ => true
       }
-    }
+    } else {
+      true
+    };
 
-    for i in 0..self.triggers.len() {
-      if let Ok(re) = regex::Regex::new(&self.triggers[i].pattern) {
-        if let Some(captures) = re.captures(line) {
+    if should_display {
+      for i in 0..self.triggers.len() {
+        if let Ok(re) = regex::Regex::new(&self.triggers[i].pattern)
+          && let Some(captures) = re.captures(line)
+        {
           let args: Vec<SteelVal> = captures
             .iter()
             .skip(1)
@@ -264,62 +281,79 @@ impl ScriptEngine {
       }
     }
 
-    true
+    should_display
+  }
+
+  pub fn eval_input(&mut self, code: &str) {
+    match self.engine.run(code.to_string()) {
+      Ok(results) => {
+        if let Some(val) = results.last() {
+          let display = format!("{val}");
+          if display != "Void" && !display.is_empty() {
+            self.append_system_message(&format!("=> {display}"));
+          }
+        }
+      }
+      Err(e) => self.append_system_message(&format!("[eval error: {e}]"))
+    }
+    self.sync_registrations();
   }
 
   pub fn handle_input(&mut self, input: &str) -> bool {
-    for i in 0..self.aliases.len() {
-      if let Ok(re) = regex::Regex::new(&self.aliases[i].pattern) {
-        if let Some(captures) = re.captures(input) {
+    let matched = (0..self.aliases.len()).find_map(|i| {
+      regex::Regex::new(&self.aliases[i].pattern)
+        .ok()
+        .and_then(|re| re.captures(input))
+        .map(|captures| {
           let args: Vec<SteelVal> = captures
             .iter()
             .skip(1)
             .filter_map(|m| m.map(|m| SteelVal::StringV(m.as_str().to_string().into())))
             .collect();
-          let callback = self.aliases[i].callback.clone();
-          if let Err(e) = self.engine.call_function_with_args(callback, args) {
-            self.append_system_message(&format!("[alias error: {e}]"));
-          }
-          return false;
-        }
+          (self.aliases[i].callback.clone(), args)
+        })
+    });
+    if let Some((callback, args)) = matched {
+      if let Err(e) = self.engine.call_function_with_args(callback, args) {
+        self.append_system_message(&format!("[alias error: {e}]"));
       }
+      false
+    } else {
+      true
     }
-    true
   }
 
   fn call_hook(&mut self, name: &str, args: Vec<SteelVal>) {
-    if let Ok(func) = self.engine.extract_value(name) {
-      if !matches!(func, SteelVal::Void) {
-        if let Err(e) = self.engine.call_function_with_args(func, args) {
-          self.append_system_message(&format!("[{name} error: {e}]"));
-        }
-      }
+    if let Some(func) = self.hooks.get(name).cloned()
+      && let Err(e) = self.engine.call_function_with_args(func, args)
+    {
+      self.append_system_message(&format!("[{name} hook error: {e}]"));
     }
   }
 
   pub fn handle_gmcp(&mut self, package: &str, data: &serde_json::Value) {
     let steel_data = json_to_steel(data);
-    self.call_hook("on-gmcp", vec![
+    self.call_hook("gmcp", vec![
       SteelVal::StringV(package.to_string().into()),
       steel_data,
     ]);
   }
 
   pub fn handle_msdp(&mut self, data: &serde_json::Value) {
-    self.call_hook("on-msdp", vec![json_to_steel(data)]);
+    self.call_hook("msdp", vec![json_to_steel(data)]);
   }
 
   pub fn handle_input_hook(&mut self, input: &str) {
-    self.call_hook("on-input", vec![SteelVal::StringV(input.to_string().into())]);
+    self.call_hook("input", vec![SteelVal::StringV(input.to_string().into())]);
   }
 
   pub fn handle_connect(&mut self) {
-    self.call_hook("on-connect", vec![]);
+    self.call_hook("connect", vec![]);
     self.sync_registrations();
   }
 
   pub fn handle_disconnect(&mut self) {
-    self.call_hook("on-disconnect", vec![]);
+    self.call_hook("disconnect", vec![]);
     self.sync_registrations();
   }
 

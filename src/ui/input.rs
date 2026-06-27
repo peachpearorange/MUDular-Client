@@ -127,32 +127,32 @@ impl InputLine {
   }
 
   fn history_up(&mut self) {
-    if self.history.is_empty() {
-      return;
+    if !self.history.is_empty() {
+      let newest = self.history.len() - 1;
+      let pos = self.history_pos.map(|p| p.saturating_sub(1)).unwrap_or_else(|| {
+        if self.history.get(newest).is_some_and(|cmd| cmd == self.text.trim()) && newest > 0
+        {
+          newest - 1
+        } else {
+          newest
+        }
+      });
+      self.history_pos = Some(pos);
+      self.text = self.history[pos].clone();
+      self.select_all_next_frame = true;
     }
-    let newest = self.history.len() - 1;
-    let pos = self.history_pos.map(|p| p.saturating_sub(1)).unwrap_or_else(|| {
-      if self.history.get(newest).is_some_and(|cmd| cmd == self.text.trim()) && newest > 0
-      {
-        newest - 1
-      } else {
-        newest
-      }
-    });
-    self.history_pos = Some(pos);
-    self.text = self.history[pos].clone();
-    self.select_all_next_frame = true;
   }
 
   fn history_down(&mut self) {
-    let Some(pos) = self.history_pos else { return };
-    if pos + 1 >= self.history.len() {
-      self.history_pos = None;
-      self.text.clear();
-    } else {
-      self.history_pos = Some(pos + 1);
-      self.text = self.history[pos + 1].clone();
+    if let Some(pos) = self.history_pos {
+      if pos + 1 >= self.history.len() {
+        self.history_pos = None;
+        self.text.clear();
+      } else {
+        self.history_pos = Some(pos + 1);
+        self.text = self.history[pos + 1].clone();
+      }
+      self.select_all_next_frame = true;
     }
-    self.select_all_next_frame = true;
   }
 }

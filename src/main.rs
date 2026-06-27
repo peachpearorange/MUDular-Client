@@ -156,7 +156,7 @@ mod tests {
   fn test_pane_print_restores_escaped_ansi() {
     let mut engine = ScriptEngine::new().expect("engine creation failed");
     engine
-      .load_script(r#"(pane-print "main" "\u{1b}[32m> who\u{1b}[0m")"#)
+      .load_script(r#"(mud/pane-print "main" "\u{1b}[32m> who\u{1b}[0m")"#)
       .expect("script failed to load");
 
     let st = engine.state.lock().unwrap();

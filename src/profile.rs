@@ -1,9 +1,7 @@
-use std::{fmt::Write, path::PathBuf};
+use std::path::PathBuf;
 
 #[cfg(not(target_arch = "wasm32"))]
 use directories::ProjectDirs;
-
-use crate::scripting::ScriptEngine;
 
 #[derive(Clone, Debug)]
 pub struct Profile {
@@ -13,6 +11,7 @@ pub struct Profile {
   pub port: u16,
   pub tls: bool,
   pub websocket_url: Option<String>,
+  pub websocket_protocol: Option<String>,
   pub script_code: String,
   pub path: Option<PathBuf>,
   pub is_preset: bool
@@ -47,6 +46,7 @@ struct GameTemplate {
   port: u16,
   tls: bool,
   websocket_url: Option<&'static str>,
+  websocket_protocol: Option<&'static str>,
   has_map: bool,
   gauges: &'static [GaugeTemplate],
   gmcp_package: &'static str,
@@ -61,6 +61,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: true,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -76,26 +77,26 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     extra_scheme: r#";; Route map-like lines (box-drawing borders) to the map pane
 (define in-map #f)
 
-(define (on-line line)
-  (let ((text (strip-ansi line)))
+(mud/on "line" (lambda (line)
+  (let ((text (mud/strip-ansi line)))
     (cond
-      ((or (regexp-match? "^\\s*--------\\+" text)
-           (regexp-match? "^\\s*\\|.*\\|\\s*$" text))
+      ((or (mud/regexp-match? "^\\s*--------\\+" text)
+           (mud/regexp-match? "^\\s*\\|.*\\|\\s*$" text))
        (set! in-map #t)
-       (pane-print "map" line)
+       (mud/pane-print "map" line)
        #f)
       (in-map
-       (if (or (equal? text "") (not (regexp-match? "[|\\-+]" text)))
+       (if (or (equal? text "") (not (mud/regexp-match? "[|\\-+]" text)))
            (begin (set! in-map #f) #t)
-           (begin (pane-print "map" line) #f)))
-      (else #t))))
+           (begin (mud/pane-print "map" line) #f)))
+      (else #t)))))
 
 ;; Aliases
 (alias "^gg$" (lambda ()
-  (send "get gold from corpse")))
+  (mud/send "get gold from corpse")))
 
 (alias "^aa (.+)$" (lambda (target)
-  (send (to-string "attack " target))))
+  (mud/send (to-string "attack " target))))
 "#
   },
   GameTemplate {
@@ -105,6 +106,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -124,7 +126,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     gmcp_package: "char.vitals",
     extra_scheme: r#";; Aliases
 (alias "^sc$" (lambda ()
-  (send "score")))
+  (mud/send "score")))
 "#
   },
   GameTemplate {
@@ -134,6 +136,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[
       GaugeTemplate { name: "health", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -150,6 +153,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4242,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: true,
     gauges: &[
       GaugeTemplate { name: "hp", color: "red", gmcp_cur: "hp", gmcp_max: "maxhp" },
@@ -160,21 +164,21 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     extra_scheme: r#";; Route map blocks (delimited by +---+) to the map pane
 (define in-map #f)
 
-(define (on-line line)
-  (let ((text (strip-ansi line)))
+(mud/on "line" (lambda (line)
+  (let ((text (mud/strip-ansi line)))
     (cond
-      ((regexp-match? "^\\+[-]+\\+$" text)
+      ((mud/regexp-match? "^\\+[-]+\\+$" text)
        (set! in-map (not in-map))
-       (pane-print "map" line)
+       (mud/pane-print "map" line)
        #f)
       (in-map
-       (pane-print "map" line)
+       (mud/pane-print "map" line)
        #f)
-      (else #t))))
+      (else #t)))))
 
 ;; Aliases
 (alias "^l$" (lambda ()
-  (send "look")))
+  (mud/send "look")))
 "#
   },
   GameTemplate {
@@ -184,6 +188,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 7777,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -196,17 +201,18 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4901,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
     extra_scheme: r#";; DragonRealms usually requires a time-sensitive Simutronics login key.
 (define launch-key-note-shown #f)
 
-(define (on-line line)
+(mud/on "line" (lambda (line)
   (when (not launch-key-note-shown)
     (set! launch-key-note-shown #t)
-    (pane-print "main" "[DragonRealms may need a launch key from the official Simutronics launcher.]"))
-  #t)
+    (mud/pane-print "main" "[DragonRealms may need a launch key from the official Simutronics launcher.]"))
+  #t))
 "#
   },
   GameTemplate {
@@ -216,6 +222,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3333,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -228,6 +235,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -240,6 +248,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -252,6 +261,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 5656,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -264,6 +274,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 1234,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -276,6 +287,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -288,6 +300,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3011,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -300,6 +313,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3011,
     tls: false,
     websocket_url: Some("wss://www.genesismud.org/websocket"),
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -313,6 +327,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 6730,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -325,6 +340,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -337,6 +353,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -349,6 +366,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 1701,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -361,6 +379,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -373,6 +392,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -385,6 +405,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4242,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -397,6 +418,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4242,
     tls: false,
     websocket_url: Some("wss://mume.org/ws-play/"),
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -410,6 +432,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -422,6 +445,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 6789,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -434,6 +458,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 10000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -446,6 +471,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 23,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -458,6 +484,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 3000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -470,6 +497,7 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
@@ -482,12 +510,13 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4001,
     tls: true,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
     extra_scheme: r#";; Log GMCP messages
-(define (on-gmcp package data)
-  (pane-print "main" (to-string "[GMCP " package "]")))
+(mud/on "gmcp" (lambda (package data)
+  (mud/pane-print "main" (to-string "[GMCP " package "]"))))
 "#
   },
   GameTemplate {
@@ -497,12 +526,13 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4001,
     tls: true,
     websocket_url: Some("wss://play.enrym.com"),
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
     extra_scheme: r#";; Log GMCP messages
-(define (on-gmcp package data)
-  (pane-print "main" (to-string "[GMCP " package "]")))
+(mud/on "gmcp" (lambda (package data)
+  (mud/pane-print "main" (to-string "[GMCP " package "]"))))
 "#
   },
   GameTemplate {
@@ -512,99 +542,155 @@ const GAME_TEMPLATES: &[GameTemplate] = &[
     port: 4000,
     tls: false,
     websocket_url: None,
+    websocket_protocol: None,
     has_map: false,
     gauges: &[],
     gmcp_package: "",
     extra_scheme: r#";; Log GMCP messages
-(define (on-gmcp package data)
-  (pane-print "main" (to-string "[GMCP " package "]")))
+(mud/on "gmcp" (lambda (package data)
+  (mud/pane-print "main" (to-string "[GMCP " package "]"))))
 "#
   }
 ];
 
 fn generate_scheme(t: &GameTemplate) -> String {
-  let mut s = String::new();
+  let tls = if t.tls { "#t" } else { "#f" };
 
-  let _ = writeln!(s, "(profile");
-  let _ = writeln!(s, "  'name \"{}\"", t.name);
-  let _ = writeln!(s, "  'connection-mode '{}", t.connection_mode.as_scheme_symbol());
-  let _ = writeln!(s, "  'host \"{}\"", t.host);
-  let _ = writeln!(s, "  'port {}", t.port);
-  let _ = write!(s, "  'tls {}", if t.tls { "#t" } else { "#f" });
-  if let Some(url) = t.websocket_url {
-    let _ = writeln!(s);
-    let _ = write!(s, "  'websocket-url \"{url}\"");
+  let websocket = t
+    .websocket_url
+    .map(|url| format!("\n  'websocket-url \"{url}\""))
+    .unwrap_or_default();
+  let websocket_protocol = t
+    .websocket_protocol
+    .map(|protocol| format!("\n  'websocket-protocol \"{protocol}\""))
+    .unwrap_or_default();
+
+  let map = if t.has_map {
+    "(mud/pane \"map\")\n\n\
+     (mud/layout \"horizontal\" (list\n\
+     \x20   (list \"main\" 3)\n\
+     \x20   (list \"map\" 1)))\n"
+  } else {
+    ""
+  };
+
+  let gauges: String = t.gauges.iter()
+    .map(|g| format!("(mud/gauge \"{}\" (hash 'color \"{}\"))\n", g.name, g.color))
+    .collect();
+
+  let gmcp = if t.gmcp_package.is_empty() {
+    String::new()
+  } else {
+    let handlers: String = t.gauges.iter()
+      .filter(|g| !g.gmcp_cur.is_empty())
+      .map(|g| format!(
+        "    (when (and (hash-contains? data \"{cur}\") (hash-contains? data \"{max}\"))\n\
+         \x20     (mud/gauge \"{name}\" (hash 'current (hash-ref data \"{cur}\") \
+                   'max (hash-ref data \"{max}\") 'color \"{color}\")))\n",
+        cur = g.gmcp_cur, max = g.gmcp_max, name = g.name, color = g.color
+      ))
+      .collect();
+    format!(
+      "\n(mud/on \"gmcp\" (lambda (package data)\n\
+       \x20 (when (equal? package \"{pkg}\")\n\
+       {handlers}\
+       \x20   )))\n",
+      pkg = t.gmcp_package
+    )
+  };
+
+  let extra = if t.extra_scheme.is_empty() {
+    String::new()
+  } else {
+    format!("\n{}", t.extra_scheme)
+  };
+
+  format!("\
+;; Steel implementation of R5RS Scheme
+
+(mud/profile
+  'name \"{name}\"
+  'connection-mode '{mode}
+  'host \"{host}\"
+  'port {port}
+  'tls {tls}{websocket}{websocket_protocol})
+
+;; You can use any of 550+ built-in themes from https://iterm2colorschemes.com
+(mud/load-theme \"Onenord\")
+;; (mud/option \"font\" \"JetBrains Mono\")
+(mud/option \"font_size\" 14)
+(mud/option \"scroll_lines\" 6)
+
+;; Scrolling
+(mud/keymap \"PageUp\" \"scroll_up 20\")
+(mud/keymap \"PageDown\" \"scroll_down 20\")
+
+;; Panes
+(mud/pane \"main\")
+{map}
+{gauges}
+(mud/on \"connect\" (lambda ()
+  (mud/pane-print \"main\" \"[Connected to {name}]\")))
+
+(mud/on \"disconnect\" (lambda ()
+  (mud/pane-print \"main\" \"[Disconnected from {name}]\")))
+{gmcp}{extra}",
+    name = t.name,
+    mode = t.connection_mode.as_scheme_symbol(),
+    host = t.host,
+    port = t.port,
+  )
+}
+
+struct ScriptedTemplate {
+  name: &'static str,
+  connection_mode: ConnectionMode,
+  host: &'static str,
+  port: u16,
+  tls: bool,
+  websocket_url: Option<&'static str>,
+  websocket_protocol: Option<&'static str>,
+  script: &'static str
+}
+
+const SCRIPTED_TEMPLATES: &[ScriptedTemplate] = &[
+  ScriptedTemplate {
+    name: "NukeFire",
+    connection_mode: ConnectionMode::Tcp,
+    host: "tdome.nukefire.org",
+    port: 4000,
+    tls: false,
+    websocket_url: None,
+    websocket_protocol: None,
+    script: include_str!("../profiles/nukefire/init.scm")
+  },
+  ScriptedTemplate {
+    name: "NukeFire WebSocket (experimental)",
+    connection_mode: ConnectionMode::WebSocket,
+    host: "tintin.nukefire.org",
+    port: 443,
+    tls: false,
+    websocket_url: Some("wss://tintin.nukefire.org/ws"),
+    websocket_protocol: Some("tty"),
+    script: include_str!("../profiles/nukefire-ws/init.scm")
   }
-  let _ = writeln!(s, ")");
-  let _ = writeln!(s);
-  let _ = writeln!(
-    s,
-    ";; You can use any of 550+ built-in themes from https://iterm2colorschemes.com"
-  );
-  let _ = writeln!(s, "(load-theme \"Onenord\")");
-  let _ = writeln!(s, ";; (option \"font\" \"JetBrains Mono\")");
-  let _ = writeln!(s, "(option \"font_size\" 14)");
-  let _ = writeln!(s, "(option \"scroll_lines\" 6)");
-  let _ = writeln!(s);
-  let _ = writeln!(s, ";; Scrolling");
-  let _ = writeln!(s, "(keymap \"PageUp\" \"scroll_up 20\")");
-  let _ = writeln!(s, "(keymap \"PageDown\" \"scroll_down 20\")");
-  let _ = writeln!(s);
-  let _ = writeln!(s, ";; Panes");
-  let _ = writeln!(s, "(pane \"main\")");
+];
 
-  if t.has_map {
-    let _ = writeln!(s, "(pane \"map\")");
-    let _ = writeln!(s);
-    let _ = writeln!(s, "(layout \"horizontal\" (list");
-    let _ = writeln!(s, "    (list \"main\" 3)");
-    let _ = writeln!(s, "    (list \"map\" 1)))");
-  }
-  let _ = writeln!(s);
-
-  for g in t.gauges {
-    let _ = writeln!(s, "(gauge \"{}\" (hash 'color \"{}\"))", g.name, g.color);
-  }
-  let _ = writeln!(s);
-
-  let _ = writeln!(s, "(define (on-connect)");
-  let _ = writeln!(s, "  (pane-print \"main\" \"[Connected to {}]\"))", t.name);
-  let _ = writeln!(s);
-  let _ = writeln!(s, "(define (on-disconnect)");
-  let _ = writeln!(s, "  (pane-print \"main\" \"[Disconnected from {}]\"))", t.name);
-
-  if !t.extra_scheme.contains("(define (on-line") {
-    let _ = writeln!(s);
-    let _ = writeln!(s, "(define (on-line line) #t)");
-  }
-
-  if !t.extra_scheme.contains("(define (on-gmcp") && !t.gmcp_package.is_empty() {
-    let _ = writeln!(s);
-    let _ = writeln!(s, "(define (on-gmcp package data)");
-    let _ = writeln!(s, "  (when (equal? package \"{}\")", t.gmcp_package);
-    for g in t.gauges {
-      if !g.gmcp_cur.is_empty() {
-        let _ = writeln!(
-          s,
-          "    (when (and (hash-contains? data \"{}\") (hash-contains? data \"{}\"))",
-          g.gmcp_cur, g.gmcp_max
-        );
-        let _ = writeln!(
-          s,
-          "      (gauge \"{}\" (hash 'current (hash-ref data \"{}\") 'max (hash-ref data \"{}\") 'color \"{}\")))",
-          g.name, g.gmcp_cur, g.gmcp_max, g.color,
-        );
-      }
-    }
-    let _ = writeln!(s, "    ))");
-  }
-
-  if !t.extra_scheme.is_empty() {
-    let _ = writeln!(s);
-    s.push_str(t.extra_scheme);
-  }
-
-  s
+fn scripted_templates() -> impl Iterator<Item = Profile> {
+  SCRIPTED_TEMPLATES.iter().map(|&ScriptedTemplate {
+    name, connection_mode, host, port, tls, websocket_url, websocket_protocol, script
+  }| Profile {
+    name: name.into(),
+    connection_mode,
+    host: host.into(),
+    port,
+    tls,
+    websocket_url: websocket_url.map(str::to_string),
+    websocket_protocol: websocket_protocol.map(str::to_string),
+    script_code: script.into(),
+    path: None,
+    is_preset: true
+  })
 }
 
 impl Profile {
@@ -628,7 +714,7 @@ impl Profile {
   }
 
   pub fn templates() -> Vec<Profile> {
-    let mut templates: Vec<Profile> = GAME_TEMPLATES
+    GAME_TEMPLATES
       .iter()
       .map(|t| Profile {
         name: t.name.into(),
@@ -637,51 +723,13 @@ impl Profile {
         port: t.port,
         tls: t.tls,
         websocket_url: t.websocket_url.map(str::to_string),
+        websocket_protocol: t.websocket_protocol.map(str::to_string),
         script_code: generate_scheme(t),
         path: None,
         is_preset: true
       })
-      .collect();
-    templates.push(Profile {
-      name: "NukeFire".into(),
-      connection_mode: ConnectionMode::Tcp,
-      host: "tdome.nukefire.org".into(),
-      port: 4000,
-      tls: false,
-      websocket_url: None,
-      script_code: include_str!("../profiles/nukefire/init.scm").into(),
-      path: None,
-      is_preset: true
-    });
-    templates.push(Profile {
-      name: "NukeFire WebSocket (experimental)".into(),
-      connection_mode: ConnectionMode::WebSocket,
-      host: "tdome.nukefire.org".into(),
-      port: 4000,
-      tls: false,
-      websocket_url: Some("wss://www.nukefire.org/".into()),
-      script_code: r#"(profile
-  'name "NukeFire WebSocket (experimental)"
-  'connection-mode 'websocket
-  'host "tdome.nukefire.org"
-  'port 4000
-  'tls #f
-  'websocket-url "wss://www.nukefire.org/")
-
-;; Experimental: official browser client exists, raw WebSocket endpoint is unverified.
-(load-theme "Gruvbox Dark")
-;; (option "font" "JetBrains Mono")
-(option "font_size" 14)
-(option "scroll_lines" 6)
-
-(pane "main")
-(define (on-line line) #t)
-"#
-      .into(),
-      path: None,
-      is_preset: true
-    });
-    templates
+      .chain(scripted_templates())
+      .collect()
   }
 
   pub fn unique_name(base: &str, existing: &[Profile]) -> String {
@@ -696,25 +744,17 @@ impl Profile {
   }
 
   fn load_user_profiles() -> Vec<Profile> {
-    let Some(dir) = Self::profiles_dir() else {
-      return Vec::new();
-    };
-    let Ok(entries) = std::fs::read_dir(&dir) else {
-      return Vec::new();
-    };
-
-    entries
+    Self::profiles_dir()
+      .and_then(|dir| std::fs::read_dir(&dir).ok())
+      .into_iter()
+      .flatten()
       .filter_map(|e| e.ok())
       .filter(|e| e.path().is_dir())
       .filter_map(|e| {
         let scm_path = e.path().join("init.scm");
-        let lua_path = e.path().join("init.lua");
-        let (path, code) = std::fs::read_to_string(&scm_path)
-          .ok()
-          .map(|c| (scm_path, c))
-          .or_else(|| std::fs::read_to_string(&lua_path).ok().map(|c| (lua_path, c)))?;
+        let (path, code) = std::fs::read_to_string(&scm_path).ok().map(|c| (scm_path, c))?;
         let fallback_name = e.file_name().to_string_lossy().to_string();
-        let metadata = load_profile_metadata(&code);
+        let metadata = parse_profile_metadata(&code);
         Some(Profile {
           name: metadata.name.unwrap_or_else(|| fallback_name.clone()),
           connection_mode: metadata.connection_mode.unwrap_or(ConnectionMode::Tcp),
@@ -722,6 +762,7 @@ impl Profile {
           port: metadata.port.unwrap_or(4000),
           tls: metadata.tls.unwrap_or(false),
           websocket_url: metadata.websocket_url,
+          websocket_protocol: metadata.websocket_protocol,
           script_code: code,
           path: Some(path),
           is_preset: false
@@ -772,27 +813,37 @@ struct ProfileMetadata {
   host: Option<String>,
   port: Option<u16>,
   tls: Option<bool>,
-  websocket_url: Option<String>
+  websocket_url: Option<String>,
+  websocket_protocol: Option<String>
 }
 
-fn load_profile_metadata(code: &str) -> ProfileMetadata {
-  let Ok(mut engine) = ScriptEngine::new() else {
-    return ProfileMetadata::default();
-  };
-  if engine.load_script(code).is_err() {
-    return ProfileMetadata::default();
+fn parse_profile_metadata(code: &str) -> ProfileMetadata {
+  let mut meta = ProfileMetadata::default();
+  for line in code.lines().map(str::trim) {
+    if let Some(val) = line.strip_prefix("'name \"").and_then(|s| s.strip_suffix('"')) {
+      meta.name = Some(val.to_string());
+    } else if let Some(val) = line.strip_prefix("'host \"").and_then(|s| s.strip_suffix('"'))
+    {
+      meta.host = Some(val.to_string());
+    } else if let Some(val) = line.strip_prefix("'port ") {
+      meta.port = val.trim_end_matches(')').trim().parse().ok();
+    } else if let Some(val) = line.strip_prefix("'tls ") {
+      meta.tls = Some(val.trim_end_matches(')').trim() == "#t");
+    } else if let Some(val) = line.strip_prefix("'connection-mode '") {
+      meta.connection_mode = match val.trim_end_matches(')').trim() {
+        "tcp" => Some(ConnectionMode::Tcp),
+        "websocket" => Some(ConnectionMode::WebSocket),
+        _ => None
+      };
+    } else if let Some(val) =
+      line.strip_prefix("'websocket-url \"").and_then(|s| s.strip_suffix("\")"))
+    {
+      meta.websocket_url = Some(val.to_string());
+    } else if let Some(val) =
+      line.strip_prefix("'websocket-protocol \"").and_then(|s| s.strip_suffix("\")"))
+    {
+      meta.websocket_protocol = Some(val.to_string());
+    }
   }
-  let st = engine.state.lock().unwrap();
-  ProfileMetadata {
-    name: st.profile_name.clone(),
-    connection_mode: st.profile_connection_mode.as_deref().and_then(|mode| match mode {
-      "tcp" => Some(ConnectionMode::Tcp),
-      "websocket" => Some(ConnectionMode::WebSocket),
-      _ => None
-    }),
-    host: st.profile_host.clone(),
-    port: st.profile_port,
-    tls: st.profile_tls,
-    websocket_url: st.profile_websocket_url.clone()
-  }
+  meta
 }

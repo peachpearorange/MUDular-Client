@@ -1,4 +1,6 @@
-(profile
+;; Steel Scheme (R5RS subset) — https://github.com/mattwparas/steel
+
+(mud/profile
   'name "NukeFire"
   'host "tdome.nukefire.org"
   'port 4000
@@ -10,56 +12,56 @@
 (define password "")
 
 ;; Options
-(option "keep_input" #t)
-;; (option "font" "JetBrains Mono")
-(option "font_size" 14)
-(option "scroll_lines" 6)
+(mud/option "keep_input" #t)
+;; (mud/option "font" "JetBrains Mono")
+(mud/option "font_size" 14)
+(mud/option "scroll_lines" 6)
 
 ;; 550+ built-in themes from https://iterm2colorschemes.com
-(load-theme "Gruvbox Dark")
+(mud/load-theme "Gruvbox Dark")
 
 ;; Movement: Alt+WASD + Alt+Q/E
-(keymap "alt+w" "n")
-(keymap "alt+s" "s")
-(keymap "alt+a" "w")
-(keymap "alt+d" "e")
-(keymap "alt+q" "d")
-(keymap "alt+e" "u")
+(mud/keymap "alt+w" "n")
+(mud/keymap "alt+s" "s")
+(mud/keymap "alt+a" "w")
+(mud/keymap "alt+d" "e")
+(mud/keymap "alt+q" "d")
+(mud/keymap "alt+e" "u")
 
 ;; Scrolling
-(keymap "PageUp" "scroll_up 20")
-(keymap "PageDown" "scroll_down 20")
+(mud/keymap "PageUp" "scroll_up 20")
+(mud/keymap "PageDown" "scroll_down 20")
 
 ;; ----------------------------------------------------------------
 
-(pane "main")
-(pane "map")
+(mud/pane "main")
+(mud/pane "map")
 
-(layout "horizontal" (list
+(mud/layout "horizontal" (list
     (list "main" 1)
     (list "map" 1)))
 
-(gauge "health" (hash 'color "green"))
-(gauge "mana" (hash 'color "cyan"))
-(gauge "moves" (hash 'color "blue"))
+(mud/gauge "health" (hash 'color "green"))
+(mud/gauge "mana" (hash 'color "cyan"))
+(mud/gauge "moves" (hash 'color "blue"))
 
 (define nf (hash))
 
 (define (update-gauges)
   (when (and (hash-contains? nf 'hp) (hash-contains? nf 'hp-max))
-    (gauge "health" (hash 'current (hash-ref nf 'hp) 'max (hash-ref nf 'hp-max) 'color "green")))
+    (mud/gauge "health" (hash 'current (hash-ref nf 'hp) 'max (hash-ref nf 'hp-max) 'color "green")))
   (when (and (hash-contains? nf 'mana) (hash-contains? nf 'mana-max))
-    (gauge "mana" (hash 'current (hash-ref nf 'mana) 'max (hash-ref nf 'mana-max) 'color "cyan")))
+    (mud/gauge "mana" (hash 'current (hash-ref nf 'mana) 'max (hash-ref nf 'mana-max) 'color "cyan")))
   (when (and (hash-contains? nf 'mv) (hash-contains? nf 'mv-max))
-    (gauge "moves" (hash 'current (hash-ref nf 'mv) 'max (hash-ref nf 'mv-max) 'color "blue"))))
+    (mud/gauge "moves" (hash 'current (hash-ref nf 'mv) 'max (hash-ref nf 'mv-max) 'color "blue"))))
 
 (define (update-map-header)
-  (pane-clear "map")
-  (for-each (lambda (l) (pane-print "map" l))
+  (mud/pane-clear "map")
+  (for-each (lambda (l) (mud/pane-print "map" l))
             (hash-get nf 'map-lines '()))
   (when (hash-contains? nf 'room-info)
-    (pane-print "map" "")
-    (pane-print "map" (hash-ref nf 'room-info))))
+    (mud/pane-print "map" "")
+    (mud/pane-print "map" (hash-ref nf 'room-info))))
 
 (define (update-status)
   (let ((room (hash-get nf 'room "?"))
@@ -67,9 +69,9 @@
         (level (hash-get nf 'level "?"))
         (tnl (hash-get nf 'tnl "?"))
         (exits (hash-get nf 'exits "?")))
-    (status (to-string room "   " area "   Lv:" (to-string level) " TNL:" (to-string tnl) "   [" exits "]"))))
+    (mud/status (to-string room "   " area "   Lv:" (to-string level) " TNL:" (to-string tnl) "   [" exits "]"))))
 
-(define (on-msdp data)
+(mud/on "msdp" (lambda (data)
   (when (hash? data)
     (define changed #f)
     (when (hash-contains? data "ROOM_NAME") (set! nf (hash-insert nf 'room (hash-ref data "ROOM_NAME"))) (set! changed #t))
@@ -92,7 +94,7 @@
     (when changed
       (update-gauges)
       (update-map-header)
-      (update-status))))
+      (update-status)))))
 
 (define map-lines-raw '())
 (define dir-indicators '())
@@ -107,16 +109,16 @@
 (define (map-grid? text)
   (and (not (equal? text ""))
        (let ((stripped (string-replace text "■" "")))
-         (regexp-match? "^[\\s\\-|@*X^v<>:/=!]*$" stripped))))
+         (mud/regexp-match? "^[\\s\\-|@*X^v<>:/=!]*$" stripped))))
 
 (define (map-content? text)
   (or (equal? text "")
       (map-grid? text)
       (starts-with? text "[ BIGMAP ]")
-      (regexp-match? "Zone:.+Room:" text)
+      (mud/regexp-match? "Zone:.+Room:" text)
       (starts-with? text "Route:")
       (starts-with? text "@ you")
-      (regexp-match? "^\\s*<--" text)))
+      (mud/regexp-match? "^\\s*<--" text)))
 
 (define (write-map)
   (set! nf (hash-insert nf 'map-lines (append dir-indicators map-lines-raw)))
@@ -134,14 +136,14 @@
   (set! parse-state "pass"))
 
 (define (emit-blanks)
-  (for-each (lambda (raw) (pane-print "main" raw)) pending-blanks)
+  (for-each (lambda (raw) (mud/pane-print "main" raw)) pending-blanks)
   (set! pending-blanks '()))
 
-(define (on-line line)
-  (let ((text (strip-ansi line)))
+(mud/on "line" (lambda (line)
+  (let ((text (mud/strip-ansi line)))
     (cond
-      ((regexp-match? "^> ?[a-zA-Z]{1,2}$" text) #f)
-      (else (process-line line text)))))
+      ((mud/regexp-match? "^> ?[a-zA-Z]{1,2}$" text) #f)
+      (else (process-line line text))))))
 
 (define (process-line line text)
   (cond
@@ -150,7 +152,7 @@
        ((equal? text "")
         (set! pending-blanks (append pending-blanks (list line)))
         #f)
-       ((regexp-match? "^[a-zA-Z].+ - \\[" text)
+       ((mud/regexp-match? "^[a-zA-Z].+ - \\[" text)
         (set! parse-state "room")
         (set! pending-blanks '())
         (set! room-buf (list line))
@@ -162,7 +164,7 @@
         (set! dir-indicators '())
         (set! map-buf (list line))
         #f)
-       ((regexp-match? "^\\s*<--" text)
+       ((mud/regexp-match? "^\\s*<--" text)
         (set! pending-blanks '())
         (set! dir-indicators (append dir-indicators (list line)))
         (write-map)
@@ -199,23 +201,23 @@
         (process-line line text))))
     (else #t)))
 
-(define (on-input cmd)
+(mud/on "input" (lambda (cmd)
   (let ((trimmed (trim cmd)))
     (when (not (equal? trimmed ""))
-      (pane-print "main" (to-string "\u{1b}[32m> " trimmed "\u{1b}[0m")))))
+      (mud/pane-print "main" (to-string "\u{1b}[32m> " trimmed "\u{1b}[0m"))))))
 
-(define (on-connect)
-  (pane-print "main" "[Connected to NukeFire]")
+(mud/on "connect" (lambda ()
+  (mud/pane-print "main" "[Connected to NukeFire]")
   (let ((msdp-vars (list
           "ROOM_NAME" "ROOM_VNUM" "AREA_NAME" "ROOM_EXITS"
           "HEALTH" "HEALTH_MAX" "MANA" "MANA_MAX"
           "MOVEMENT" "MOVEMENT_MAX" "LEVEL" "EXPERIENCE_TNL")))
     (timer 0.5 (lambda ()
-      (msdp-report msdp-vars)
-      (msdp-send msdp-vars))))
+      (mud/msdp-report msdp-vars)
+      (mud/msdp-send msdp-vars))))
   (when (not (equal? character ""))
-    (timer 0.5 (lambda () (send character)))
-    (timer 1.0 (lambda () (send password)))))
+    (timer 0.5 (lambda () (mud/send character)))
+    (timer 1.0 (lambda () (mud/send password))))))
 
-(define (on-disconnect)
-  (pane-print "main" "[Disconnected from NukeFire]"))
+(mud/on "disconnect" (lambda ()
+  (mud/pane-print "main" "[Disconnected from NukeFire]")))
