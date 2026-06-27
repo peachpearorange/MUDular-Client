@@ -967,7 +967,7 @@ impl MudApp {
   'tls #f)
 
 ;; Use /(mud/themes) to see available color schemes.
-(mud/load-theme "Onenord")
+(mud/load-theme theme-onenord)
 ;; Use /(mud/fonts) to see available fonts.
 ;; (mud/option "font" "JetBrains Mono")
 

@@ -81,6 +81,13 @@ impl ScriptEditor {
 
           egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
             theme.modify_style(ui, fontsize);
+            let style = ui.style_mut();
+            let bg = theme.bg();
+            let accent = theme.type_color(TokenType::Function);
+            style.visuals.widgets.active.bg_fill = accent.gamma_multiply(0.7);
+            style.visuals.widgets.hovered.bg_fill = accent.gamma_multiply(0.85);
+            style.visuals.widgets.inactive.bg_fill =
+              if is_dark(bg) { bg.gamma_multiply(1.2) } else { bg.gamma_multiply(0.8) };
             egui::ScrollArea::horizontal().show(ui, |ui| {
               self.completer.show_on_text_widget(
                 ui,
@@ -125,6 +132,11 @@ fn default_bg() -> egui::Color32 { egui::Color32::from_rgb(30, 30, 30) }
 
 fn default_fg() -> egui::Color32 { egui::Color32::from_rgb(220, 220, 220) }
 
+fn is_dark(c: egui::Color32) -> bool {
+  let [r, g, b, _] = c.to_array();
+  (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) < 128.0
+}
+
 fn color_theme_from_palette(
   palette: &[egui::Color32; 16],
   bg: egui::Color32,
@@ -132,10 +144,6 @@ fn color_theme_from_palette(
 ) -> ColorTheme {
   let leak = |c: egui::Color32| -> &'static str {
     Box::leak(format!("{:02x}{:02x}{:02x}", c.r(), c.g(), c.b()).into_boxed_str())
-  };
-  let is_dark = |c: egui::Color32| {
-    let [r, g, b, _] = c.to_array();
-    (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) < 128.0
   };
   let dim = |c: egui::Color32| c.gamma_multiply(0.65);
 
