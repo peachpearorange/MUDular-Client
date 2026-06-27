@@ -128,13 +128,14 @@ impl InputLine {
       && let Some(mut state) = egui::TextEdit::load_state(ctx, response_id)
       && let Some(range) = state.cursor.char_range()
     {
-      let cursor = range.primary.index;
+      let char_index = range.primary.index;
+      let cursor: usize = char_index.into();
       if cursor > 0 && self.text.chars().nth(cursor - 1) == Some('(') {
         let byte_idx = char_to_byte_idx(&self.text, cursor);
         self.text.insert(byte_idx, ')');
         state.cursor.set_char_range(Some(egui::text::CCursorRange::two(
-          egui::text::CCursor::new(cursor),
-          egui::text::CCursor::new(cursor)
+          egui::text::CCursor::new(char_index),
+          egui::text::CCursor::new(char_index)
         )));
         state.store(ctx, response_id);
       }
