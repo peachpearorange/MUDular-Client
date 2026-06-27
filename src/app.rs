@@ -567,22 +567,31 @@ impl MudApp {
   }
 
   fn apply_theme(&mut self, ctx: &egui::Context) {
-    let appearance =
-      self.active_tab.checked_sub(1).and_then(|si| self.sessions.get(si)).and_then(
-        |session| {
-          let mut st = session.script_engine.state.lock().unwrap();
-          st.theme_dirty.then(|| {
-            st.theme_dirty = false;
+    let theme_change = self
+      .active_tab
+      .checked_sub(1)
+      .and_then(|si| self.sessions.get(si))
+      .and_then(|session| {
+        let mut st = session.script_engine.state.lock().unwrap();
+        st.theme_dirty.then(|| {
+          st.theme_dirty = false;
+          (
+            st.ansi_palette,
             Appearance {
               font_name: st.font_name.clone(),
               font_size: st.font_size,
               bg_color: st.bg_color,
               fg_color: st.fg_color
             }
-          })
-        }
-      );
-    if let Some(appearance) = appearance {
+          )
+        })
+      });
+    if let Some((palette, appearance)) = theme_change {
+      if let Some(palette) = palette {
+        let bg = appearance.bg_color.map(|[r, g, b]| egui::Color32::from_rgb(r, g, b));
+        let fg = appearance.fg_color.map(|[r, g, b]| egui::Color32::from_rgb(r, g, b));
+        self.editor.set_theme(&palette, bg, fg);
+      }
       if appearance.font_name != self.loaded_font_name {
         self.loaded_font_name = appearance.font_name.clone();
       }

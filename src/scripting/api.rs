@@ -179,30 +179,16 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       }
   });
 
-  reg!("mud/load-theme", s => move |name_or_path: String| -> Result<(), String> {
+  reg!("mud/load-theme", s => move |name: String| -> Result<(), String> {
       let mut st = s.lock().unwrap();
-      if let Some(content) = crate::themes::get_builtin_theme(&name_or_path) {
+      if let Some(content) = crate::themes::get_builtin_theme(&name) {
           parse_kitty_theme(content, &mut st);
           st.theme_dirty = true;
           Ok(())
       } else {
-          let resolved = if std::path::Path::new(&name_or_path).is_absolute() {
-              std::path::PathBuf::from(&name_or_path)
-          } else {
-              st.profile_dir.as_ref()
-                  .map(|d| d.join(&name_or_path))
-                  .unwrap_or_else(|| std::path::PathBuf::from(&name_or_path))
-          };
-          match std::fs::read_to_string(&resolved) {
-              Ok(content) => {
-                  parse_kitty_theme(&content, &mut st);
-                  st.theme_dirty = true;
-                  Ok(())
-              }
-              Err(e) => Err(format!(
-                  "Unknown theme and failed to read '{}': {e}", resolved.display()
-              )),
-          }
+          Err(format!(
+              "Unknown theme '{}'. Use /(mud/themes) to see available built-in themes.", name
+          ))
       }
   });
 
