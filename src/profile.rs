@@ -83,6 +83,48 @@ impl GameTemplate {
     self
   }
 
+  /// Override the default theme. Appends after OPTIONS_BLOCK so the last
+  /// `(mud/set-theme ...)` call wins.
+  fn theme(self, name: &str) -> Self {
+    self.concat(format!("(mud/set-theme {name})\n"))
+  }
+
+  /// Enable keep-input (don't clear the input line on submit).
+  fn keep_input(self) -> Self {
+    self.concat("(mud/set-keep-input #t)\n")
+  }
+
+  /// Apply the shared NukeFire game configuration: theme, keep-input, movement
+  /// keymaps, the map pane with a 1:1 main/map layout, the three gauges, and the
+  /// MSDP/map-parser/connect hooks. Used by both the TCP and WebSocket variants.
+  fn apply_nukefire_config(self) -> Self {
+    self
+      .theme("theme/toy-chest")
+      .keep_input()
+      .concat(
+        ";; Movement: Alt+WASD + Alt+Q/E\n\
+         (mud/keymap \"alt+w\" (lambda () (mud/send \"n\")))\n\
+         (mud/keymap \"alt+s\" (lambda () (mud/send \"s\")))\n\
+         (mud/keymap \"alt+a\" (lambda () (mud/send \"w\")))\n\
+         (mud/keymap \"alt+d\" (lambda () (mud/send \"e\")))\n\
+         (mud/keymap \"alt+q\" (lambda () (mud/send \"d\")))\n\
+         (mud/keymap \"alt+e\" (lambda () (mud/send \"u\")))\n"
+      )
+      .concat(
+        "\n\
+         (mud/pane \"map\")\n\
+         (mud/layout \"horizontal\" (list\n\
+             (list \"main\" 1)\n\
+             (list \"map\" 1)))\n"
+      )
+      .gauges(&[
+        gauge("health", "green", "", ""),
+        gauge("mana", "cyan", "", ""),
+        gauge("moves", "blue", "", "")
+      ])
+      .concat(nukefire_custom_block())
+  }
+
   /// Append the map pane plus a horizontal main/map layout.
   fn map_panes(self) -> Self {
     self.concat(
@@ -253,6 +295,10 @@ fn gmcp_gauge_hook(package: &str, gauges: &[GaugeTemplate]) -> String {
      (mud/on-gmcp (lambda (package data)\n  (when (equal? package \"{pkg}\")\n{handlers}    )))\n",
     pkg = package
   )
+}
+
+fn nukefire_custom_block() -> &'static str {
+  include_str!("profiles/nukefire_custom.scm")
 }
 
 const OPTIONS_BLOCK: &str = "\
@@ -434,6 +480,20 @@ fn game_templates() -> Vec<Profile> {
     .on_msdp(DEFAULT_MSDP)
     .concat("(define launch-key-note-shown #f)\n")
     .build(),
+  GameTemplate::new("NukeFire", ConnectionMode::Tcp, "tdome.nukefire.org", 4000, false)
+    .apply_nukefire_config()
+    .build(),
+  GameTemplate::new(
+    "NukeFire WebSocket (experimental)",
+    ConnectionMode::WebSocket,
+    "tintin.nukefire.org",
+    443,
+    false
+  )
+  .websocket("wss://tintin.nukefire.org/ws", Some("tty".into()))
+  .apply_nukefire_config()
+  .concat(";; Uses the same endpoint and tty WebSocket protocol as the browser client.\n")
+  .build(),
   GameTemplate::new("Threshold RPG", ConnectionMode::Tcp, "thresholdrpg.com", 3333, false)
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("AwakeMUD CE", ConnectionMode::Tcp, "play.awakemud.com", 4000, false)
@@ -516,66 +576,6 @@ fn game_templates() -> Vec<Profile> {
   ]
 }
 
-struct ScriptedTemplate {
-  name: &'static str,
-  connection_mode: ConnectionMode,
-  host: &'static str,
-  port: u16,
-  tls: bool,
-  websocket_url: Option<&'static str>,
-  websocket_protocol: Option<&'static str>,
-  script: &'static str
-}
-
-const SCRIPTED_TEMPLATES: &[ScriptedTemplate] = &[
-  ScriptedTemplate {
-    name: "NukeFire",
-    connection_mode: ConnectionMode::Tcp,
-    host: "tdome.nukefire.org",
-    port: 4000,
-    tls: false,
-    websocket_url: None,
-    websocket_protocol: None,
-    script: include_str!("../profiles/nukefire/init.scm")
-  },
-  ScriptedTemplate {
-    name: "NukeFire WebSocket (experimental)",
-    connection_mode: ConnectionMode::WebSocket,
-    host: "tintin.nukefire.org",
-    port: 443,
-    tls: false,
-    websocket_url: Some("wss://tintin.nukefire.org/ws"),
-    websocket_protocol: Some("tty"),
-    script: include_str!("../profiles/nukefire-ws/init.scm")
-  }
-];
-
-fn scripted_templates() -> impl Iterator<Item = Profile> {
-  SCRIPTED_TEMPLATES.iter().map(
-    |&ScriptedTemplate {
-       name,
-       connection_mode,
-       host,
-       port,
-       tls,
-       websocket_url,
-       websocket_protocol,
-       script
-     }| Profile {
-      name: name.into(),
-      connection_mode,
-      host: host.into(),
-      port,
-      tls,
-      websocket_url: websocket_url.map(str::to_string),
-      websocket_protocol: websocket_protocol.map(str::to_string),
-      script_code: script.into(),
-      path: None,
-      is_preset: true
-    }
-  )
-}
-
 impl Profile {
   pub fn profiles_dir() -> Option<PathBuf> {
     #[cfg(not(target_arch = "wasm32"))]
@@ -598,9 +598,6 @@ impl Profile {
 
   pub fn templates() -> Vec<Profile> {
     game_templates()
-      .into_iter()
-      .chain(scripted_templates())
-      .collect()
   }
 
   pub fn unique_name(base: &str, existing: &[Profile]) -> String {

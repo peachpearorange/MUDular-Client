@@ -87,11 +87,19 @@ fn main() {
 mod tests {
   use crate::scripting::ScriptEngine;
 
+  fn nukefire_template_code() -> String {
+    crate::profile::Profile::templates()
+      .into_iter()
+      .find(|p| p.name == "NukeFire")
+      .expect("NukeFire template exists")
+      .script_code
+  }
+
   #[test]
   fn test_nukefire_profile_loads() {
-    let code = include_str!("../profiles/nukefire/init.scm");
+    let code = nukefire_template_code();
     let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(code).expect("nukefire script failed to load");
+    engine.load_script(&code).expect("nukefire script failed to load");
 
     let st = engine.state.lock().unwrap();
     assert!(st.panes.contains_key("main"));
@@ -111,9 +119,9 @@ mod tests {
 
   #[test]
   fn test_nukefire_msdp_updates_status_and_gauges() {
-    let code = include_str!("../profiles/nukefire/init.scm");
+    let code = nukefire_template_code();
     let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(code).expect("nukefire script failed to load");
+    engine.load_script(&code).expect("nukefire script failed to load");
 
     engine.handle_msdp(&serde_json::json!({
         "ROOM_NAME": "\u{1b}[1;32mThe Overlook Catwalk\u{1b}[0;00m",
@@ -169,9 +177,9 @@ mod tests {
 
   #[test]
   fn test_nukefire_on_line() {
-    let code = include_str!("../profiles/nukefire/init.scm");
+    let code = nukefire_template_code();
     let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(code).expect("script load failed");
+    engine.load_script(&code).expect("script load failed");
 
     // Normal text should pass through
     assert!(engine.handle_line("Hello world"));
@@ -221,9 +229,9 @@ mod tests {
 
   #[test]
   fn test_nukefire_keymaps() {
-    let code = include_str!("../profiles/nukefire/init.scm");
+    let code = nukefire_template_code();
     let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(code).expect("script load failed");
+    engine.load_script(&code).expect("script load failed");
 
     assert!(engine.keymaps().len() >= 6);
     assert!(engine.state.lock().unwrap().keep_input);
