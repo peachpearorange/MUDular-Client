@@ -107,19 +107,17 @@ impl ScriptEditor {
             .map(|f| f.size)
             .unwrap_or(13.0);
           let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-          let editor_size = egui::vec2(
-            ui.available_width(),
-            ui.available_height().max(row_height * 3.0)
-          );
+          let desired_rows =
+            ((ui.available_height() / row_height).floor() as usize).max(3);
+          let desired_width = ui.available_width();
 
           let output = egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
             theme.modify_style(ui, fontsize);
             egui::TextEdit::multiline(&mut self.code)
               .id_source("script editor")
               .lock_focus(true)
-              .desired_rows(3)
-              .desired_width(f32::INFINITY)
-              .min_size(editor_size)
+              .desired_rows(desired_rows)
+              .desired_width(desired_width)
               .layouter(&mut |ui: &egui::Ui,
                                text: &dyn egui::TextBuffer,
                                _wrap_width: f32| {
@@ -174,12 +172,11 @@ impl ScriptEditor {
       Some(CompletionAction::Insert) => {
         if let Some(word) = self.completion_candidates.get(self.completion_selected).cloned() {
           let prefix_len = self.completion_prefix.chars().count();
-          let cursor = self.completion_cursor.0;
           let suffix = &word[prefix_len..];
-          let before: String = self.code.chars().take(cursor).collect();
-          let after: String = self.code.chars().skip(cursor).collect();
-          let new_cursor = cursor + suffix.chars().count();
-          self.code = format!("{before}{suffix}{after}");
+          ctx.input_mut(|input| {
+            input.events.push(egui::Event::Paste(suffix.to_string()));
+          });
+          let new_cursor = self.completion_cursor.0 + suffix.chars().count();
           self.completion_ignore_cursor = Some(egui::text::CharIndex(new_cursor));
         }
         self.completion_active = false;
@@ -278,7 +275,7 @@ impl ScriptEditor {
     .show(|ui| {
       ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
       egui::ScrollArea::vertical()
-        .auto_shrink([true, false])
+        .auto_shrink([true, true])
         .max_height(max_popup_height)
         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
         .show(ui, |ui| {
@@ -315,6 +312,11 @@ impl ScriptEditor {
               let after: String = self.code.chars().skip(cursor.0).collect();
               let new_cursor = cursor.0 + suffix.chars().count();
               self.code = format!("{before}{suffix}{after}");
+              let mut state = output.state.clone();
+              state.cursor.set_char_range(Some(egui::text::CCursorRange::one(
+                egui::text::CCursor::new(new_cursor)
+              )));
+              state.store(ctx, output.response.id);
               self.completion_ignore_cursor = Some(egui::text::CharIndex(new_cursor));
               self.completion_active = false;
               self.completion_candidates.clear();
