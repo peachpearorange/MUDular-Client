@@ -12,7 +12,11 @@ pub struct ScriptEditor {
   syntax: Syntax,
   theme: ColorTheme,
   candidates: BTreeSet<String>,
+  completion_active: bool,
   completion_selected: usize,
+  completion_prefix: String,
+  completion_candidates: Vec<String>,
+  completion_cursor: egui::text::CharIndex,
   completion_ignore_cursor: Option<egui::text::CharIndex>,
   last_cursor: egui::text::CharIndex
 }
@@ -28,9 +32,13 @@ impl ScriptEditor {
       syntax,
       theme: color_theme_from_palette(&DEFAULT_PALETTE, default_bg(), default_fg()),
       candidates,
+      completion_active: false,
       completion_selected: 0,
+      completion_prefix: String::new(),
+      completion_candidates: Vec::new(),
+      completion_cursor: egui::text::CharIndex(0),
       completion_ignore_cursor: None,
-      last_cursor: egui::text::CharIndex::default()
+      last_cursor: egui::text::CharIndex(0)
     }
   }
 
@@ -89,6 +97,8 @@ impl ScriptEditor {
           });
           ui.separator();
 
+          self.handle_completion_input(ctx);
+
           let syntax = &self.syntax;
           let fontsize = ui
             .style()
@@ -97,36 +107,36 @@ impl ScriptEditor {
             .map(|f| f.size)
             .unwrap_or(13.0);
           let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-          let desired_rows = (ui.available_height() / row_height) as usize;
+          let editor_size = egui::vec2(
+            ui.available_width(),
+            ui.available_height().max(row_height * 3.0)
+          );
 
           let output = egui::Frame::new().fill(theme.bg()).show(ui, |ui| {
             theme.modify_style(ui, fontsize);
-            egui::ScrollArea::horizontal()
-              .auto_shrink([true, false])
-              .show(ui, |ui| {
-                egui::TextEdit::multiline(&mut self.code)
-                  .id_source("script editor")
-                  .lock_focus(true)
-                  .desired_rows(desired_rows.max(3))
-                  .desired_width(f32::INFINITY)
-                  .layouter(&mut |ui: &egui::Ui,
-                                   text: &dyn egui::TextBuffer,
-                                   _wrap_width: f32| {
-                    ui.fonts_mut(|f| {
-                      f.layout_job(layout_with_rainbow_parens(
-                        text.as_str(),
-                        syntax,
-                        &theme,
-                        fontsize
-                      ))
-                    })
-                  })
-                  .show(ui)
-              }).inner
+            egui::TextEdit::multiline(&mut self.code)
+              .id_source("script editor")
+              .lock_focus(true)
+              .desired_rows(3)
+              .desired_width(f32::INFINITY)
+              .min_size(editor_size)
+              .layouter(&mut |ui: &egui::Ui,
+                               text: &dyn egui::TextBuffer,
+                               _wrap_width: f32| {
+                ui.fonts_mut(|f| {
+                  f.layout_job(layout_with_rainbow_parens(
+                    text.as_str(),
+                    syntax,
+                    &theme,
+                    fontsize
+                  ))
+                })
+              })
+              .show(ui)
           }).inner;
 
-          let max_popup_height = ui.max_rect().bottom() - output.response.rect.bottom();
-          self.show_completion_popup(ctx, &output, fontsize, max_popup_height);
+          let window_bottom = ui.max_rect().bottom();
+          self.show_completion_popup(ctx, &output, fontsize, window_bottom);
         });
       self.visible = visible;
     }
@@ -134,14 +144,78 @@ impl ScriptEditor {
     action
   }
 
+  fn handle_completion_input(&mut self, ctx: &egui::Context) {
+    if !self.completion_active {
+      return;
+    }
+
+    let mut action = None;
+    ctx.input_mut(|input| {
+      let mut remove = None;
+      for (idx, event) in input.events.iter().enumerate() {
+        if let egui::Event::Key { key, pressed: true, .. } = event {
+          action = Some(match key {
+            egui::Key::Tab | egui::Key::Enter => CompletionAction::Insert,
+            egui::Key::ArrowDown => CompletionAction::Next,
+            egui::Key::ArrowUp => CompletionAction::Prev,
+            egui::Key::Escape => CompletionAction::Dismiss,
+            _ => continue
+          });
+          remove = Some(idx);
+          break;
+        }
+      }
+      if let Some(idx) = remove {
+        input.events.remove(idx);
+      }
+    });
+
+    match action {
+      Some(CompletionAction::Insert) => {
+        if let Some(word) = self.completion_candidates.get(self.completion_selected).cloned() {
+          let prefix_len = self.completion_prefix.chars().count();
+          let cursor = self.completion_cursor.0;
+          let suffix = &word[prefix_len..];
+          let before: String = self.code.chars().take(cursor).collect();
+          let after: String = self.code.chars().skip(cursor).collect();
+          let new_cursor = cursor + suffix.chars().count();
+          self.code = format!("{before}{suffix}{after}");
+          self.completion_ignore_cursor = Some(egui::text::CharIndex(new_cursor));
+        }
+        self.completion_active = false;
+        self.completion_candidates.clear();
+      }
+      Some(CompletionAction::Next) => {
+        self.completion_selected =
+          (self.completion_selected + 1).min(self.completion_candidates.len().saturating_sub(1));
+      }
+      Some(CompletionAction::Prev) => {
+        self.completion_selected = self.completion_selected.saturating_sub(1);
+      }
+      Some(CompletionAction::Dismiss) | None => {
+        if action.is_some() {
+          self.completion_ignore_cursor = Some(self.completion_cursor);
+        }
+        self.completion_active = false;
+        self.completion_candidates.clear();
+      }
+    }
+  }
+
   fn show_completion_popup(
     &mut self,
     ctx: &egui::Context,
     output: &egui::text_edit::TextEditOutput,
     fontsize: f32,
-    max_popup_height: f32
+    window_bottom: f32
   ) {
+    if self.completion_ignore_cursor.is_some() {
+      self.completion_ignore_cursor = None;
+    }
+
     if !output.response.has_focus() {
+      self.completion_active = false;
+      self.completion_candidates.clear();
       return;
     }
 
@@ -153,21 +227,20 @@ impl ScriptEditor {
     let next_char = output.galley.text().chars().nth(cursor.0);
     let next_allows = next_char.is_none_or(|c| !is_word_body(c));
     if !next_allows {
-      return;
-    }
-
-    if self.completion_ignore_cursor == Some(cursor) {
+      self.completion_active = false;
+      self.completion_candidates.clear();
       return;
     }
 
     if cursor != self.last_cursor {
       self.last_cursor = cursor;
       self.completion_selected = 0;
-      self.completion_ignore_cursor = None;
     }
 
     let prefix = completion_prefix(&self.code, cursor.0);
     if prefix.is_empty() {
+      self.completion_active = false;
+      self.completion_candidates.clear();
       return;
     }
 
@@ -178,34 +251,20 @@ impl ScriptEditor {
       .cloned()
       .collect();
     if completions.is_empty() {
+      self.completion_active = false;
+      self.completion_candidates.clear();
       return;
     }
 
-    let last = completions.len().saturating_sub(1);
-    let mut insert = None;
-    ctx.input_mut(|i| {
-      if i.consume_key(egui::Modifiers::NONE, egui::Key::Escape) {
-        self.completion_ignore_cursor = Some(cursor);
-      } else if i.consume_key(egui::Modifiers::NONE, egui::Key::ArrowDown) {
-        self.completion_selected = if self.completion_selected == last { 0 } else { self.completion_selected + 1 };
-      } else if i.consume_key(egui::Modifiers::NONE, egui::Key::ArrowUp) {
-        self.completion_selected = if self.completion_selected == 0 { last } else { self.completion_selected - 1 };
-      } else if i.consume_key(egui::Modifiers::NONE, egui::Key::Tab)
-        || i.consume_key(egui::Modifiers::NONE, egui::Key::Enter)
-      {
-        insert = completions.get(self.completion_selected).cloned();
-      }
-    });
-
-    if let Some(word) = insert {
-      let suffix = &word[prefix.len()..];
-      ctx.input_mut(|i| i.events.push(egui::Event::Paste(suffix.to_string())));
-      self.completion_ignore_cursor = Some(cursor);
-      return;
-    }
+    self.completion_active = true;
+    self.completion_prefix = prefix.clone();
+    self.completion_candidates = completions.clone();
+    self.completion_cursor = cursor;
+    self.completion_selected = self.completion_selected.min(completions.len().saturating_sub(1));
 
     let cursor_pos = output.galley.pos_from_cursor(egui::text::CCursor::new(cursor));
     let cursor_rect = cursor_pos.translate(output.response.rect.left_top().to_vec2());
+    let max_popup_height = (window_bottom - cursor_rect.bottom()).max(50.0);
 
     egui::Popup::new(
       egui::Id::new("script_editor_completer"),
@@ -220,7 +279,7 @@ impl ScriptEditor {
       ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
       egui::ScrollArea::vertical()
         .auto_shrink([true, false])
-        .max_height(max_popup_height.max(50.0))
+        .max_height(max_popup_height)
         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
         .show(ui, |ui| {
           for (i, completion) in completions.iter().enumerate() {
@@ -250,9 +309,15 @@ impl ScriptEditor {
               ui.scroll_to_rect(button.rect, None);
             }
             if button.clicked() {
-              let suffix = &completion[prefix.len()..];
-              ctx.input_mut(|input| input.events.push(egui::Event::Paste(suffix.to_string())));
-              self.completion_ignore_cursor = Some(cursor);
+              let prefix_len = prefix.chars().count();
+              let suffix = &completion[prefix_len..];
+              let before: String = self.code.chars().take(cursor.0).collect();
+              let after: String = self.code.chars().skip(cursor.0).collect();
+              let new_cursor = cursor.0 + suffix.chars().count();
+              self.code = format!("{before}{suffix}{after}");
+              self.completion_ignore_cursor = Some(egui::text::CharIndex(new_cursor));
+              self.completion_active = false;
+              self.completion_candidates.clear();
             }
           }
         });
@@ -263,6 +328,14 @@ impl ScriptEditor {
 pub enum EditorAction {
   None,
   SaveAndReload(String)
+}
+
+#[derive(Clone, Copy)]
+enum CompletionAction {
+  Insert,
+  Next,
+  Prev,
+  Dismiss
 }
 
 fn default_bg() -> egui::Color32 { egui::Color32::from_rgb(30, 30, 30) }
