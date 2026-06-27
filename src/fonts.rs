@@ -14,7 +14,7 @@ pub fn load_system_font(name: &str) -> Option<Vec<u8>> {
 
 #[cfg(target_arch = "wasm32")]
 pub fn available_fonts() -> Vec<String> {
-  vec!["monospace".into(), "proportional".into()]
+  vec!["Font list not supported in wasm".into()]
 }
 
 #[cfg(not(target_arch = "wasm32"))]
