@@ -65,12 +65,14 @@ impl ScriptEditor {
       let theme = self.theme;
       ctx.global_style_mut(|style| {
         let bg = theme.bg();
-        let accent = theme.type_color(TokenType::Function);
-        style.visuals.widgets.open.weak_bg_fill = accent.gamma_multiply(0.7);
-        style.visuals.widgets.active.bg_fill = accent.gamma_multiply(0.7);
-        style.visuals.widgets.hovered.bg_fill = accent.gamma_multiply(0.85);
-        style.visuals.widgets.inactive.bg_fill =
-          if is_dark(bg) { bg.gamma_multiply(1.2) } else { bg.gamma_multiply(0.8) };
+        let fg = theme.type_color(TokenType::Literal);
+        // Title bar reads as chrome: a hue-stable blend of bg toward fg that
+        // lifts on dark themes and depresses on light ones, matching the
+        // terminal buttons (see crate::ui::panel_button_bg).
+        style.visuals.widgets.open.weak_bg_fill = bg.lerp_to_gamma(fg, 0.10);
+        style.visuals.widgets.active.bg_fill = bg.lerp_to_gamma(fg, 0.10);
+        style.visuals.widgets.hovered.bg_fill = bg.lerp_to_gamma(fg, 0.16);
+        style.visuals.widgets.inactive.bg_fill = bg.lerp_to_gamma(fg, 0.06);
       });
 
       let mut visible = self.visible;
@@ -333,8 +335,8 @@ impl ScriptEditor {
                     .min_size(egui::vec2(ui.available_width(), row_height))
                     .fill(if selected {
                       self.theme
-                        .type_color(TokenType::Function)
-                        .gamma_multiply(0.3)
+                        .bg()
+                        .lerp_to_gamma(self.theme.type_color(TokenType::Literal), 0.18)
                     } else {
                       egui::Color32::TRANSPARENT
                     }),
@@ -419,14 +421,14 @@ fn color_theme_from_palette(
   let leak = |c: egui::Color32| -> &'static str {
     Box::leak(format!("{:02x}{:02x}{:02x}", c.r(), c.g(), c.b()).into_boxed_str())
   };
-  let dim = |c: egui::Color32| c.gamma_multiply(0.65);
+  let blend_to_bg = |c: egui::Color32| c.lerp_to_gamma(bg, 0.6);
 
   ColorTheme {
     name: "dynamic",
     dark: is_dark(bg),
     bg: leak(bg),
     cursor: leak(fg),
-    selection: leak(dim(fg)),
+    selection: leak(blend_to_bg(fg)),
     comments: leak(palette[8]),
     functions: leak(palette[11]),
     keywords: leak(palette[9]),

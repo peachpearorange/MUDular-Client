@@ -129,11 +129,7 @@ pub fn render_pane(ui: &mut egui::Ui, _name: &str, buffer: &mut TextBuffer) {
       btn_size
     );
     let response = ui.allocate_rect(btn_rect, egui::Sense::click());
-    let bg = if response.hovered() {
-      crate::ui::lighten(base, 50)
-    } else {
-      crate::ui::lighten(base, 30)
-    };
+    let bg = crate::ui::panel_button_bg(base, fg, response.hovered());
     ui.painter().rect_filled(btn_rect, 0.0, bg);
     ui.painter().galley(btn_rect.min, galley, fg);
     if response.clicked() {

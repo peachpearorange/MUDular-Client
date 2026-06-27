@@ -18,7 +18,7 @@ fn render_single_gauge(ui: &mut egui::Ui, gauge: &Gauge) {
     if gauge.max > 0.0 { (gauge.current / gauge.max).clamp(0.0, 1.0) } else { 0.0 };
   let color = color_from_name(&gauge.color);
   let fg = ui.visuals().widgets.noninteractive.fg_stroke.color;
-  let empty_bg = crate::ui::lighten(ui.visuals().panel_fill, 20);
+  let empty_bg = crate::ui::panel_button_bg(ui.visuals().panel_fill, fg, false);
 
   let label = format!(" {}: {}/{} ", gauge.name, gauge.current as i64, gauge.max as i64);
   let font = ui

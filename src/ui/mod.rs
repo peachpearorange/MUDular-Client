@@ -32,12 +32,18 @@ pub fn copy_to_clipboard(ctx: &egui::Context, text: String) {
   });
 }
 
-pub fn lighten(color: egui::Color32, amount: u8) -> egui::Color32 {
-  egui::Color32::from_rgb(
-    color.r().saturating_add(amount),
-    color.g().saturating_add(amount),
-    color.b().saturating_add(amount)
-  )
+/// Hue-stable button/panel shading that adapts to both dark and light themes.
+/// Blends the background toward the foreground, so on dark themes the button
+/// lifts (fg is light) and on light themes it depresses (fg is dark). Because
+/// this is a real interpolation, channels move together and never drift in hue
+/// the way per-channel `saturating_add` or `gamma_multiply(>1)` can.
+fn panel_shade(bg: egui::Color32, fg: egui::Color32, t: f32) -> egui::Color32 {
+  bg.lerp_to_gamma(fg, t)
+}
+
+/// Normal button fill derived from the panel background + foreground.
+pub fn panel_button_bg(base: egui::Color32, fg: egui::Color32, hovered: bool) -> egui::Color32 {
+  panel_shade(base, fg, if hovered { 0.16 } else { 0.08 })
 }
 
 pub fn term_button(ui: &mut egui::Ui, text: &str) -> egui::Response {
@@ -52,7 +58,7 @@ pub fn term_button(ui: &mut egui::Ui, text: &str) -> egui::Response {
   let base = ui.visuals().panel_fill;
   let galley = ui.painter().layout_no_wrap(label, font, fg);
   let (rect, response) = ui.allocate_exact_size(galley.size(), egui::Sense::click());
-  let bg = if response.hovered() { lighten(base, 50) } else { lighten(base, 30) };
+  let bg = panel_button_bg(base, fg, response.hovered());
   ui.painter().rect_filled(rect, 0.0, bg);
   ui.painter().galley(rect.min, galley, fg);
   response
