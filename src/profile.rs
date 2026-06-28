@@ -47,6 +47,7 @@ struct GameTemplate {
   tls: bool,
   websocket_url: Option<String>,
   websocket_protocol: Option<String>,
+  theme_name: Option<String>,
   scheme: String
 }
 
@@ -66,6 +67,7 @@ impl GameTemplate {
       tls,
       websocket_url: None,
       websocket_protocol: None,
+      theme_name: None,
       scheme: String::new()
     }
   }
@@ -83,10 +85,9 @@ impl GameTemplate {
     self
   }
 
-  /// Set the theme. Concats a `(mud/set-theme ...)` call; OPTIONS_BLOCK emits no
-  /// theme, so this is the single theme load.
-  fn theme(self, name: &str) -> Self {
-    self.concat(format!("(mud/set-theme {name})\n"))
+  fn theme(mut self, name: &str) -> Self {
+    self.theme_name = Some(name.to_string());
+    self
   }
 
   /// Enable keep-input (don't clear the input line on submit).
@@ -209,6 +210,12 @@ impl GameTemplate {
     s.push_str(";; Leave empty to log in manually.\n");
     s.push_str("(define character \"\")\n(define password \"\")\n\n");
     s.push_str(OPTIONS_BLOCK_PREFIX);
+    if let Some(theme) = &self.theme_name {
+      s.push_str(&format!(
+        ";; Use /(mud/themes) to see available color schemes.\n\
+         (mud/set-theme {theme})\n"
+      ));
+    }
     s.push_str(&format!(
       ";; Discord Rich Presence\n\
        (mud/discord-rpc \"Playing {}\")\n\n",
@@ -306,7 +313,6 @@ fn nukefire_custom_block() -> &'static str {
 }
 
 const OPTIONS_BLOCK_PREFIX: &str = "\
-;; Use /(mud/themes) to see available color schemes.\n\
 ;; Use /(mud/fonts) to see available fonts.\n\
 ;; (mud/set-font \"JetBrains Mono\")\n\
 (mud/set-font-size 14)\n\
