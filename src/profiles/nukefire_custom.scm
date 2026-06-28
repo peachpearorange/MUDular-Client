@@ -61,7 +61,7 @@
 (define pending-blanks '())
 
 (define (map-grid? text)
-  (and (not (equal? text ""))
+  (and (> (string-length text) 2)
        (let ((stripped (string-replace text "■" "")))
          (mud/regexp-match? "^[\\s\\-|@*X^v<>:/=!]*$" stripped))))
 
@@ -96,7 +96,7 @@
 (mud/on-line (lambda (line)
   (let ((text (mud/strip-ansi line)))
     (cond
-      ((mud/regexp-match? "^> ?[a-zA-Z]{1,2}$" text) #f)
+      ((mud/regexp-match? "^> ?[a-zA-Z]{0,2}$" text) #f)
       (else (process-line line text))))))
 
 (define (process-line line text)

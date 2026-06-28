@@ -3,6 +3,8 @@ mod app;
 mod buffer;
 #[cfg(not(target_arch = "wasm32"))]
 mod connection;
+#[cfg(not(target_arch = "wasm32"))]
+mod discord_rpc;
 mod fonts;
 #[cfg(not(target_arch = "wasm32"))]
 mod probe;

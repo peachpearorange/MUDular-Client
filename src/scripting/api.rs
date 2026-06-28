@@ -63,6 +63,15 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
       s.lock().unwrap().outgoing_reconnect = true;
   });
 
+  reg!("mud/discord-rpc", s => move |val: SteelVal| {
+      s.lock().unwrap().discord_rpc_details = match val {
+          SteelVal::BoolV(false) => None,
+          SteelVal::StringV(details) => Some(details.to_string()),
+          SteelVal::BoolV(true) => Some(String::new()),
+          _ => None
+      };
+  });
+
   engine.register_fn("mud/strip-ansi", |text: String| -> String { strip_ansi(&text) });
 
   engine.register_fn("mud/regexp-match?", |pattern: String, text: String| -> bool {

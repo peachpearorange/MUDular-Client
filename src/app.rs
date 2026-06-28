@@ -168,7 +168,11 @@ struct Session {
   name: String,
   connection: Option<Connection>,
   script_engine: ScriptEngine,
-  input: InputLine
+  input: InputLine,
+  last_line_filtered: bool,
+  #[cfg(not(target_arch = "wasm32"))]
+  #[allow(dead_code)]
+  discord_presence: Option<crate::discord_rpc::DiscordPresence>
 }
 
 impl Session {
@@ -186,12 +190,17 @@ impl Session {
           ConnEvent::Data(line) => {
             info!("DATA: {}", line.chars().take(120).collect::<String>());
             let show = self.script_engine.handle_line(&line);
+            self.last_line_filtered = !show;
             if show {
               self.script_engine.append_to_main(&line);
             }
           }
           ConnEvent::PendingData(line) => {
-            self.script_engine.set_main_pending(&line);
+            if self.last_line_filtered {
+              self.script_engine.set_main_pending("");
+            } else {
+              self.script_engine.set_main_pending(&line);
+            }
           }
           #[cfg(not(target_arch = "wasm32"))]
           ConnEvent::GmcpReceived(package, data) => {
@@ -417,12 +426,23 @@ impl MudApp {
       engine.timer_count()
     );
 
+    let discord_presence = engine.discord_rpc_details().map(|details| {
+      let details = if details.is_empty() {
+        format!("Playing {}", profile.name)
+      } else {
+        details
+      };
+      crate::discord_rpc::start(&details)
+    }).flatten();
+
     self.sessions.push(Session {
       profile_idx: idx,
       name: profile.name.clone(),
       connection,
       script_engine: engine,
-      input: InputLine::new()
+      input: InputLine::new(),
+      last_line_filtered: false,
+      discord_presence
     });
     self.active_tab = self.sessions.len();
   }
@@ -457,7 +477,8 @@ impl MudApp {
       name: profile.name.clone(),
       connection,
       script_engine: engine,
-      input: InputLine::new()
+      input: InputLine::new(),
+      last_line_filtered: false
     });
     self.active_tab = self.sessions.len();
   }
@@ -995,6 +1016,8 @@ impl MudApp {
 (mud/set-theme theme/onenord)
 ;; Use /(mud/fonts) to see available fonts.
 ;; (mud/set-font "JetBrains Mono")
+;; Discord Rich Presence
+(mud/discord-rpc "Playing {name}")
 
 (mud/keymap "PageUp" (lambda () (mud/scroll-up 20)))
 (mud/keymap "PageDown" (lambda () (mud/scroll-down 20)))

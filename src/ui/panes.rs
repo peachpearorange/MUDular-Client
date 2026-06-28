@@ -33,15 +33,20 @@ pub fn render_pane(ui: &mut egui::Ui, _name: &str, buffer: &mut TextBuffer) {
     for line in &buffer.lines {
       render_styled_line(ui, line, available_width, &font_id, default_color);
     }
+    let y_before = ui.cursor().min.y;
     if let Some(line) = &buffer.pending_line {
       render_styled_line(ui, line, available_width, &font_id, default_color);
     }
+    ui.cursor().min.y - y_before
   });
+  let pending_height = output.inner;
 
   let max_scroll = (output.content_size.y - output.inner_rect.height()).max(0.0);
   let at_bottom = output.state.offset.y >= max_scroll - 5.0;
 
-  let content_grew = output.content_size.y - buffer.prev_content_height;
+  let stable_content = output.content_size.y - pending_height;
+  let content_grew = stable_content - buffer.prev_stable_height;
+  buffer.prev_stable_height = stable_content;
   buffer.prev_content_height = output.content_size.y;
   if content_grew > 0.5 && buffer.auto_scroll {
     buffer.scroll_anim_offset += content_grew;

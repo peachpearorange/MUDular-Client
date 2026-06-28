@@ -44,6 +44,7 @@ pub struct TextBuffer {
   pub scroll_anim_start_offset: f32,
   pub scroll_anim_elapsed: f32,
   pub prev_content_height: f32,
+  pub prev_stable_height: f32,
   pub unread_lines: usize
 }
 
@@ -59,6 +60,7 @@ impl TextBuffer {
       scroll_anim_start_offset: 0.0,
       scroll_anim_elapsed: 0.0,
       prev_content_height: 0.0,
+      prev_stable_height: 0.0,
       unread_lines: 0
     }
   }
@@ -68,6 +70,7 @@ impl TextBuffer {
     if self.lines.len() > self.max_lines {
       self.lines.remove(0);
       self.prev_content_height = 0.0;
+      self.prev_stable_height = 0.0;
       self.scroll_anim_offset = 0.0;
       self.scroll_anim_start_offset = 0.0;
       self.scroll_anim_elapsed = 0.0;
@@ -86,7 +89,6 @@ impl TextBuffer {
   pub fn clear(&mut self) {
     self.lines.clear();
     self.pending_line = None;
-    self.prev_content_height = 0.0;
     self.scroll_anim_offset = 0.0;
     self.scroll_anim_start_offset = 0.0;
     self.scroll_anim_elapsed = 0.0;

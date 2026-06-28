@@ -208,7 +208,12 @@ impl GameTemplate {
     s.push_str(";; Enter your character and password here to log in automatically on connect.\n");
     s.push_str(";; Leave empty to log in manually.\n");
     s.push_str("(define character \"\")\n(define password \"\")\n\n");
-    s.push_str(OPTIONS_BLOCK);
+    s.push_str(OPTIONS_BLOCK_PREFIX);
+    s.push_str(&format!(
+      ";; Discord Rich Presence\n\
+       (mud/discord-rpc \"Playing {}\")\n\n",
+      self.name.split(" WebSocket").next().unwrap_or(&self.name)
+    ));
     s.push_str(DEFAULT_KEYBINDS);
     s.push_str("\n;; Panes\n(mud/pane \"main\")\n");
     s.push_str(&self.scheme);
@@ -300,12 +305,12 @@ fn nukefire_custom_block() -> &'static str {
   include_str!("profiles/nukefire_custom.scm")
 }
 
-const OPTIONS_BLOCK: &str = "\
+const OPTIONS_BLOCK_PREFIX: &str = "\
 ;; Use /(mud/themes) to see available color schemes.\n\
 ;; Use /(mud/fonts) to see available fonts.\n\
 ;; (mud/set-font \"JetBrains Mono\")\n\
 (mud/set-font-size 14)\n\
-(mud/set-scroll-lines 6)\n\n";
+(mud/set-scroll-lines 6)\n";
 
 const DEFAULT_KEYBINDS: &str = "\
 ;; Scrolling\n\

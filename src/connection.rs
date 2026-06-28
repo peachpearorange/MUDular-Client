@@ -197,6 +197,10 @@ async fn run_connection<
         let _ = event_tx.send(ConnEvent::Disconnected("Server closed connection".into()));
         break;
       }
+      Err(e) => {
+        let _ = event_tx.send(ConnEvent::Disconnected(format!("Read error: {e}")));
+        break;
+      }
       Ok(n) => {
         let raw = &buf[..n];
         let data = if mccp.is_active() {
@@ -258,10 +262,6 @@ async fn run_connection<
         {
           break;
         }
-      }
-      Err(e) => {
-        let _ = event_tx.send(ConnEvent::Disconnected(format!("Read error: {e}")));
-        break;
       }
     }
   }

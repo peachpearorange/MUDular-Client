@@ -34,8 +34,11 @@ pub fn render_profile_list(
   } else {
     ui.separator();
     ui.add_space(4.0);
+    let mut sorted: Vec<usize> = (0..profiles.len()).collect();
+    sorted.sort_by(|&a, &b| profiles[a].name.to_lowercase().cmp(&profiles[b].name.to_lowercase()));
     egui::ScrollArea::vertical().show(ui, |ui| {
-      for (i, profile) in profiles.iter().enumerate() {
+      for &i in &sorted {
+        let profile = &profiles[i];
         ui.group(|ui| {
           ui.horizontal(|ui| {
             ui.vertical(|ui| {
@@ -94,18 +97,23 @@ pub fn render_template_picker(
       ui.set_min_width(350.0);
       ui.label("Choose a game template:");
       ui.add_space(8.0);
-      for (i, template) in templates.iter().enumerate() {
-        ui.horizontal(|ui| {
-          if crate::ui::term_button(ui, &template.name).clicked() {
-            action = TemplateAction::CreateFromTemplate(i);
-          }
-          ui.label(
-            egui::RichText::new(format!("{}:{}", template.host, template.port))
-              .color(egui::Color32::from_gray(140))
-          );
-        });
-        ui.add_space(2.0);
-      }
+      let mut sorted: Vec<usize> = (0..templates.len()).collect();
+      sorted.sort_by(|&a, &b| templates[a].name.to_lowercase().cmp(&templates[b].name.to_lowercase()));
+      egui::ScrollArea::vertical().max_height(400.0).show(ui, |ui| {
+        for &i in &sorted {
+          let template = &templates[i];
+          ui.horizontal(|ui| {
+            if crate::ui::term_button(ui, &template.name).clicked() {
+              action = TemplateAction::CreateFromTemplate(i);
+            }
+            ui.label(
+              egui::RichText::new(format!("{}:{}", template.host, template.port))
+                .color(egui::Color32::from_gray(140))
+            );
+          });
+          ui.add_space(2.0);
+        }
+      });
       ui.add_space(8.0);
       ui.separator();
       ui.add_space(4.0);

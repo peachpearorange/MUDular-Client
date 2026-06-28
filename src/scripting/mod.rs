@@ -108,7 +108,8 @@ pub struct ScriptState {
   pub profile_port: Option<u16>,
   pub profile_tls: Option<bool>,
   pub profile_websocket_url: Option<String>,
-  pub profile_websocket_protocol: Option<String>
+  pub profile_websocket_protocol: Option<String>,
+  pub discord_rpc_details: Option<String>
 }
 
 impl ScriptState {
@@ -146,7 +147,8 @@ impl ScriptState {
       profile_port: None,
       profile_tls: None,
       profile_websocket_url: None,
-      profile_websocket_protocol: None
+      profile_websocket_protocol: None,
+      discord_rpc_details: None
     }
   }
 }
@@ -440,6 +442,10 @@ impl ScriptEngine {
 
   pub fn drain_reconnect(&self) -> bool {
     std::mem::take(&mut self.state.lock().unwrap().outgoing_reconnect)
+  }
+
+  pub fn discord_rpc_details(&self) -> Option<String> {
+    self.state.lock().unwrap().discord_rpc_details.clone()
   }
 
   pub fn append_to_main(&self, line: &str) {
