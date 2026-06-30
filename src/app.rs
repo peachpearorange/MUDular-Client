@@ -23,26 +23,26 @@ struct Appearance {
 }
 
 impl Appearance {
-  #[cfg(not(target_arch = "wasm32"))]
+  #[cfg(desktop)]
   fn path() -> Option<std::path::PathBuf> {
     directories::ProjectDirs::from("com", "mudular", "mudular-client")
       .map(|dirs| dirs.config_dir().join("appearance.json"))
   }
 
   fn load() -> Self {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(desktop)]
     {
       Self::path()
         .and_then(|p| std::fs::read_to_string(p).ok())
         .and_then(|s| serde_json::from_str(&s).ok())
         .unwrap_or(Self { font_size: 14.0, ..Default::default() })
     }
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(desktop))]
     Self { font_size: 14.0, ..Default::default() }
   }
 
   fn save(&self) {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(desktop)]
     if let Some(path) = Self::path() {
       if let Some(dir) = path.parent() {
         let _ = std::fs::create_dir_all(dir);
@@ -93,7 +93,7 @@ fn format_key_combo(key: egui::Key, modifiers: egui::Modifiers) -> String {
 fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<String> {
   let mut warning = None;
 
-  #[cfg(not(target_arch = "wasm32"))]
+  #[cfg(desktop)]
   if let Some(name) = &appearance.font_name {
     if let Some(data) = crate::fonts::load_system_font(name) {
       let mut fonts = egui::FontDefinitions::default();
@@ -115,10 +115,10 @@ fn apply_appearance(ctx: &egui::Context, appearance: &Appearance) -> Option<Stri
       warning = Some(format!("[Font '{name}' is not available; using the default font]"));
     }
   }
-  #[cfg(target_arch = "wasm32")]
+  #[cfg(not(desktop))]
   if let Some(name) = &appearance.font_name {
     warning = Some(format!(
-      "[Font '{name}' cannot be loaded from system fonts in the web build; using the default font]"
+      "[Font '{name}' cannot be loaded from system fonts on this platform; using the default font]"
     ));
   }
 
@@ -170,7 +170,7 @@ struct Session {
   script_engine: ScriptEngine,
   input: InputLine,
   last_line_filtered: bool,
-  #[cfg(not(target_arch = "wasm32"))]
+  #[cfg(desktop)]
   #[allow(dead_code)]
   discord_presence: Option<crate::discord_rpc::DiscordPresence>
 }
@@ -426,6 +426,7 @@ impl MudApp {
       engine.timer_count()
     );
 
+    #[cfg(desktop)]
     let discord_presence = engine.discord_rpc_details().map(|details| {
       let details = if details.is_empty() {
         format!("Playing {}", profile.name)
@@ -442,6 +443,7 @@ impl MudApp {
       script_engine: engine,
       input: InputLine::new(),
       last_line_filtered: false,
+      #[cfg(desktop)]
       discord_presence
     });
     self.active_tab = self.sessions.len();
@@ -789,17 +791,9 @@ impl eframe::App for MudApp {
       if let Some(session) = self.sessions.get_mut(si) {
         if let Some(cmd) = session.input.take_submitted() {
           info!("Input submitted: {cmd:?}");
-          if let Some(code) = cmd.strip_prefix('/') {
-            if code.is_empty() {
-              session.script_engine.handle_input_hook(&cmd);
-              let should_send = session.script_engine.handle_input(&cmd);
-              if should_send {
-                if let Some(conn) = &session.connection {
-                  conn.send(&cmd);
-                }
-              }
-            } else {
-              session.script_engine.eval_input(code);
+          if session.input.scheme_mode {
+            if !cmd.is_empty() {
+              session.script_engine.eval_input(&cmd);
             }
           } else {
             session.script_engine.handle_input_hook(&cmd);
@@ -843,6 +837,25 @@ impl eframe::App for MudApp {
   }
 
   fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    #[cfg(target_os = "android")]
+    let keyboard_height = {
+      crate::android_util::keep_keyboard_visible();
+      crate::android_util::poll_keyboard_height();
+      let raw = crate::android_util::keyboard_height() / ui.ctx().pixels_per_point();
+      if raw > 10.0 { raw } else { 0.0 }
+    };
+    #[cfg(not(target_os = "android"))]
+    let keyboard_height = 0.0_f32;
+
+    let usable_height = ui.available_height() - keyboard_height;
+    ui.allocate_ui(egui::vec2(ui.available_width(), usable_height), |ui| {
+      self.ui_content(ui);
+    });
+  }
+}
+
+impl MudApp {
+  fn ui_content(&mut self, ui: &mut egui::Ui) {
     let mut want_disconnect = false;
     let mut want_edit = false;
 
@@ -880,7 +893,29 @@ impl eframe::App for MudApp {
     });
     ui.separator();
 
-    if self.active_tab == 0 {
+    if cfg!(target_os = "android") && self.editor.visible {
+      let editor_action = self.editor.render_inline(ui);
+      match editor_action {
+        EditorAction::Save(code) => {
+          if let Some(profile_idx) = self.editor_profile_idx {
+            self.profiles[profile_idx].script_code = code.clone();
+            let _ = self.profiles[profile_idx].save();
+            for session in &mut self.sessions {
+              if session.profile_idx == profile_idx {
+                if let Err(e) = session.script_engine.load_script(&code) {
+                  session
+                    .script_engine
+                    .append_system_message(&format!("[Script reload error: {e}]"));
+                } else {
+                  session.script_engine.append_system_message("[Script reloaded]");
+                }
+              }
+            }
+          }
+        }
+        EditorAction::None => {}
+      }
+    } else if self.active_tab == 0 {
       #[cfg(not(target_arch = "wasm32"))]
       let mssp = &self.mssp_info;
       #[cfg(target_arch = "wasm32")]
@@ -1012,10 +1047,11 @@ impl MudApp {
   'port {port}
   'tls #f)
 
-;; Use /(mud/themes) to see available color schemes.
+;; Switch to scheme mode and run (mud/themes) to see available color schemes.
 (mud/set-theme theme/onenord)
-;; Use /(mud/fonts) to see available fonts.
+;; Switch to scheme mode and run (mud/fonts) to see available fonts.
 ;; (mud/set-font "JetBrains Mono")
+(mud/set-keep-input #t)
 ;; Discord Rich Presence
 (mud/discord-rpc "Playing {name}")
 

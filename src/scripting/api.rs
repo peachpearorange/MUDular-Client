@@ -242,7 +242,7 @@ pub fn register_api(engine: &mut Engine, state: Arc<Mutex<ScriptState>>) {
 const PRELUDE: &str = r#"
 (define *triggers* '())
 (define *aliases* '())
-(define *timers* '())
+(define *pending-timers* '())
 (define *hooks* (hash))
 (define *keymaps* (hash))
 
@@ -253,10 +253,10 @@ const PRELUDE: &str = r#"
   (set! *aliases* (cons (cons pattern callback) *aliases*)))
 
 (define (timer interval callback)
-  (set! *timers* (cons (list interval #t callback) *timers*)))
+  (set! *pending-timers* (cons (list interval #t callback) *pending-timers*)))
 
 (define (interval secs callback)
-  (set! *timers* (cons (list secs #f callback) *timers*)))
+  (set! *pending-timers* (cons (list secs #f callback) *pending-timers*)))
 
 (define (mud/profile . args)
   (mud/profile* args))

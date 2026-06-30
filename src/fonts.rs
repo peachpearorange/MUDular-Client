@@ -1,7 +1,7 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 use font_kit::{handle::Handle, properties::Properties, source::SystemSource};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 pub fn load_system_font(name: &str) -> Option<Vec<u8>> {
   SystemSource::new()
     .select_best_match(
@@ -12,12 +12,12 @@ pub fn load_system_font(name: &str) -> Option<Vec<u8>> {
     .and_then(font_bytes)
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(not(desktop))]
 pub fn available_fonts() -> Vec<String> {
-  vec!["Font list not supported in wasm".into()]
+  vec!["Font list not supported on this platform".into()]
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 pub fn available_fonts() -> Vec<String> {
   let mut fonts = SystemSource::new().all_families().unwrap_or_default();
   fonts.sort();
@@ -25,7 +25,7 @@ pub fn available_fonts() -> Vec<String> {
   fonts
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 fn font_bytes(handle: Handle) -> Option<Vec<u8>> {
   match handle {
     Handle::Path { path, .. } => std::fs::read(path).ok(),

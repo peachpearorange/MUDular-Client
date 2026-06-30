@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 use directories::ProjectDirs;
 
 #[derive(Clone, Debug)]
@@ -48,6 +48,7 @@ struct GameTemplate {
   websocket_url: Option<String>,
   websocket_protocol: Option<String>,
   theme_name: Option<String>,
+  skip_auto_gauge: bool,
   scheme: String
 }
 
@@ -68,6 +69,7 @@ impl GameTemplate {
       websocket_url: None,
       websocket_protocol: None,
       theme_name: None,
+      skip_auto_gauge: false,
       scheme: String::new()
     }
   }
@@ -90,9 +92,9 @@ impl GameTemplate {
     self
   }
 
-  /// Enable keep-input (don't clear the input line on submit).
-  fn keep_input(self) -> Self {
-    self.concat("(mud/set-keep-input #t)\n")
+  fn skip_auto_gauge(mut self) -> Self {
+    self.skip_auto_gauge = true;
+    self
   }
 
   /// Apply the shared NukeFire game configuration: theme, keep-input, movement
@@ -101,7 +103,7 @@ impl GameTemplate {
   fn apply_nukefire_config(self) -> Self {
     self
       .theme("theme/toy-chest")
-      .keep_input()
+      .skip_auto_gauge()
       .concat(
         ";; Movement: Alt+WASD + Alt+Q/E\n\
          (mud/keymap \"alt+w\" (lambda () (mud/send \"n\")))\n\
@@ -124,16 +126,6 @@ impl GameTemplate {
         gauge("moves", "blue", "", "")
       ])
       .concat(nukefire_custom_block())
-  }
-
-  /// Append the map pane plus a horizontal main/map layout.
-  fn map_panes(self) -> Self {
-    self.concat(
-      "\n(mud/pane \"map\")\n\
-       (mud/layout \"horizontal\" (list\n\
-       \x20   (list \"main\" 3)\n\
-       \x20   (list \"map\" 1)))\n"
-    )
   }
 
   /// Append gauge declarations.
@@ -212,7 +204,7 @@ impl GameTemplate {
     s.push_str(OPTIONS_BLOCK_PREFIX);
     if let Some(theme) = &self.theme_name {
       s.push_str(&format!(
-        ";; Use /(mud/themes) to see available color schemes.\n\
+        ";; Switch to scheme mode and run (mud/themes) to see available color schemes.\n\
          (mud/set-theme {theme})\n"
       ));
     }
@@ -224,6 +216,9 @@ impl GameTemplate {
     s.push_str(DEFAULT_KEYBINDS);
     s.push_str("\n;; Panes\n(mud/pane \"main\")\n");
     s.push_str(&self.scheme);
+    if !self.skip_auto_gauge {
+      s.push_str(AUTO_GAUGE_BLOCK);
+    }
     Profile {
       name: self.name,
       connection_mode: self.connection_mode,
@@ -303,20 +298,77 @@ fn gmcp_gauge_hook(package: &str, gauges: &[GaugeTemplate]) -> String {
   }
   format!(
     "\n;; Fired when the server sends a GMCP message. data is a hash.\n\
-     (mud/on-gmcp (lambda (package data)\n  (when (equal? package \"{pkg}\")\n{handlers}    )))\n",
+     (mud/on-gmcp (lambda (package data)\n  (when (and (equal? package \"{pkg}\") (hash? data))\n{handlers}    )\n  \
+     (when (hash? data) (auto-gauge-from-hash data))))\n",
     pkg = package
   )
 }
+
+const AUTO_GAUGE_BLOCK: &str = r##"
+;; Auto-detect vitals from GMCP/MSDP hashes and set up gauges + status
+(define discovered-gauges (hash))
+
+(define gauge-patterns (list
+  (list "HEALTH"      "HEALTH_MAX"      "health" "red")
+  (list "HP"          "HP_MAX"          "health" "red")
+  (list "hp"          "maxhp"           "health" "red")
+  (list "MANA"        "MANA_MAX"        "mana"   "blue")
+  (list "MP"          "MP_MAX"          "mana"   "blue")
+  (list "mp"          "maxmp"           "mana"   "blue")
+  (list "mana"        "maxmana"         "mana"   "blue")
+  (list "MOVEMENT"    "MOVEMENT_MAX"    "moves"  "yellow")
+  (list "MV"          "MV_MAX"          "moves"  "yellow")
+  (list "moves"       "maxmoves"        "moves"  "yellow")
+  (list "ENERGY"      "ENERGY_MAX"      "energy" "green")
+  (list "ep"          "maxep"           "energy" "green")
+  (list "ENDURANCE"   "ENDURANCE_MAX"   "endurance" "green")
+  (list "EXPERIENCE_TNL" #f             "tnl"    "cyan")))
+
+(define (auto-gauge-from-hash data)
+  (for-each
+    (lambda (pattern)
+      (let ((cur-key  (list-ref pattern 0))
+            (max-key  (list-ref pattern 1))
+            (name     (list-ref pattern 2))
+            (color    (list-ref pattern 3)))
+        (when (hash-contains? data cur-key)
+          (let ((cur (hash-ref data cur-key)))
+            (let ((mx (if max-key
+                         (hash-get data max-key cur)
+                         cur)))
+              (set! discovered-gauges
+                (hash-insert (hash-insert discovered-gauges
+                  (to-string name "-cur") cur)
+                  (to-string name "-max") mx))
+              (mud/gauge name (hash 'current cur 'max mx 'color color)))))))
+    gauge-patterns)
+  (update-auto-status))
+
+(define (update-auto-status)
+  (let ((parts '()))
+    (for-each
+      (lambda (name)
+        (let ((ck (to-string name "-cur"))
+              (mk (to-string name "-max")))
+          (when (hash-contains? discovered-gauges ck)
+            (set! parts (append parts
+              (list (to-string name ":" (hash-ref discovered-gauges ck)
+                               "/" (hash-ref discovered-gauges mk))))))))
+      (list "health" "mana" "moves" "energy" "endurance" "tnl"))
+    (when (not (null? parts))
+      (mud/status (string-join parts "  ")))))
+"##;
 
 fn nukefire_custom_block() -> &'static str {
   include_str!("profiles/nukefire_custom.scm")
 }
 
 const OPTIONS_BLOCK_PREFIX: &str = "\
-;; Use /(mud/fonts) to see available fonts.\n\
+;; Switch to scheme mode and run (mud/fonts) to see available fonts.\n\
 ;; (mud/set-font \"JetBrains Mono\")\n\
 (mud/set-font-size 14)\n\
-(mud/set-scroll-lines 6)\n";
+(mud/set-scroll-lines 6)\n\
+(mud/set-keep-input #t)\n";
 
 const DEFAULT_KEYBINDS: &str = "\
 ;; Scrolling\n\
@@ -359,13 +411,13 @@ const DEFAULT_HOOKS: &str = r##";; Fired for each line received from the server.
 
 ;; Fired when the server sends an MSDP message. data is a hash.
 (mud/on-msdp (lambda (data)
-  ;; (mud/pane-print "main" (to-string "msdp " data))
+  (when (hash? data) (auto-gauge-from-hash data))
   #t))
 "##;
 
 const DEFAULT_ON_GMCP: &str = r##";; Fired when the server sends a GMCP message. data is a hash.
 (mud/on-gmcp (lambda (package data)
-  ;; (mud/pane-print "main" (to-string "gmcp " package " " data))
+  (when (hash? data) (auto-gauge-from-hash data))
   #t))
 "##;
 
@@ -376,7 +428,6 @@ fn game_templates() -> Vec<Profile> {
   vec![
   GameTemplate::new("Achaea", ConnectionMode::Tcp, "achaea.com", 23, false)
     .theme("theme/onenord")
-    .map_panes()
     .gauges(&[
       gauge("health", "red", "hp", "maxhp"),
       gauge("mana", "blue", "mp", "maxmp"),
@@ -451,7 +502,6 @@ fn game_templates() -> Vec<Profile> {
     .build(),
   GameTemplate::new("Discworld", ConnectionMode::Tcp, "discworld.atuin.net", 4242, false)
     .theme("theme/onenord")
-    .map_panes()
     .gauges(&[
       gauge("hp", "red", "hp", "maxhp"),
       gauge("gp", "blue", "gp", "maxgp"),
@@ -610,33 +660,56 @@ fn game_templates() -> Vec<Profile> {
     .build(),
   GameTemplate::new("Generic", ConnectionMode::Tcp, "localhost", 4000, false)
     .theme("theme/onenord")
-    .connect()
-    .default_hooks()
-    .on_gmcp(
-      "(lambda (package data)\n  (mud/pane-print \"main\" (to-string \"[GMCP \" package \"]\")))"
+    .concat(
+      "\n(mud/pane \"data\")\n\
+       (mud/layout \"horizontal\" (list\n\
+       \x20   (list \"main\" 3)\n\
+       \x20   (list \"data\" 1)))\n\n"
     )
-    .concat(";; Log GMCP messages\n")
+    .connect()
+    .on_line("(lambda (line) #t)")
+    .on_input("(lambda (cmd) #t)")
+    .on_gmcp(
+      r##"(lambda (package data)
+  (mud/pane-print "data" (to-string "\u{1b}[33m[GMCP " package "]\u{1b}[0m"))
+  (when (hash? data)
+    (for-each (lambda (k) (mud/pane-print "data" (to-string "  " k " = " (hash-ref data k))))
+              (hash-keys->list data))
+    (auto-gauge-from-hash data))
+  (when (not (hash? data))
+    (mud/pane-print "data" (to-string "  " data))))"##
+    )
+    .on_msdp(
+      r##"(lambda (data)
+  (mud/pane-print "data" (to-string "\u{1b}[36m[MSDP]\u{1b}[0m"))
+  (when (hash? data)
+    (for-each (lambda (k) (mud/pane-print "data" (to-string "  " k " = " (hash-ref data k))))
+              (hash-keys->list data))
+    (auto-gauge-from-hash data))
+  (when (not (hash? data))
+    (mud/pane-print "data" (to-string "  " data))))"##
+    )
     .build()
   ]
 }
 
 impl Profile {
   pub fn profiles_dir() -> Option<PathBuf> {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(desktop)]
     {
       ProjectDirs::from("com", "mudular", "mudular-client")
         .map(|dirs| dirs.config_dir().join("profiles"))
     }
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(desktop))]
     None
   }
 
   pub fn load_user() -> Vec<Profile> {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(desktop)]
     {
       Self::load_user_profiles()
     }
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(desktop))]
     Vec::new()
   }
 

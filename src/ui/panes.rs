@@ -94,13 +94,8 @@ pub fn render_pane(ui: &mut egui::Ui, _name: &str, buffer: &mut TextBuffer) {
     buffer.scroll_anim_offset = 0.0;
     buffer.scroll_anim_start_offset = 0.0;
     buffer.scroll_anim_elapsed = 0.0;
-  } else if animating_scroll {
+  } else if animating_scroll || at_bottom {
     buffer.auto_scroll = true;
-  } else if at_bottom {
-    buffer.auto_scroll = true;
-  } else if !buffer.auto_scroll {
-  } else {
-    buffer.auto_scroll = at_bottom;
   }
 
   if buffer.auto_scroll {

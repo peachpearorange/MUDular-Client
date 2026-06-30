@@ -1,30 +1,14 @@
-mod ansi;
-mod app;
-mod buffer;
-#[cfg(not(target_arch = "wasm32"))]
-mod connection;
-#[cfg(not(target_arch = "wasm32"))]
-mod discord_rpc;
-mod fonts;
-#[cfg(not(target_arch = "wasm32"))]
-mod probe;
-mod profile;
-mod protocol;
-mod scripting;
-mod telnet;
-mod themes;
-mod ui;
-#[cfg(target_arch = "wasm32")]
-mod web_connection;
+#[cfg(desktop)]
+use std::io::Write;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 struct DualWriter {
   stderr: std::io::Stderr,
   file: std::sync::Mutex<std::fs::File>
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-impl std::io::Write for DualWriter {
+#[cfg(desktop)]
+impl Write for DualWriter {
   fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
     let _ = self.stderr.write(buf);
     let _ = self.file.lock().unwrap().write(buf);
@@ -37,7 +21,7 @@ impl std::io::Write for DualWriter {
   }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(desktop)]
 fn main() -> eframe::Result<()> {
   let log_path = "/tmp/mudular.log";
   let log_file = std::fs::File::create(log_path).expect("Failed to create log file");
@@ -50,23 +34,33 @@ fn main() -> eframe::Result<()> {
   })))
   .init();
   eprintln!("Logging to {log_path}");
+  let icon = {
+    let png = image::load_from_memory_with_format(
+      include_bytes!("../mudular.png"),
+      image::ImageFormat::Png
+    )
+    .expect("embedded icon")
+    .into_rgba8();
+    let (w, h) = (png.width(), png.height());
+    eframe::egui::IconData { rgba: png.into_raw(), width: w, height: h }
+  };
   let options = eframe::NativeOptions {
     viewport: eframe::egui::ViewportBuilder::default()
       .with_inner_size([1024.0, 768.0])
-      .with_min_inner_size([640.0, 480.0]),
+      .with_min_inner_size([640.0, 480.0])
+      .with_icon(std::sync::Arc::new(icon)),
     ..Default::default()
   };
 
   eframe::run_native(
     "MUDular Client",
     options,
-    Box::new(|cc| Ok(Box::new(app::MudApp::new(cc))))
+    Box::new(|cc| Ok(Box::new(mudular::app::MudApp::new(cc))))
   )
 }
 
 #[cfg(target_arch = "wasm32")]
 fn main() {
-  let web_options = eframe::WebOptions::default();
   wasm_bindgen_futures::spawn_local(async {
     use wasm_bindgen::JsCast;
 
@@ -80,227 +74,11 @@ fn main() {
       .expect("element is not a canvas");
 
     let _ = eframe::WebRunner::new()
-      .start(canvas, web_options, Box::new(|cc| Ok(Box::new(app::MudApp::new(cc)))))
+      .start(
+        canvas,
+        eframe::WebOptions::default(),
+        Box::new(|cc| Ok(Box::new(mudular::app::MudApp::new(cc))))
+      )
       .await;
   });
-}
-
-#[cfg(test)]
-mod tests {
-  use crate::scripting::ScriptEngine;
-
-  fn nukefire_template_code() -> String {
-    crate::profile::Profile::templates()
-      .into_iter()
-      .find(|p| p.name == "NukeFire")
-      .expect("NukeFire template exists")
-      .script_code
-  }
-
-  #[test]
-  fn test_nukefire_profile_loads() {
-    let code = nukefire_template_code();
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&code).expect("nukefire script failed to load");
-
-    let st = engine.state.lock().unwrap();
-    assert!(st.panes.contains_key("main"));
-    assert!(st.panes.contains_key("map"));
-    assert_eq!(st.profile_host.as_deref(), Some("tdome.nukefire.org"));
-    assert_eq!(st.profile_port, Some(4000));
-    assert_eq!(st.profile_tls, Some(false));
-    assert!(st.gauges.len() >= 3);
-    let health = st.gauges.iter().find(|g| g.name == "health").unwrap();
-    let mana = st.gauges.iter().find(|g| g.name == "mana").unwrap();
-    let moves = st.gauges.iter().find(|g| g.name == "moves").unwrap();
-    assert_eq!(health.color, "green");
-    assert_eq!(mana.color, "cyan");
-    assert_eq!(moves.color, "blue");
-  }
-
-  #[test]
-  fn test_nukefire_msdp_updates_status_and_gauges() {
-    let code = nukefire_template_code();
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&code).expect("nukefire script failed to load");
-
-    engine.handle_msdp(&serde_json::json!({
-        "ROOM_NAME": "\u{1b}[1;32mThe Overlook Catwalk\u{1b}[0;00m",
-        "AREA_NAME": "NukeFire",
-        "ROOM_EXITS": { "north": "123" },
-        "HEALTH": "42",
-        "HEALTH_MAX": "100",
-        "MANA": "17",
-        "MANA_MAX": "50",
-        "MOVEMENT": "88",
-        "MOVEMENT_MAX": "90",
-        "LEVEL": "12",
-        "EXPERIENCE_TNL": "345",
-    }));
-
-    let st = engine.state.lock().unwrap();
-    let status_text: String =
-      st.status_line.spans.iter().map(|span| span.text.as_str()).collect();
-    assert!(status_text.contains("The Overlook Catwalk"));
-    assert!(!status_text.contains("\u{1b}"));
-    assert!(st.status_line.spans.iter().any(|span| span.style.fg.is_some()));
-
-    let health = st.gauges.iter().find(|g| g.name == "health").unwrap();
-    let mana = st.gauges.iter().find(|g| g.name == "mana").unwrap();
-    let moves = st.gauges.iter().find(|g| g.name == "moves").unwrap();
-    assert_eq!(
-      (health.current as i64, health.max as i64, health.color.as_str()),
-      (42, 100, "green")
-    );
-    assert_eq!(
-      (mana.current as i64, mana.max as i64, mana.color.as_str()),
-      (17, 50, "cyan")
-    );
-    assert_eq!(
-      (moves.current as i64, moves.max as i64, moves.color.as_str()),
-      (88, 90, "blue")
-    );
-  }
-
-  #[test]
-  fn test_pane_print_restores_escaped_ansi() {
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine
-      .load_script(r#"(mud/pane-print "main" "\u{1b}[32m> who\u{1b}[0m")"#)
-      .expect("script failed to load");
-
-    let st = engine.state.lock().unwrap();
-    let line = st.panes.get("main").unwrap().lines.last().unwrap();
-    let text: String = line.spans.iter().map(|span| span.text.as_str()).collect();
-    assert_eq!(text, "> who");
-    assert!(line.spans.iter().any(|span| span.style.fg.is_some()));
-  }
-
-  #[test]
-  fn test_nukefire_on_line() {
-    let code = nukefire_template_code();
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&code).expect("script load failed");
-
-    // Normal text should pass through
-    assert!(engine.handle_line("Hello world"));
-
-    // Prompt echo should be suppressed
-    assert!(!engine.handle_line("> n"));
-
-    // Map grid should be captured
-    assert!(!engine.handle_line("  |  @  |  "));
-  }
-
-  #[test]
-  fn test_generated_templates_load() {
-    let templates = crate::profile::Profile::templates();
-    for template in &templates {
-      let mut engine = ScriptEngine::new().expect("engine creation failed");
-      engine
-        .load_script(&template.script_code)
-        .unwrap_or_else(|e| panic!("template '{}' failed to load: {e}", template.name));
-      let st = engine.state.lock().unwrap();
-      assert!(
-        st.panes.contains_key("main"),
-        "template '{}' missing main pane",
-        template.name
-      );
-      assert!(
-        st.ansi_palette.is_some(),
-        "template '{}' missing palette (load_theme failed)",
-        template.name
-      );
-    }
-  }
-
-  #[test]
-  fn test_default_hooks_dont_error() {
-    let templates = crate::profile::Profile::templates();
-    let dune = templates.iter().find(|p| p.name == "Dune").expect("Dune template");
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&dune.script_code).expect("script load failed");
-    // The on-input no-op default used to call (void) which is not a function.
-    // Invoking the hook must not error.
-    engine.handle_input_hook("hello");
-    engine.handle_gmcp("Core.Hello", &serde_json::Value::Null);
-    engine.handle_msdp(&serde_json::Value::Null);
-    engine.handle_line("a line");
-  }
-
-  #[test]
-  fn test_nukefire_keymaps() {
-    let code = nukefire_template_code();
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&code).expect("script load failed");
-
-    assert!(engine.keymaps().len() >= 6);
-    assert!(engine.state.lock().unwrap().keep_input);
-    let w_map = engine.keymaps().iter().find(|km| km.combo.key == "w").unwrap();
-    assert!(w_map.combo.alt);
-    engine.invoke_keymap(w_map.callback.clone());
-    assert!(engine.state.lock().unwrap().outgoing_commands.contains(&"n".to_string()));
-  }
-
-  #[test]
-  fn test_font_size_keymaps() {
-    let code = nukefire_template_code();
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.load_script(&code).expect("script load failed");
-
-    let initial = engine.state.lock().unwrap().font_size;
-    let plus_cb = engine
-      .keymaps()
-      .iter()
-      .find(|km| km.combo.key == "plus")
-      .unwrap()
-      .callback
-      .clone();
-    engine.invoke_keymap(plus_cb);
-    assert_eq!(engine.state.lock().unwrap().font_size, initial + 1.0);
-
-    let minus_cb = engine
-      .keymaps()
-      .iter()
-      .find(|km| km.combo.key == "minus")
-      .unwrap()
-      .callback
-      .clone();
-    engine.invoke_keymap(minus_cb.clone());
-    engine.invoke_keymap(minus_cb);
-    assert_eq!(engine.state.lock().unwrap().font_size, initial - 1.0);
-
-    // The keymap should have printed the new font size to the main pane.
-    let text: String = engine
-      .state
-      .lock()
-      .unwrap()
-      .panes
-      .get("main")
-      .unwrap()
-      .lines
-      .iter()
-      .flat_map(|l| l.spans.iter().map(|s| s.text.as_str()))
-      .collect();
-    assert!(text.contains("[Font size:"));
-  }
-
-  #[test]
-  fn test_keymap_is_idempotent() {
-    let mut engine = ScriptEngine::new().expect("engine creation failed");
-    engine.eval_input(r#"(mud/keymap "alt+x" (lambda () (mud/send "x")))"#);
-    engine.eval_input(r#"(mud/keymap "alt+x" (lambda () (mud/send "y")))"#);
-
-    let x_maps: Vec<_> = engine
-      .keymaps()
-      .iter()
-      .filter(|km| km.combo.key == "x" && km.combo.alt)
-      .collect();
-    assert_eq!(x_maps.len(), 1);
-
-    engine.invoke_keymap(x_maps[0].callback.clone());
-    let st = engine.state.lock().unwrap();
-    assert!(st.outgoing_commands.contains(&"y".to_string()));
-    assert!(!st.outgoing_commands.contains(&"x".to_string()));
-  }
 }

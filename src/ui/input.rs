@@ -6,6 +6,7 @@ pub struct InputLine {
   pub history_pos: Option<usize>,
   pub submitted: Option<String>,
   pub keymap_matched: bool,
+  pub scheme_mode: bool,
   select_all_next_frame: bool
 }
 
@@ -17,6 +18,7 @@ impl InputLine {
       history_pos: None,
       submitted: None,
       keymap_matched: false,
+      scheme_mode: false,
       select_all_next_frame: false
     }
   }
@@ -47,6 +49,11 @@ impl InputLine {
             self.history_down();
           }
         });
+      }
+
+      let label = if self.scheme_mode { "scheme" } else { ">" };
+      if crate::ui::term_button(ui, label).clicked() {
+        self.scheme_mode = !self.scheme_mode;
       }
 
       let text_before = self.text.clone();

@@ -1,1 +1,6 @@
 /target
+android/app/build/
+android/app/src/main/jniLibs/
+android/.gradle/
+android/local.properties
+android/build/

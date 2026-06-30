@@ -248,7 +248,7 @@ impl ScriptEngine {
         }
       }
     }
-    if let Ok(val) = self.engine.extract_value("*timers*") {
+    if let Ok(val) = self.engine.extract_value("*pending-timers*") {
       for item in steel_list_iter(&val) {
         if let Some(fields) = steel_list_to_vec(&item) {
           if fields.len() >= 3 {
@@ -264,6 +264,7 @@ impl ScriptEngine {
           }
         }
       }
+      let _ = self.engine.run("(set! *pending-timers* '())".to_string());
     }
     self.keymaps.clear();
     if let Ok(SteelVal::HashMapV(hm)) = self.engine.extract_value("*keymaps*") {

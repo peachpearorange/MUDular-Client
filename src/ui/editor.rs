@@ -59,22 +59,25 @@ impl ScriptEditor {
   }
 
   pub fn render(&mut self, ctx: &egui::Context) -> EditorAction {
+    if cfg!(target_os = "android") {
+      EditorAction::None
+    } else {
+      self.render_window(ctx)
+    }
+  }
+
+  pub fn render_inline(&mut self, ui: &mut egui::Ui) -> EditorAction {
+    let mut action = EditorAction::None;
+    self.apply_editor_theme(ui.ctx());
+    self.render_body(ui, &mut action, true);
+    action
+  }
+
+  fn render_window(&mut self, ctx: &egui::Context) -> EditorAction {
     let mut action = EditorAction::None;
 
     if self.visible {
-      let theme = self.theme;
-      ctx.global_style_mut(|style| {
-        let bg = theme.bg();
-        let fg = theme.type_color(TokenType::Literal);
-        // Title bar reads as chrome: a hue-stable blend of bg toward fg that
-        // lifts on dark themes and depresses on light ones, matching the
-        // terminal buttons (see crate::ui::panel_button_bg).
-        style.visuals.widgets.open.weak_bg_fill = bg.lerp_to_gamma(fg, 0.10);
-        style.visuals.widgets.active.bg_fill = bg.lerp_to_gamma(fg, 0.10);
-        style.visuals.widgets.hovered.bg_fill = bg.lerp_to_gamma(fg, 0.16);
-        style.visuals.widgets.inactive.bg_fill = bg.lerp_to_gamma(fg, 0.06);
-      });
-
+      self.apply_editor_theme(ctx);
       let mut visible = self.visible;
       egui::Window::new("Script Editor")
         .default_size([600.0, 500.0])
@@ -83,99 +86,123 @@ impl ScriptEditor {
         .collapsible(true)
         .open(&mut visible)
         .show(ctx, |ui| {
-          ui.horizontal(|ui| {
-            if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
-              crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
-              self.status_message =
-                Some(("Copied!".into(), ui.input(|input| input.time)));
-            }
-            if crate::ui::term_button(ui, "Save").clicked() {
-              action = EditorAction::Save(self.code.clone());
-            }
-            if let Some((ref msg, when)) = self.status_message {
-              if ui.input(|input| input.time) - when < 3.0 {
-                ui.label(msg);
-              } else {
-                self.status_message = None;
-              }
-            }
-          });
-          ui.separator();
-
-          self.handle_completion_input(ctx);
-
-          let syntax = &self.syntax;
-          let fontsize = ui
-            .style()
-            .text_styles
-            .get(&egui::TextStyle::Monospace)
-            .map(|f| f.size)
-            .unwrap_or(13.0);
-          let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-          let avail_h = ui.available_height().max(row_height);
-          let desired_rows = ((avail_h / row_height).floor() as usize).max(1);
-          let desired_width = ui.available_width().max(1.0);
-          let editor_size = egui::vec2(desired_width, (desired_rows as f32) * row_height);
-
-          let code_before = self.code.clone();
-          let output = ui.allocate_ui_with_layout(
-            editor_size,
-            egui::Layout::top_down(egui::Align::LEFT),
-            |ui| {
-              theme.modify_style(ui, fontsize);
-              // Suppress the focus/hover outline and background-tint egui draws
-              // around/behind the TextEdit, so the editor looks the same whether
-              // idle, hovered, or focused for typing.
-              let bg = theme.bg();
-              let widgets = &mut ui.style_mut().visuals.widgets;
-              widgets.noninteractive.bg_stroke = egui::Stroke::NONE;
-              widgets.inactive.bg_stroke = egui::Stroke::NONE;
-              widgets.hovered.bg_stroke = egui::Stroke::NONE;
-              widgets.active.bg_stroke = egui::Stroke::NONE;
-              widgets.open.bg_stroke = egui::Stroke::NONE;
-              widgets.noninteractive.weak_bg_fill = bg;
-              widgets.inactive.weak_bg_fill = bg;
-              widgets.hovered.weak_bg_fill = bg;
-              widgets.active.weak_bg_fill = bg;
-              widgets.open.weak_bg_fill = bg;
-              widgets.noninteractive.bg_fill = bg;
-              widgets.inactive.bg_fill = bg;
-              widgets.hovered.bg_fill = bg;
-              widgets.active.bg_fill = bg;
-              widgets.open.bg_fill = bg;
-              egui::ScrollArea::vertical()
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                  egui::TextEdit::multiline(&mut self.code)
-                    .id_source("script editor")
-                    .lock_focus(true)
-                    .desired_rows(desired_rows)
-                    .desired_width(ui.available_width())
-                    .layouter(&mut |ui: &egui::Ui,
-                                     text: &dyn egui::TextBuffer,
-                                     wrap_width: f32| {
-                      ui.fonts_mut(|f| {
-                        f.layout_job(layout_with_rainbow_parens(
-                          text.as_str(),
-                          syntax,
-                          &theme,
-                          fontsize,
-                          wrap_width.max(1.0)
-                        ))
-                      })
-                    })
-                    .show(ui)
-                }).inner
-            }
-          ).inner;
-
-          self.complete_open_paren(ctx, &output, &code_before);
-          self.show_completion_popup(ctx, &output, row_height, fontsize);
+          self.render_body(ui, &mut action, false);
         });
       self.visible = visible;
     }
 
     action
+  }
+
+  fn apply_editor_theme(&self, ctx: &egui::Context) {
+    let theme = self.theme;
+    ctx.global_style_mut(|style| {
+      let bg = theme.bg();
+      let fg = theme.type_color(TokenType::Literal);
+      style.visuals.widgets.open.weak_bg_fill = bg.lerp_to_gamma(fg, 0.10);
+      style.visuals.widgets.active.bg_fill = bg.lerp_to_gamma(fg, 0.10);
+      style.visuals.widgets.hovered.bg_fill = bg.lerp_to_gamma(fg, 0.16);
+      style.visuals.widgets.inactive.bg_fill = bg.lerp_to_gamma(fg, 0.06);
+    });
+  }
+
+  fn render_body(
+    &mut self,
+    ui: &mut egui::Ui,
+    action: &mut EditorAction,
+    show_close: bool
+  ) {
+    let theme = self.theme;
+    let ctx = ui.ctx().clone();
+
+    ui.horizontal(|ui| {
+      if show_close && crate::ui::term_button(ui, "Close").clicked() {
+        self.visible = false;
+      }
+      if crate::ui::term_button(ui, "Copy to Clipboard").clicked() {
+        crate::ui::copy_to_clipboard(ui.ctx(), self.code.clone());
+        self.status_message =
+          Some(("Copied!".into(), ui.input(|input| input.time)));
+      }
+      if crate::ui::term_button(ui, "Save").clicked() {
+        *action = EditorAction::Save(self.code.clone());
+      }
+      if let Some((ref msg, when)) = self.status_message {
+        if ui.input(|input| input.time) - when < 3.0 {
+          ui.label(msg);
+        } else {
+          self.status_message = None;
+        }
+      }
+    });
+    ui.separator();
+
+    self.handle_completion_input(&ctx);
+
+    let syntax = &self.syntax;
+    let fontsize = ui
+      .style()
+      .text_styles
+      .get(&egui::TextStyle::Monospace)
+      .map(|f| f.size)
+      .unwrap_or(13.0);
+    let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+    let avail_h = ui.available_height().max(row_height);
+    let desired_rows = ((avail_h / row_height).floor() as usize).max(1);
+    let desired_width = ui.available_width().max(1.0);
+    let editor_size = egui::vec2(desired_width, (desired_rows as f32) * row_height);
+
+    let code_before = self.code.clone();
+    let output = ui.allocate_ui_with_layout(
+      editor_size,
+      egui::Layout::top_down(egui::Align::LEFT),
+      |ui| {
+        theme.modify_style(ui, fontsize);
+        let bg = theme.bg();
+        let widgets = &mut ui.style_mut().visuals.widgets;
+        widgets.noninteractive.bg_stroke = egui::Stroke::NONE;
+        widgets.inactive.bg_stroke = egui::Stroke::NONE;
+        widgets.hovered.bg_stroke = egui::Stroke::NONE;
+        widgets.active.bg_stroke = egui::Stroke::NONE;
+        widgets.open.bg_stroke = egui::Stroke::NONE;
+        widgets.noninteractive.weak_bg_fill = bg;
+        widgets.inactive.weak_bg_fill = bg;
+        widgets.hovered.weak_bg_fill = bg;
+        widgets.active.weak_bg_fill = bg;
+        widgets.open.weak_bg_fill = bg;
+        widgets.noninteractive.bg_fill = bg;
+        widgets.inactive.bg_fill = bg;
+        widgets.hovered.bg_fill = bg;
+        widgets.active.bg_fill = bg;
+        widgets.open.bg_fill = bg;
+        egui::ScrollArea::vertical()
+          .auto_shrink([false, false])
+          .show(ui, |ui| {
+            egui::TextEdit::multiline(&mut self.code)
+              .id_source("script editor")
+              .lock_focus(true)
+              .desired_rows(desired_rows)
+              .desired_width(ui.available_width())
+              .layouter(&mut |ui: &egui::Ui,
+                               text: &dyn egui::TextBuffer,
+                               wrap_width: f32| {
+                ui.fonts_mut(|f| {
+                  f.layout_job(layout_with_rainbow_parens(
+                    text.as_str(),
+                    syntax,
+                    &theme,
+                    fontsize,
+                    wrap_width.max(1.0)
+                  ))
+                })
+              })
+              .show(ui)
+          }).inner
+      }
+    ).inner;
+
+    self.complete_open_paren(&ctx, &output, &code_before);
+    self.show_completion_popup(&ctx, &output, row_height, fontsize);
   }
 
   fn handle_completion_input(&mut self, ctx: &egui::Context) {
