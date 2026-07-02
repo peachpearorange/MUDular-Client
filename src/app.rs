@@ -202,18 +202,15 @@ impl Session {
               self.script_engine.set_main_pending(&line);
             }
           }
-          #[cfg(not(target_arch = "wasm32"))]
           ConnEvent::GmcpReceived(package, data) => {
             info!("GMCP: {package}");
             self.script_engine.handle_gmcp(&package, &data);
           }
-          #[cfg(not(target_arch = "wasm32"))]
           ConnEvent::MsspReceived(mssp_info) => {
             let msg = format!("[MSSP: {} entries received]", mssp_info.len());
             info!("{msg}");
             self.script_engine.append_system_message(&msg);
           }
-          #[cfg(not(target_arch = "wasm32"))]
           ConnEvent::MsdpReceived(data) => {
             info!("MSDP: {data}");
             if let Some(vars) = data.get("REPORTABLE_VARIABLES") {
@@ -250,34 +247,22 @@ impl Session {
         info!("Sending command ({} chars)", cmd.len());
         conn.send(&cmd);
       }
-      #[cfg(not(target_arch = "wasm32"))]
       for (package, data) in self.script_engine.drain_gmcp() {
         info!("Sending GMCP: {package}");
         conn.send_gmcp(&package, &data);
       }
-      #[cfg(target_arch = "wasm32")]
-      let _ = self.script_engine.drain_gmcp();
-      #[cfg(not(target_arch = "wasm32"))]
       for vars in self.script_engine.drain_msdp_reports() {
         info!("Sending MSDP report for: {vars:?}");
         conn.send_msdp_report(vars);
       }
-      #[cfg(target_arch = "wasm32")]
-      let _ = self.script_engine.drain_msdp_reports();
-      #[cfg(not(target_arch = "wasm32"))]
       for vars in self.script_engine.drain_msdp_sends() {
         info!("Sending MSDP send for: {vars:?}");
         conn.send_msdp_send(vars);
       }
-      #[cfg(target_arch = "wasm32")]
-      let _ = self.script_engine.drain_msdp_sends();
-      #[cfg(not(target_arch = "wasm32"))]
       for what in self.script_engine.drain_msdp_lists() {
         info!("Sending MSDP list: {what}");
         conn.send_msdp_list(what);
       }
-      #[cfg(target_arch = "wasm32")]
-      let _ = self.script_engine.drain_msdp_lists();
     }
   }
 }

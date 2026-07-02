@@ -366,7 +366,7 @@ fn nukefire_custom_block() -> &'static str {
 const OPTIONS_BLOCK_PREFIX: &str = "\
 ;; Switch to scheme mode and run (mud/fonts) to see available fonts.\n\
 ;; (mud/set-font \"JetBrains Mono\")\n\
-(mud/set-font-size 14)\n\
+(mud/set-font-size 16)\n\
 (mud/set-scroll-lines 6)\n\
 (mud/set-keep-input #t)\n";
 
@@ -466,8 +466,69 @@ fn game_templates() -> Vec<Profile> {
        (mud/alias \"^aa (.+)$\" (lambda (target)\n  (mud/send (to-string \"attack \" target))))\n"
     )
     .build(),
+  GameTemplate::new("Achaea WebSocket", ConnectionMode::WebSocket, "achaea.com", 443, false)
+    .theme("theme/onenord")
+    .websocket("wss://achaea.com:443/socket/", Some("binary".into()))
+    .gauges(&[
+      gauge("health", "red", "hp", "maxhp"),
+      gauge("mana", "blue", "mp", "maxmp"),
+      gauge("endurance", "green", "ep", "maxep")
+    ])
+    .connect()
+    .on_line(
+      r##"(lambda (line)
+  (let ((text (mud/strip-ansi line)))
+    (cond
+      ((or (mud/regexp-match? "^\\s*--------\\+" text)
+           (mud/regexp-match? "^\\s*\\|.*\\|\\s*$" text))
+       (set! in-map #t)
+       (mud/pane-print "map" line)
+       #f)
+      (in-map
+       (if (or (equal? text "") (not (mud/regexp-match? "[|\\-+]" text)))
+           (begin (set! in-map #f) #t)
+           (begin (mud/pane-print "map" line) #f)))
+      (else #t))))"##
+    )
+    .on_input(DEFAULT_INPUT)
+    .gmcp("Char.Vitals", &[
+      gauge("health", "red", "hp", "maxhp"),
+      gauge("mana", "blue", "mp", "maxmp"),
+      gauge("endurance", "green", "ep", "maxep")
+    ])
+    .on_msdp(DEFAULT_MSDP)
+    .concat(
+      ";; Route map-like lines (box-drawing borders) to the map pane\n\
+       (define in-map #f)\n\
+       \n\
+       ;; Aliases\n\
+       (mud/alias \"^gg$\" (lambda ()\n  (mud/send \"get gold from corpse\")))\n\
+       \n\
+       (mud/alias \"^aa (.+)$\" (lambda (target)\n  (mud/send (to-string \"attack \" target))))\n"
+    )
+    .build(),
   GameTemplate::new("Aardwolf", ConnectionMode::Tcp, "aardmud.org", 23, false)
     .theme("theme/onenord")
+    .gauges(&[
+      gauge("health", "red", "hp", "maxhp"),
+      gauge("mana", "blue", "mana", "maxmana"),
+      gauge("moves", "yellow", "moves", "maxmoves")
+    ])
+    .connect()
+    .default_hooks()
+    .gmcp("char.vitals", &[
+      gauge("health", "red", "hp", "maxhp"),
+      gauge("mana", "blue", "mana", "maxmana"),
+      gauge("moves", "yellow", "moves", "maxmoves")
+    ])
+    .concat(
+      ";; Aliases\n\
+       (mud/alias \"^sc$\" (lambda ()\n  (mud/send \"score\")))\n"
+    )
+    .build(),
+  GameTemplate::new("Aardwolf WebSocket", ConnectionMode::WebSocket, "aardmud.org", 4000, false)
+    .theme("theme/onenord")
+    .websocket("wss://play.aardwolf.com:6200/", None)
     .gauges(&[
       gauge("health", "red", "hp", "maxhp"),
       gauge("mana", "blue", "mana", "maxmana"),
@@ -633,6 +694,10 @@ fn game_templates() -> Vec<Profile> {
   GameTemplate::new("Lost Souls", ConnectionMode::Tcp, "lostsouls.org", 23, false)
     .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Lost Souls WebSocket", ConnectionMode::WebSocket, "lostsouls.org", 23, false)
+    .theme("theme/onenord")
+    .websocket("wss://play.lostsouls.org:6001/ws", None)
+    .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("RetroMUD", ConnectionMode::Tcp, "retromud.org", 3000, false)
     .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
@@ -658,6 +723,73 @@ fn game_templates() -> Vec<Profile> {
     )
     .concat(";; Log GMCP messages\n")
     .build(),
+  GameTemplate::new("Mossworld", ConnectionMode::Tcp, "mossworld.ca", 4000, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Chronicles of Krynn", ConnectionMode::Tcp, "krynn.d20mud.com", 4300, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Elyisum", ConnectionMode::Tcp, "elysium-rpg.com", 7777, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Redemption", ConnectionMode::Tcp, "mud.redemptionmud.com", 4000, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Moral Decay", ConnectionMode::Tcp, "playdecay.com", 3003, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Project Twilight", ConnectionMode::Tcp, "project-twilight.vineyard.haus", 9080, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Age of Heroes 2", ConnectionMode::Tcp, "omen.genesismuds.com", 2250, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Carrion Fields", ConnectionMode::Tcp, "carrionfields.net", 4449, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("StickMUD", ConnectionMode::Tcp, "stickmud.com", 7680, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Cosmic Rage", ConnectionMode::Tcp, "cosmicrage.nathantech.net", 7777, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Ansalon", ConnectionMode::Tcp, "ansalon.net", 8679, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("DartMUD", ConnectionMode::Tcp, "dartmud.com", 2525, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Sundering Shadows", ConnectionMode::Tcp, "sunderingshadows.com", 8080, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Aetolia", ConnectionMode::Tcp, "aetolia.com", 23, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Aetolia WebSocket", ConnectionMode::WebSocket, "aetolia.com", 443, false)
+    .theme("theme/onenord")
+    .websocket("wss://aetolia.com:443/socket/", Some("binary".into()))
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Lusternia", ConnectionMode::Tcp, "lusternia.com", 23, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Lusternia WebSocket", ConnectionMode::WebSocket, "lusternia.com", 443, false)
+    .theme("theme/onenord")
+    .websocket("wss://lusternia.com:443/socket/", Some("binary".into()))
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Imperian", ConnectionMode::Tcp, "imperian.com", 23, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Imperian WebSocket", ConnectionMode::WebSocket, "imperian.com", 443, false)
+    .theme("theme/onenord")
+    .websocket("wss://imperian.com:443/socket/", Some("binary".into()))
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Starmourn", ConnectionMode::Tcp, "starmourn.com", 23, false)
+    .theme("theme/onenord")
+    .connect().default_hooks().default_on_gmcp().build(),
+  GameTemplate::new("Starmourn WebSocket", ConnectionMode::WebSocket, "starmourn.com", 443, false)
+    .theme("theme/onenord")
+    .websocket("wss://starmourn.com:443/socket/", Some("binary".into()))
+    .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Generic", ConnectionMode::Tcp, "localhost", 4000, false)
     .theme("theme/onenord")
     .concat(
