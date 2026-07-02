@@ -7,6 +7,10 @@ edition = "2024"
 name = "mudular"
 crate-type = ["lib", "cdylib"]
 
+[[bin]]
+name = "mudular-desktop"
+path = "src/main.rs"
+
 [dependencies]
 eframe = { version = "0.35", default-features = false, features = [
     "default_fonts",

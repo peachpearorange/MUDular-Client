@@ -16,15 +16,15 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             name: mudular-linux-x86_64
-            binary: mudular
+            binary: mudular-desktop
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             name: mudular-windows-x86_64.exe
-            binary: mudular.exe
+            binary: mudular-desktop.exe
           - os: macos-latest
             target: aarch64-apple-darwin
             name: mudular-macos-aarch64
-            binary: mudular
+            binary: mudular-desktop
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
