@@ -137,6 +137,27 @@ pub mod android_util {
   }
 }
 
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen::prelude::wasm_bindgen(start)]
+pub fn web_main() {
+  wasm_bindgen_futures::spawn_local(async {
+    use wasm_bindgen::JsCast;
+
+    let canvas = web_sys::window()
+      .expect("window not available")
+      .document()
+      .expect("document not available")
+      .get_element_by_id("the_canvas_id")
+      .expect("canvas not found")
+      .dyn_into::<web_sys::HtmlCanvasElement>()
+      .expect("element is not a canvas");
+
+    let _ = eframe::WebRunner::new()
+      .start(canvas, eframe::WebOptions::default(), Box::new(|cc| Ok(Box::new(app::MudApp::new(cc)))))
+      .await;
+  });
+}
+
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
 fn android_main(android_app: android_activity::AndroidApp) {

@@ -783,7 +783,7 @@ fn game_templates() -> Vec<Profile> {
     .theme("theme/onenord")
     .websocket("wss://imperian.com:443/socket/", Some("binary".into()))
     .connect().default_hooks().default_on_gmcp().build(),
-  GameTemplate::new("Starmourn", ConnectionMode::Tcp, "starmourn.com", 23, false)
+  GameTemplate::new("Starmourn", ConnectionMode::Tcp, "starmourn.com", 3000, false)
     .theme("theme/onenord")
     .connect().default_hooks().default_on_gmcp().build(),
   GameTemplate::new("Starmourn WebSocket", ConnectionMode::WebSocket, "starmourn.com", 443, false)

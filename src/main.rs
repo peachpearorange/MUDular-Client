@@ -59,26 +59,8 @@ fn main() -> eframe::Result<()> {
   )
 }
 
-#[cfg(target_arch = "wasm32")]
-fn main() {
-  wasm_bindgen_futures::spawn_local(async {
-    use wasm_bindgen::JsCast;
-
-    let canvas = web_sys::window()
-      .expect("window not available")
-      .document()
-      .expect("document not available")
-      .get_element_by_id("the_canvas_id")
-      .expect("canvas not found")
-      .dyn_into::<web_sys::HtmlCanvasElement>()
-      .expect("element is not a canvas");
-
-    let _ = eframe::WebRunner::new()
-      .start(
-        canvas,
-        eframe::WebOptions::default(),
-        Box::new(|cc| Ok(Box::new(mudular::app::MudApp::new(cc))))
-      )
-      .await;
-  });
-}
+// The wasm and android entry points live in the "mudular" lib (built as a
+// cdylib) rather than this desktop binary, but the binary still needs to
+// compile for those targets.
+#[cfg(not(desktop))]
+fn main() {}
